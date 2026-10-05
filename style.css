@@ -356,3 +356,42 @@ button:disabled { opacity: .5; cursor: default; }
 .sl-label { font-size: 13px; color: var(--muted); margin-right: 2px; }
 .search-links .btn { min-height: 34px; padding: 5px 12px; font-size: 13px; }
 .week-links .search-links { gap: 4px 12px; }
+
+/* ----- 배경 지우기 ----- */
+.checker {
+  background-color: #fff;
+  background-image:
+    linear-gradient(45deg, #e9e4de 25%, transparent 25%), linear-gradient(-45deg, #e9e4de 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, #e9e4de 75%), linear-gradient(-45deg, transparent 75%, #e9e4de 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+}
+#photo-preview.checker { border-style: solid; }
+.photo-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: -6px 0 14px; }
+.photo-tools:empty { display: none; }
+.small { font-size: 12px; }
+.thumb .swatch.cut img { width: 92%; height: 92%; object-fit: contain; border: 0; background: none; aspect-ratio: auto; }
+
+#cutter { width: min(640px, calc(100vw - 16px)); }
+.cutter { padding: 16px; }
+.cutter h2 { margin: 0 0 4px; font-size: 18px; }
+.cut-status { min-height: 20px; font-size: 14px; color: var(--accent); margin: 0 0 8px; }
+.cut-stage { border-radius: 12px; overflow: hidden; display: flex; justify-content: center; max-height: 58dvh; }
+#cut-canvas { display: block; max-width: 100%; max-height: 58dvh; touch-action: none; cursor: crosshair; }
+.cut-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 12px 0 6px; }
+.cut-size { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+.cut-size input { width: 110px; }
+
+/* ----- 입혀보기: 사진 모드 ----- */
+.mode-toggle { width: fit-content; margin: 0 auto 10px; background: var(--card); }
+.mode-toggle button { font-size: 13px; padding: 6px 10px; }
+.board-svg { width: 100%; max-width: 360px; height: auto; display: block; margin: 0 auto; }
+.mini-avatar .board-svg, .look-pic .board-svg { max-width: none; }
+.fit { margin-top: 10px; }
+.fit-target { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; align-items: center; font-size: 13px; margin-bottom: 6px; }
+.fit-target .chip { padding: 3px 10px; min-height: 30px; font-size: 12px; }
+.fit-buttons { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.fit-buttons button { width: 40px; height: 40px; padding: 0; background: var(--card); }
+.fit-hint { font-size: 13px; color: var(--muted); margin: 8px 0 0; }
+:root { --board: #fbf8f4; }
+@media (prefers-color-scheme: dark) { :root { --board: #2f2925; } }

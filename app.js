@@ -641,13 +641,37 @@ const state = {
   closetMode: ls.get('closetMode', 'grid'),
   look: ls.get('look', {}),
   tryCat: 'top',
+  tryMode: ls.get('tryMode', 'photo'),
+  fitId: null,
   draft: null,
 };
+
+/* ---------- 배경 지운 사진 주소 (같은 사진은 한 번만 만들어 재사용) ---------- */
+
+const urlCache = new Map();
+function cutoutUrl(item) {
+  if (!item?.cutout) return null;
+  const key = item.id || 'draft';
+  const hit = urlCache.get(key);
+  if (hit && hit.src === item.cutout) return hit.url;
+  if (hit) URL.revokeObjectURL(hit.url);
+  const [head, b64] = item.cutout.split(',');
+  const bin = atob(b64);
+  const bytes = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+  const url = URL.createObjectURL(new Blob([bytes], { type: head.slice(5).split(';')[0] }));
+  urlCache.set(key, { src: item.cutout, url });
+  return url;
+}
+// 배경 지운 옷이 하나라도 있으면 사진으로, 아니면 그림으로
+const autoMode = pieces => (pieces.some(p => p.cutout) ? 'photo' : 'draw');
 
 /* ---------- 화면 그리기 ---------- */
 
 function thumb(item) {
-  const inner = item.photo
+  const inner = item.cutout
+    ? `<span class="swatch cut"><img src="${cutoutUrl(item)}" alt=""></span>`
+    : item.photo
     ? `<img src="${item.photo}" alt="">`
     : `<span class="swatch">${miniAvatarPiece(item)}</span>`;
   return `<figure class="thumb">${item.sample ? '<span class="badge">예시</span>' : ''}${inner}<figcaption>${esc(itemName(item))}</figcaption></figure>`;
@@ -694,7 +718,7 @@ function outfitCard(o, idx, occasion) {
     <article class="card outfit">
       <div class="outfit-head"><b>추천 ${idx + 1}</b></div>
       <div class="outfit-body">
-        <div class="mini-avatar">${drawAvatar(lookFromIds(pieces.map(p => p.id)), `추천 ${idx + 1} 아바타`)}</div>
+        <div class="mini-avatar">${drawLook(lookFromIds(pieces.map(p => p.id)), autoMode(pieces), `추천 ${idx + 1} 아바타`)}</div>
         <div>
           <div class="pieces">${pieces.map(thumb).join('')}</div>
           <ul class="reasons">${o.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
@@ -831,7 +855,7 @@ function renderWeek() {
         const pieces = [...best.pieces, best.shoes].filter(Boolean);
         body = `
           <div class="week-body">
-            <div class="mini-avatar small">${drawAvatar(lookFromIds(pieces.map(p => p.id)))}</div>
+            <div class="mini-avatar small">${drawLook(lookFromIds(pieces.map(p => p.id)), autoMode(pieces))}</div>
             <div>
               <ul class="week-items">${pieces.map(p => `<li><i style="background:${col(p.color).hex}"></i>${esc(itemName(p))}</li>`).join('')}</ul>
               ${best.reasons[0] ? `<p class="reason-line">✓ ${esc(best.reasons[0])}</p>` : ''}
@@ -855,6 +879,28 @@ function renderWeek() {
       </article>`;
   });
   el.innerHTML = html;
+}
+
+// 사진으로 입힌 옷의 크기·위치 조절
+function fitControls(pieces) {
+  if (state.tryMode !== 'photo') return '';
+  const photos = pieces.filter(p => p.cutout);
+  if (!photos.length) {
+    return pieces.length
+      ? '<p class="fit-hint">💡 옷을 눌러 <b>사진 → 배경 지우기</b>를 하면 실제 옷 사진으로 입혀져요</p>'
+      : '';
+  }
+  const target = photos.find(p => p.id === state.fitId) || photos[photos.length - 1];
+  return `
+    <div class="fit">
+      <div class="fit-target">${photos.length > 1
+        ? photos.map(p => `<button type="button" class="chip" data-act="fit-target" data-id="${esc(p.id)}" aria-pressed="${p.id === target.id}">${esc(itemName(p))}</button>`).join('')
+        : `<span>${esc(itemName(target))}</span>`} <small class="muted">크기·위치 맞추기</small></div>
+      <div class="fit-buttons" data-id="${esc(target.id)}">
+        ${[['s-', '➖', '작게'], ['s+', '➕', '크게'], ['y-', '⬆', '위로'], ['y+', '⬇', '아래로'], ['x-', '⬅', '왼쪽'], ['x+', '➡', '오른쪽'], ['reset', '↺', '처음대로']]
+          .map(([v, icon, name]) => `<button type="button" data-act="fit" data-v="${v}" aria-label="${name}" title="${name}">${icon}</button>`).join('')}
+      </div>
+    </div>`;
 }
 
 function renderTryon() {
@@ -881,7 +927,10 @@ function renderTryon() {
   el.innerHTML = `
     <div class="tryon">
       <div class="card stage">
-        ${drawAvatar(look)}
+        <div class="toggle mode-toggle">${[['photo', '📷 내 옷 사진'], ['draw', '✏️ 그림'], ['board', '🖼️ 코디 보드']].map(([m, n]) =>
+          `<button type="button" data-act="trymode" data-mode="${m}" aria-pressed="${state.tryMode === m}">${n}</button>`).join('')}</div>
+        ${drawLook(look, state.tryMode)}
+        ${fitControls(pieces)}
         <div class="worn-list">${pieces.length
           ? pieces.map(p => `<button type="button" class="tag" data-act="puton" data-id="${esc(p.id)}" title="벗기기"><i style="background:${col(p.color).hex}"></i>${esc(itemName(p))} ✕</button>`).join('')
           : '<span class="muted">오른쪽(아래)에서 옷을 눌러 입혀 보세요</span>'}</div>
@@ -915,7 +964,7 @@ function renderTryon() {
             <p><b>⭐ 저장한 코디</b> <small class="muted">${looks.length}개</small></p>
             <div class="looks">${looks.map(l => `
               <div class="look">
-                <button type="button" class="look-pic" data-act="load-look" data-id="${esc(l.id)}" aria-label="이 코디 입혀보기">${drawAvatar(lookFromIds(l.ids))}</button>
+                <button type="button" class="look-pic" data-act="load-look" data-id="${esc(l.id)}" aria-label="이 코디 입혀보기">${(look => drawLook(look, autoMode(lookPieces(look))))(lookFromIds(l.ids))}</button>
                 <button type="button" class="link danger" data-act="del-look" data-id="${esc(l.id)}">삭제</button>
               </div>`).join('')}</div>
           </div>` : ''}
@@ -1030,9 +1079,17 @@ function openEditor(item) {
 
 function renderEditor() {
   const d = state.draft;
-  $('#photo-preview').innerHTML = d.photo
+  $('#photo-preview').innerHTML = d.cutout
+    ? `<img class="cut" src="${cutoutUrl(d)}" alt="배경 지운 옷 사진">`
+    : d.photo
     ? `<img src="${d.photo}" alt="옷 사진">`
     : '<span>📷<br>사진 찍기 / 앨범에서 고르기<br><small>사진 없이 저장해도 괜찮아요</small></span>';
+  $('#photo-preview').classList.toggle('checker', Boolean(d.cutout));
+  $('#photo-tools').innerHTML = d.photo ? `
+    <button type="button" class="primary" data-photo="cut">✂️ ${d.cutout ? '배경 다시 다듬기' : '배경 지우기'}</button>
+    ${d.cutout ? '<button type="button" data-photo="uncut">원래 사진으로</button>' : ''}
+    <button type="button" data-photo="change">사진 바꾸기</button>
+    <span class="muted small">${d.cutout ? '✓ 배경을 지워서 아바타에 실제 사진으로 입혀져요' : '배경을 지우면 아바타에 실제 옷 사진을 입힐 수 있어요'}</span>` : '';
   $('#f-cat').innerHTML = Object.entries(CATS).map(([id, name]) =>
     `<button type="button" class="chip" data-field="cat" data-val="${id}" aria-pressed="${d.cat === id}">${name}</button>`).join('');
   $('#f-kind').innerHTML = KINDS[d.cat].map(k =>
@@ -1079,18 +1136,49 @@ editor.addEventListener('click', e => {
   renderEditor();
 });
 
+// 배경 지우기 창을 열고, 끝나면 결과를 옷 정보에 반영
+async function cutDraft(autoAI) {
+  const d = state.draft;
+  const r = await Cutter.open(d.photo, d.cutout ? { src: d.cutout, box: d.cutoutBox } : null, autoAI);
+  if (!r) return;
+  if (r.empty) { toast('옷이 전부 지워졌어요. 다시 해 볼까요?'); return; }
+  d.cutout = r.src;
+  d.cutoutBox = r.box;
+  if (r.color) {
+    d.color = r.color;
+    renderEditor();
+    $('#color-hint').textContent = `옷 색은 ${col(r.color).name}(으)로 골랐어요. 다르면 눌러서 바꿔 주세요`;
+  } else {
+    renderEditor();
+  }
+}
+
+$('#photo-tools').addEventListener('click', async e => {
+  const b = e.target.closest('[data-photo]');
+  if (!b) return;
+  if (b.dataset.photo === 'cut') await cutDraft(!state.draft.cutout);
+  if (b.dataset.photo === 'uncut') { state.draft.cutout = null; state.draft.cutoutBox = null; renderEditor(); }
+  if (b.dataset.photo === 'change') $('#photo-input').click();
+});
+
 $('#photo-input').addEventListener('change', async e => {
   const file = e.target.files[0];
   if (!file) return;
   try {
     const { photo, color } = await processPhoto(file);
     state.draft.photo = photo;
+    state.draft.cutout = null;
+    state.draft.cutoutBox = null;
+    state.draft.fit = undefined;
     state.draft.color = color;
     renderEditor();
     $('#color-hint').textContent = `사진에서 ${col(color).name}(으)로 골랐어요. 다르면 눌러서 바꿔 주세요`;
   } catch {
     toast('사진을 읽지 못했어요. 다른 사진으로 해 볼까요?');
+    return;
   }
+  // 사진을 고르면 바로 AI 배경 지우기 시작 (취소하면 원래 사진 그대로)
+  await cutDraft(true);
 });
 
 $('#editor-form').addEventListener('submit', async e => {
@@ -1230,13 +1318,13 @@ async function processPhoto(file) {
       i.onerror = reject;
       i.src = url;
     });
-    const max = 640;
+    const max = 1024;
     const scale = Math.min(1, max / Math.max(img.width, img.height));
     const cv = document.createElement('canvas');
     cv.width = Math.round(img.width * scale);
     cv.height = Math.round(img.height * scale);
     cv.getContext('2d').drawImage(img, 0, 0, cv.width, cv.height);
-    return { photo: cv.toDataURL('image/jpeg', 0.8), color: detectColor(img) };
+    return { photo: cv.toDataURL('image/jpeg', 0.85), color: detectColor(img) };
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -1351,7 +1439,34 @@ document.addEventListener('click', async e => {
         if (item.cat === 'top' || item.cat === 'bottom') delete look.dress;
       }
       setLook(look);
+      if (look[item.cat]?.id === item.id && item.cutout) state.fitId = item.id;
       render();
+      break;
+    }
+    case 'trymode':
+      state.tryMode = b.dataset.mode;
+      ls.set('tryMode', state.tryMode);
+      render();
+      break;
+    case 'fit-target':
+      state.fitId = b.dataset.id;
+      render();
+      break;
+    case 'fit': {
+      const item = state.items.find(i => i.id === b.closest('.fit-buttons').dataset.id);
+      if (!item) break;
+      const f = { s: 1, x: 0, y: 0, ...(item.fit || {}) };
+      const v = b.dataset.v;
+      if (v === 's-') f.s = Math.max(0.5, +(f.s - 0.05).toFixed(2));
+      if (v === 's+') f.s = Math.min(1.6, +(f.s + 0.05).toFixed(2));
+      if (v === 'y-') f.y -= 3;
+      if (v === 'y+') f.y += 3;
+      if (v === 'x-') f.x -= 3;
+      if (v === 'x+') f.x += 3;
+      item.fit = v === 'reset' ? undefined : f;
+      state.fitId = item.id;
+      render();
+      store.put(item).catch(() => {});
       break;
     }
     case 'undress':
@@ -1455,6 +1570,7 @@ async function refreshWeather(force) {
 }
 
 async function init() {
+  Cutter.init();
   $('#city').innerHTML = CITIES.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
   $('#city').value = ls.get('city', 'seoul');
   try {

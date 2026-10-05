@@ -46,6 +46,7 @@
         <input type="file" accept="image/*" id="photo-input">
         <div id="photo-preview"><span>📷<br>사진 찍기 / 앨범에서 고르기</span></div>
       </label>
+      <div class="photo-tools" id="photo-tools"></div>
 
       <fieldset>
         <legend>종류</legend>
@@ -114,10 +115,35 @@
     </form>
   </dialog>
 
+  <dialog id="cutter">
+    <div class="cutter">
+      <h2>배경 지우기</h2>
+      <p id="cut-status" class="cut-status" role="status"></p>
+      <div class="cut-stage checker"><canvas id="cut-canvas"></canvas></div>
+      <div class="cut-tools">
+        <button type="button" data-cut="ai" class="primary">✨ AI로 자동 지우기</button>
+        <div class="toggle">
+          <button type="button" data-cut="erase" aria-pressed="true">🧽 지우개</button>
+          <button type="button" data-cut="restore" aria-pressed="false">🖌️ 되살리기</button>
+        </div>
+        <label class="cut-size">붓 크기 <input type="range" id="cut-size" min="6" max="80" value="28"></label>
+        <button type="button" data-cut="undo">↶ 되돌리기</button>
+        <button type="button" data-cut="reset">처음 사진으로</button>
+      </div>
+      <p class="muted small">손가락으로 문지르면 지워져요. 옷이 같이 지워졌으면 '되살리기'로 칠해 주세요.</p>
+      <div class="editor-actions">
+        <span class="grow"></span>
+        <button type="button" data-cut="cancel">취소</button>
+        <button type="button" data-cut="done" class="primary">완료</button>
+      </div>
+    </div>
+  </dialog>
+
   <input type="file" id="import-file" accept="application/json,.json" hidden>
   <div id="toast" role="status" aria-live="polite"></div>
 
   <script src="avatar.js"></script>
+  <script src="cutout.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

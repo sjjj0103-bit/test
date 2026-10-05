@@ -217,3 +217,85 @@ function drawAvatar(look, label = '아바타') {
   s += HANDS;
   return `<svg class="avatar-svg" viewBox="0 0 200 390" role="img" aria-label="${label}">${s}</svg>`;
 }
+
+/* =========================================================
+   실제 옷 사진으로 입히기 (배경을 지운 사진이 있는 옷만, 없으면 그림으로)
+   ========================================================= */
+
+// 옷 종류별로 사진을 놓을 자리 [x, y, 너비, 높이] (아바타 좌표)
+const PHOTO_BOX = {
+  top:    () => [42, 82, 116, 112],
+  outer:  k => (['trench', 'coat'].includes(k) ? [34, 80, 132, 226] : ['padding'].includes(k) ? [34, 78, 132, 146] : [36, 80, 128, 132]),
+  bottom: k => ({ shorts: [62, 164, 76, 80], miniskirt: [60, 164, 80, 84], longskirt: [54, 164, 92, 172] }[k] || [62, 164, 76, 200]),
+  dress:  k => ({ 'dress-short': [48, 82, 104, 172], 'dress-knit': [46, 82, 108, 224] }[k] || [44, 82, 112, 258]),
+  shoes:  () => [66, 344, 68, 36],
+};
+
+let clipSeq = 0;
+function photoPiece(item, url) {
+  const [bx, by, bw, bh] = PHOTO_BOX[item.cat](kindOf(item).id);
+  const f = { s: 1, x: 0, y: 0, ...(item.fit || {}) };
+  const w = bw * f.s, h = bh * f.s;
+  const x = bx + (bw - w) / 2 + f.x, y = by + f.y;
+  const align = item.cat === 'shoes' ? 'xMidYMax' : 'xMidYMin';
+  const img = `<image href="${url}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="${align} meet"/>`;
+  if (item.cat !== 'outer' || item.closed) return img;
+  // 아우터는 앞을 살짝 열어서 안에 입은 옷이 보이게: 왼쪽·오른쪽 반을 바깥으로 벌림
+  const mid = x + w / 2, gap = 6 * f.s;
+  const id = `cl${++clipSeq}`;
+  return `<defs><clipPath id="${id}L"><rect x="${x - 20}" y="${y - 20}" width="${mid - x + 20}" height="${h + 40}"/></clipPath>`
+    + `<clipPath id="${id}R"><rect x="${mid}" y="${y - 20}" width="${w / 2 + 20}" height="${h + 40}"/></clipPath></defs>`
+    + `<g clip-path="url(#${id}L)" transform="translate(${-gap} 0)">${img}</g>`
+    + `<g clip-path="url(#${id}R)" transform="translate(${gap} 0)">${img}</g>`;
+}
+
+function photoOrDrawing(item) {
+  const url = cutoutUrl(item);
+  return url ? photoPiece(item, url) : garment(item);
+}
+
+// 아바타에 실제 사진 입히기
+function drawPhotoAvatar(look, label = '아바타') {
+  let s = bodyBack();
+  if (look.dress) {
+    s += photoOrDrawing(look.dress);
+  } else {
+    s += look.bottom ? photoOrDrawing(look.bottom) : BASIC_BOTTOM;
+    s += look.top ? photoOrDrawing(look.top) : BASIC_TOP;
+  }
+  if (look.outer) s += photoOrDrawing(look.outer);
+  s += look.shoes ? photoOrDrawing(look.shoes) : BARE_FEET;
+  // 사진 옷은 소매가 손을 덮지 않게 손을 그리지 않음
+  if (!lookPieces(look).some(p => cutoutUrl(p) && ['top', 'outer', 'dress'].includes(p.cat))) s += HANDS;
+  return `<svg class="avatar-svg" viewBox="0 0 200 390" role="img" aria-label="${label}">${s}</svg>`;
+}
+
+// 코디 보드: 핀터레스트 코디 사진처럼 옷을 나란히 펼쳐 놓기
+const BOARD = {
+  withOuter: { outer: [8, 16, 132, 210], top: [148, 8, 144, 116], bottom: [154, 132, 132, 150], dress: [148, 8, 144, 226], shoes: [20, 232, 108, 60] },
+  noOuter:   { top: [16, 10, 150, 136], bottom: [168, 30, 120, 210], dress: [40, 8, 150, 270], shoes: [24, 200, 120, 84] },
+};
+const DRAW_BOX = { top: '40 76 120 130', bottom: '40 160 120 210', dress: '35 76 130 270', outer: '30 76 140 230', shoes: '66 350 68 30' };
+
+function drawBoard(look, label = '코디 보드') {
+  const L = look.outer ? BOARD.withOuter : BOARD.noOuter;
+  let s = '<rect width="300" height="300" rx="14" fill="var(--board, #fbf8f4)"/>';
+  for (const cat of ['outer', 'bottom', 'top', 'dress', 'shoes']) {
+    const item = look[cat];
+    if (!item) continue;
+    let [x, y, w, h] = L[cat];
+    if (cat === 'shoes' && look.dress && !look.outer) [x, y, w, h] = [190, 210, 100, 80];
+    const url = cutoutUrl(item);
+    s += url
+      ? `<image href="${url}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet"/>`
+      : `<svg x="${x}" y="${y}" width="${w}" height="${h}" viewBox="${DRAW_BOX[cat]}">${garment(item)}</svg>`;
+  }
+  return `<svg class="board-svg" viewBox="0 0 300 300" role="img" aria-label="${label}">${s}</svg>`;
+}
+
+// mode: 'draw' 그림 / 'photo' 사진 입히기 / 'board' 코디 보드
+function drawLook(look, mode, label) {
+  if (mode === 'board') return drawBoard(look, label);
+  if (mode === 'photo') return drawPhotoAvatar(look, label);
+  return drawAvatar(look, label);
+}
