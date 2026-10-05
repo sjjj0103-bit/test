@@ -166,11 +166,41 @@ const HANDS = `<circle cx="56" cy="199" r="6.5" fill="${SKIN}"/><circle cx="144"
 const BASIC_TOP = path('M79 90 Q89 86 92 86 Q100 96 108 86 Q111 86 121 90 L124 176 L76 176 Z', '#ece6df', '#cfc6bd');
 const BASIC_BOTTOM = path('M75 168 L125 168 L127 220 L101 222 L100 210 L99 222 L73 220 Z', '#ece6df', '#cfc6bd');
 
+// 무늬 채우기. 화면에 같은 그림이 여러 개 있어도 섞이지 않게 매번 새 id를 씀
+let patternSeq = 0;
+function patternDef(kind, base, sub) {
+  const id = `pt${++patternSeq}`;
+  const bg = `<rect width="40" height="40" fill="${base}"/>`;
+  const body = {
+    stripe: `<pattern id="${id}" width="8" height="8" patternUnits="userSpaceOnUse">${bg}<rect y="0" width="8" height="3" fill="${sub}"/></pattern>`,
+    check:  `<pattern id="${id}" width="12" height="12" patternUnits="userSpaceOnUse">${bg}<rect width="12" height="5" fill="${sub}" opacity=".55"/><rect width="5" height="12" fill="${sub}" opacity=".55"/></pattern>`,
+    dot:    `<pattern id="${id}" width="9" height="9" patternUnits="userSpaceOnUse">${bg}<circle cx="4.5" cy="4.5" r="1.7" fill="${sub}"/></pattern>`,
+    floral: `<pattern id="${id}" width="16" height="16" patternUnits="userSpaceOnUse">${bg}`
+      + [[8, 5], [11, 8], [8, 11], [5, 8]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.4" fill="${sub}"/>`).join('')
+      + `<circle cx="8" cy="8" r="1.6" fill="#f0cc4a"/></pattern>`,
+  }[kind];
+  return body ? { id, def: `<defs>${body}</defs>` } : null;
+}
+
+// 프린팅 티: 가슴에 작은 그림
+function printMark(item, sub) {
+  if (!['top', 'dress'].includes(item.cat)) return '';
+  return `<rect x="88" y="112" width="24" height="16" rx="3" fill="${sub}"/>`
+    + `<path d="M92 124 L97 117 L101 122 L104 119 L108 124 Z" fill="${col(item.color).hex}" opacity=".8"/>`;
+}
+
 function garment(item) {
   const draw = SHAPES[kindOf(item).id];
+  if (!draw) return '';
+  const hex = col(item.color).hex;
+  const sub = col(item.color2 || 'white').hex;
+  const pt = item.pattern || 'none';
   // 이름에 "반팔"이 있으면 셔츠·블라우스도 반팔로 그림
   const short = /반팔|반소매/.test(item.name || '');
-  return draw ? draw({ ...paints(col(item.color).hex), short }) : '';
+  const p = { ...paints(hex), short };
+  const fill = pt !== 'none' && pt !== 'print' && item.cat !== 'shoes' ? patternDef(pt, hex, sub) : null;
+  if (fill) p.f = `url(#${fill.id})`;
+  return (fill ? fill.def : '') + draw(p) + (pt === 'print' ? printMark(item, sub) : '');
 }
 
 // look: { top, bottom, dress, outer, shoes } — 각 값은 옷 아이템(없으면 비어 있음)

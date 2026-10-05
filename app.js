@@ -83,6 +83,17 @@ const COLORS = [
   { id: 'lavender', name: '라벤더', hex: '#cbbde9', family: 'purple', alias: ['연보라'] },
 ];
 const COLOR = Object.fromEntries(COLORS.map(c => [c.id, c]));
+
+// 무늬(디테일). kw = 글로 등록할 때 알아듣는 말
+const PATTERNS = {
+  none:   { name: '무지',       kw: [] },
+  stripe: { name: '스트라이프', kw: ['스트라이프', '트라이프', '트레이프', '줄무늬', '단가라', '스트라잎'] },
+  check:  { name: '체크',       kw: ['체크', '깅엄', '타탄', '격자', '하운드투스'] },
+  dot:    { name: '도트',       kw: ['도트', '땡땡이', '물방울'] },
+  floral: { name: '꽃무늬',     kw: ['꽃무늬', '플라워', '플로럴', '꽃'] },
+  print:  { name: '프린팅',     kw: ['프린팅', '프린트', '레터링', '로고', '그래픽', '캐릭터'] },
+};
+const patternOf = item => (PATTERNS[item.pattern] && item.pattern) || 'none';
 const col = id => COLOR[id] || COLOR.gray;
 
 // 실패 없는 기본색 조합
@@ -197,6 +208,24 @@ const KIND_WORDS = Object.entries(KINDS).flatMap(([cat, list]) =>
   list.flatMap(k => [k.name, ...k.kw].map(w => ({ w, value: { cat, kind: k } }))));
 const COLOR_WORDS = COLORS.flatMap(c => [c.name, ...c.alias].map(w => ({ w, value: c.id })));
 
+// 글에 나온 색을 순서대로 찾음 ("하늘색 흰 스트라이프" → 하늘, 화이트)
+function findColors(text) {
+  const found = [];
+  for (let i = 0; i < text.length;) {
+    let hit = null;
+    for (const { w, value } of COLOR_WORDS) {
+      if (text.startsWith(w, i) && (!hit || w.length > hit.w.length)) hit = { w, value };
+    }
+    if (hit) {
+      if (!found.includes(hit.value)) found.push(hit.value);
+      i += hit.w.length;
+    } else {
+      i++;
+    }
+  }
+  return found;
+}
+
 // 가장 긴 단어를 우선, 길이가 같으면 뒤에 나온 단어를 우선 ("반팔 셔츠" → 셔츠)
 function bestMatch(text, words) {
   let best = null;
@@ -217,7 +246,9 @@ function parseLine(line) {
   if (!name) return null;
   const k = bestMatch(text, KIND_WORDS);
   if (!k) return { name, unknown: true };
-  const colorId = bestMatch(text, COLOR_WORDS);
+  const colors = findColors(text);
+  const colorId = colors[0];
+  const pattern = Object.keys(PATTERNS).find(id => PATTERNS[id].kw.some(w => text.includes(w))) || 'none';
   let warmth = k.kind.warmth;
   if (k.cat === 'top' && /반팔|반소매/.test(text)) warmth = 1;
   if (/얇은|린넨|시스루|여름/.test(text)) warmth -= 1;
@@ -229,6 +260,8 @@ function parseLine(line) {
     kind: k.kind.id,
     color: colorId || (k.kind.id === 'jeans' ? 'denim' : 'gray'),
     colorFound: Boolean(colorId) || k.kind.id === 'jeans',
+    pattern,
+    color2: colors[1] || (colorId === 'white' ? 'navy' : 'white'),
     warmth: Math.min(5, Math.max(1, warmth)),
     occasions,
   };
@@ -239,7 +272,11 @@ function kindOf(item) {
     || (item.name && parseLine(item.name)?.cat === item.cat && findKind(item.cat, parseLine(item.name).kind))
     || findKind(item.cat, DEFAULT_KIND[item.cat]);
 }
-const defaultName = item => `${col(item.color).name} ${kindOf(item)?.name || CATS[item.cat] || ''}`.trim();
+const defaultName = item => [
+  col(item.color).name,
+  patternOf(item) !== 'none' ? PATTERNS[item.pattern].name : '',
+  kindOf(item)?.name || CATS[item.cat] || '',
+].filter(Boolean).join(' ');
 const itemName = item => item.name || defaultName(item);
 
 /* ---------- 옷장 저장소 (IndexedDB) ---------- */
@@ -412,7 +449,17 @@ function colorScore(pieces) {
     score += 1;
     reasons.push(`${COLOR[classic[0]].name}+${COLOR[classic[1]].name}는 공식 같은 조합이에요`);
   }
-  return { score, reasons };
+  // 무늬 있는 옷은 한 벌만 — 나머지는 무지로 맞추면 깔끔해요
+  const warns = [];
+  const patterned = pieces.filter(p => p.cat !== 'shoes' && patternOf(p) !== 'none');
+  if (patterned.length === 1 && pieces.length > 1) {
+    score += 1;
+    reasons.push(`${PATTERNS[patterned[0].pattern].name} 옷 하나에 무지 옷을 맞춰서 정돈돼 보여요`);
+  } else if (patterned.length >= 2) {
+    score -= 3;
+    warns.push('무늬 있는 옷이 두 벌 이상이에요. 한 벌은 무지로 바꾸면 덜 복잡해 보여요');
+  }
+  return { score, reasons, warns };
 }
 
 function scoreOutfit(pieces, ctx) {
@@ -508,10 +555,20 @@ function recommend(ctx) {
   });
 }
 
-function pinterestUrl(pieces, occasion) {
+// 비슷한 코디 사진 검색 (핀터레스트가 로그인을 요구할 때를 대비해 네이버·구글도 함께)
+function searchQuery(pieces, occasion) {
   const words = pieces.filter(p => p.cat !== 'shoes').map(itemName);
-  const q = `${words.join(' ')} ${OCCASIONS[occasion].word}`;
-  return 'https://www.pinterest.co.kr/search/pins/?q=' + encodeURIComponent(q);
+  return `${words.join(' ')} ${OCCASIONS[occasion].word}`;
+}
+function searchLinks(pieces, occasion, cls = 'btn') {
+  const q = encodeURIComponent(searchQuery(pieces, occasion));
+  const links = [
+    ['핀터레스트', `https://www.pinterest.co.kr/search/pins/?q=${q}`],
+    ['네이버', `https://search.naver.com/search.naver?where=image&query=${q}`],
+    ['구글', `https://www.google.com/search?tbm=isch&q=${q}`],
+  ];
+  return `<span class="search-links"><span class="sl-label">비슷한 코디 사진</span>${links.map(([name, url]) =>
+    `<a class="${cls}" href="${url}" target="_blank" rel="noopener">${name} ↗</a>`).join('')}</span>`;
 }
 
 /* ---------- 입혀보기 ---------- */
@@ -566,6 +623,7 @@ function evaluateLook(look, day) {
 
   const c = colorScore([...main, look.shoes].filter(Boolean));
   c.reasons.forEach(r => out.push([true, r]));
+  c.warns.forEach(w => out.push([false, w]));
   if (c.score < 0) out.push([false, '눈에 띄는 색이 여러 개예요. 하나를 기본색(블랙·화이트·베이지 등)으로 바꿔 보세요']);
   return out;
 }
@@ -646,7 +704,8 @@ function outfitCard(o, idx, occasion) {
       <div class="actions">
         <button type="button" class="primary" data-act="wear" data-ids="${ids}">이거 입을래요</button>
         <button type="button" data-act="tryon" data-ids="${ids}">👗 입혀보기</button>
-        <a class="btn" href="${pinterestUrl(pieces, occasion)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
+      </div>
+      <div class="actions">${searchLinks(pieces, occasion)}
       </div>
     </article>`;
 }
@@ -778,7 +837,8 @@ function renderWeek() {
               ${best.reasons[0] ? `<p class="reason-line">✓ ${esc(best.reasons[0])}</p>` : ''}
               <div class="week-links">
                 <button type="button" class="link" data-act="tryon" data-ids="${pieces.map(p => p.id).join(',')}">입혀보기</button>
-                <a class="link" href="${pinterestUrl(pieces, occ)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
+              </div>
+              <div class="week-links">${searchLinks(pieces, occ, 'link')}
               </div>
             </div>
           </div>`;
@@ -846,8 +906,8 @@ function renderTryon() {
           ${pieces.length ? `
             <button type="button" class="primary" data-act="wear" data-ids="${pieces.map(p => p.id).join(',')}">오늘 이거 입을래요</button>
             <button type="button" data-act="save-look">⭐ 코디 저장</button>
-            <a class="btn" href="${pinterestUrl(pieces, state.occasion)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
-            <button type="button" data-act="undress">다 벗기기</button>` : ''}
+            <button type="button" data-act="undress">다 벗기기</button>
+            ${searchLinks(pieces, state.occasion)}` : ''}
         </div>
 
         ${looks.length ? `
@@ -911,7 +971,7 @@ function renderCloset() {
       html += `<div class="grid">${list.map(i => `
         <button type="button" class="item" data-act="edit" data-id="${esc(i.id)}">
           ${thumb(i)}
-          <span class="meta">${kindOf(i)?.name || CATS[i.cat]} · ${WARMTH[i.warmth]?.name || ''}</span>
+          <span class="meta">${kindOf(i)?.name || CATS[i.cat]}${patternOf(i) !== 'none' ? ' · ' + PATTERNS[i.pattern].name : ''} · ${WARMTH[i.warmth]?.name || ''}</span>
         </button>`).join('')}</div>`;
     }
   }
@@ -957,8 +1017,8 @@ const editor = $('#editor');
 
 function openEditor(item) {
   state.draft = item
-    ? { ...item, kind: kindOf(item).id, occasions: [...(item.occasions || [])] }
-    : { id: null, photo: null, cat: 'top', kind: DEFAULT_KIND.top, color: 'gray', warmth: 2, occasions: [], name: '' };
+    ? { ...item, kind: kindOf(item).id, pattern: patternOf(item), color2: item.color2 || 'white', occasions: [...(item.occasions || [])] }
+    : { id: null, photo: null, cat: 'top', kind: DEFAULT_KIND.top, color: 'gray', pattern: 'none', color2: 'white', warmth: 2, occasions: [], name: '' };
   $('#editor-title').textContent = item ? '옷 정보 수정' : '옷 추가';
   $('#btn-delete').hidden = !item;
   $('#f-name').value = state.draft.name || '';
@@ -980,6 +1040,13 @@ function renderEditor() {
   $('#f-color').innerHTML = COLORS.map(c =>
     `<button type="button" class="color" data-field="color" data-val="${c.id}" aria-pressed="${d.color === c.id}" title="${c.name}">
        <span style="background:${c.hex}"></span>${c.name}</button>`).join('');
+  $('#f-pattern').innerHTML = Object.entries(PATTERNS).map(([id, pt]) =>
+    `<button type="button" class="chip" data-field="pattern" data-val="${id}" aria-pressed="${d.pattern === id}">${pt.name}</button>`).join('');
+  $('#f-color2-wrap').hidden = d.pattern === 'none';
+  $('#f-color2').innerHTML = COLORS.map(c =>
+    `<button type="button" class="color sm" data-field="color2" data-val="${c.id}" aria-pressed="${d.color2 === c.id}" title="${c.name}">
+       <span style="background:${c.hex}"></span>${c.name}</button>`).join('');
+  $('#f-preview').innerHTML = miniAvatarPiece(d);
   $('#f-warmth').innerHTML = WARMTH.slice(1).map((w, i) =>
     `<button type="button" data-field="warmth" data-val="${i + 1}" aria-pressed="${d.warmth === i + 1}">
        <b>${'●'.repeat(i + 1)}${'○'.repeat(4 - i)} ${w.name}</b><small>${w.ex}</small></button>`).join('');
@@ -1003,6 +1070,8 @@ editor.addEventListener('click', e => {
     d.warmth = findKind(d.cat, v).warmth;
   }
   if (b.dataset.field === 'color') { d.color = v; $('#color-hint').textContent = ''; }
+  if (b.dataset.field === 'pattern') d.pattern = v;
+  if (b.dataset.field === 'color2') d.color2 = v;
   if (b.dataset.field === 'warmth') d.warmth = Number(v);
   if (b.dataset.field === 'occ') {
     d.occasions = d.occasions.includes(v) ? d.occasions.filter(x => x !== v) : [...d.occasions, v];
@@ -1033,6 +1102,13 @@ $('#editor-form').addEventListener('submit', async e => {
     name: $('#f-name').value.trim(),
     createdAt: d.createdAt || Date.now(),
   };
+  if (item.pattern === 'none' && item.name) {
+    const parsed = parseLine(item.name);
+    if (parsed && !parsed.unknown && parsed.pattern !== 'none') {
+      item.pattern = parsed.pattern;
+      item.color2 = parsed.color2;
+    }
+  }
   try {
     await store.put(item);
   } catch {
@@ -1071,7 +1147,7 @@ function renderBulkPreview() {
     ? bulkParsed.map(p => p.unknown
       ? `<li class="warn"><b>${esc(p.name)}</b> — 종류를 모르겠어요. "니트", "청바지"처럼 종류를 같이 적어 주세요</li>`
       : `<li><i style="background:${col(p.color).hex}"></i><b>${esc(p.name)}</b>
-           <span>${CATS[p.cat]} · ${findKind(p.cat, p.kind).name} · ${col(p.color).name}${p.colorFound ? '' : '(색 못 찾음)'} · ${WARMTH[p.warmth].name}${p.occasions.length ? ' · ' + p.occasions.map(o => OCCASIONS[o].name).join('·') : ''}</span></li>`).join('')
+           <span>${CATS[p.cat]} · ${findKind(p.cat, p.kind).name} · ${col(p.color).name}${p.colorFound ? '' : '(색 못 찾음)'}${p.pattern !== 'none' ? ` · <b class="pt">${PATTERNS[p.pattern].name}(${col(p.color2).name})</b>` : ''} · ${WARMTH[p.warmth].name}${p.occasions.length ? ' · ' + p.occasions.map(o => OCCASIONS[o].name).join('·') : ''}</span></li>`).join('')
     : '<li class="muted">적은 내용이 여기에서 어떻게 등록될지 미리 보여요.</li>';
   $('#bulk-save').textContent = ok.length ? `${ok.length}벌 등록하기` : '등록하기';
   $('#bulk-save').disabled = !ok.length;
@@ -1090,6 +1166,8 @@ $('#bulk-form').addEventListener('submit', async e => {
     color: p.color,
     warmth: p.warmth,
     occasions: p.occasions,
+    pattern: p.pattern,
+    color2: p.color2,
     photo: null,
     createdAt: now + i,
   }));

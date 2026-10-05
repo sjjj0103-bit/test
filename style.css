@@ -336,3 +336,23 @@ button:disabled { opacity: .5; cursor: default; }
   font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px;
   background: rgb(0 0 0 / 0.55); color: #fff;
 }
+
+/* ----- 무늬 ----- */
+.pattern-row { display: flex; gap: 12px; align-items: flex-start; }
+.pattern-row .chips { flex: 1; }
+.garment-preview {
+  flex: none; width: 72px; height: 72px; border-radius: 12px; background: var(--stage);
+  display: flex; align-items: center; justify-content: center;
+}
+.garment-preview svg { width: 90%; height: 90%; }
+.sub-legend { font-size: 13px; font-weight: 600; margin: 12px 0 6px; }
+.sub-legend small { font-weight: 400; color: var(--muted); }
+.color.sm { padding: 4px 2px; }
+.color.sm span { width: 18px; height: 18px; }
+.bulk-preview .pt { color: var(--accent); font-weight: 600; }
+
+/* ----- 비슷한 코디 사진 검색 ----- */
+.search-links { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; width: 100%; }
+.sl-label { font-size: 13px; color: var(--muted); margin-right: 2px; }
+.search-links .btn { min-height: 34px; padding: 5px 12px; font-size: 13px; }
+.week-links .search-links { gap: 4px 12px; }
