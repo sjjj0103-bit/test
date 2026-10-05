@@ -1,0 +1,14 @@
+{
+  "name": "오늘 뭐 입지?",
+  "short_name": "뭐입지",
+  "description": "내 옷장 사진과 이번 주 날씨로 코디를 추천해 주는 웹앱",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f7f2ec",
+  "theme_color": "#f7f2ec",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}

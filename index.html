@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>오늘 뭐 입지?</title>
+  <meta name="description" content="내 옷장 사진과 이번 주 날씨로 코디를 추천해 주는 웹앱">
+  <meta name="theme-color" content="#f7f2ec">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="뭐입지">
+  <link rel="manifest" href="manifest.json">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="top">
+    <h1>오늘 뭐 입지?</h1>
+    <label class="city">
+      <span class="sr">지역</span>
+      <select id="city"></select>
+    </label>
+  </header>
+
+  <main>
+    <section id="view-today" class="view active" aria-label="오늘"></section>
+    <section id="view-week" class="view" aria-label="이번 주"></section>
+    <section id="view-closet" class="view" aria-label="내 옷장"></section>
+  </main>
+
+  <button id="fab" class="fab" type="button" aria-label="옷 추가">＋</button>
+
+  <nav class="tabs">
+    <button type="button" data-view="today" class="active"><span aria-hidden="true">☀️</span>오늘</button>
+    <button type="button" data-view="week"><span aria-hidden="true">📅</span>이번 주</button>
+    <button type="button" data-view="closet"><span aria-hidden="true">👚</span>옷장</button>
+  </nav>
+
+  <dialog id="editor">
+    <form id="editor-form" method="dialog">
+      <h2 id="editor-title">옷 추가</h2>
+
+      <label class="photo-pick">
+        <input type="file" accept="image/*" id="photo-input">
+        <div id="photo-preview"><span>📷<br>사진 찍기 / 앨범에서 고르기</span></div>
+      </label>
+
+      <fieldset>
+        <legend>종류</legend>
+        <div class="chips" id="f-cat"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>색 <small id="color-hint"></small></legend>
+        <div class="colors" id="f-color"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>두께</legend>
+        <div class="warmth" id="f-warmth"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>어디에 입나요? <small>안 고르면 어디든 OK</small></legend>
+        <div class="chips" id="f-occ"></div>
+      </fieldset>
+
+      <label class="field">
+        <span>이름 <small>핀터레스트 검색에 쓰여요</small></span>
+        <input id="f-name" maxlength="30" autocomplete="off">
+      </label>
+
+      <div class="editor-actions">
+        <button type="button" id="btn-delete" class="danger">삭제</button>
+        <span class="grow"></span>
+        <button type="button" id="btn-cancel">취소</button>
+        <button type="submit" class="primary">저장</button>
+      </div>
+    </form>
+  </dialog>
+
+  <input type="file" id="import-file" accept="application/json,.json" hidden>
+  <div id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
