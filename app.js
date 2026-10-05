@@ -592,7 +592,7 @@ function thumb(item) {
   const inner = item.photo
     ? `<img src="${item.photo}" alt="">`
     : `<span class="swatch">${miniAvatarPiece(item)}</span>`;
-  return `<figure class="thumb">${inner}<figcaption>${esc(itemName(item))}</figcaption></figure>`;
+  return `<figure class="thumb">${item.sample ? '<span class="badge">예시</span>' : ''}${inner}<figcaption>${esc(itemName(item))}</figcaption></figure>`;
 }
 
 // 사진이 없는 옷은 색 카드 위에 옷 모양을 작게 그려서 보여줌
@@ -928,10 +928,23 @@ function renderCloset() {
   el.innerHTML = html;
 }
 
+// 예시 옷이 들어 있으면 모든 탭 맨 위에 알려 줌
+function renderSampleBanner() {
+  const n = state.items.filter(i => i.sample).length;
+  const mine = state.items.length - n;
+  $('#banner').innerHTML = n ? `
+    <div class="banner">
+      <p><b>지금 보이는 옷 ${n}벌은 체험용 예시예요.</b><br>
+        ${mine ? `직접 넣은 옷 ${mine}벌은 그대로 두고 예시만 지워요.` : '예시를 지우고 내 옷을 넣어야 진짜 추천이 나와요.'}</p>
+      <button type="button" class="primary" data-act="sample-del" data-then="bulk">예시 옷 지우고 내 옷 넣기</button>
+    </div>` : '';
+}
+
 function render() {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === `view-${state.view}`));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
   document.body.dataset.view = state.view;
+  renderSampleBanner();
   if (state.view === 'today') renderToday();
   else if (state.view === 'week') renderWeek();
   else if (state.view === 'tryon') renderTryon();
@@ -1309,12 +1322,28 @@ document.addEventListener('click', async e => {
       toast('예시 옷 16벌을 넣었어요. 오늘·입혀보기 탭에서 확인해 보세요!');
       render();
       break;
-    case 'sample-del':
+    case 'sample-del': {
       if (!confirm('예시 옷을 모두 지울까요? 직접 넣은 옷은 그대로 남아요.')) return;
       for (const s of state.items.filter(i => i.sample)) await store.del(s.id);
       state.items = state.items.filter(i => !i.sample);
-      render();
+      // 예시 옷이 들어간 저장 코디·입혀보기·입은 기록도 정리
+      const isSample = id => String(id).startsWith('sample-');
+      ls.set('looks', ls.get('looks', []).filter(l => !l.ids.some(isSample)));
+      setLook(Object.fromEntries(Object.entries(state.look).filter(([, id]) => !isSample(id))));
+      const log = wornLog();
+      for (const k of Object.keys(log)) if (log[k].some(isSample)) delete log[k];
+      ls.set('wornLog', log);
+      toast('예시 옷을 지웠어요');
+      if (b.dataset.then === 'bulk') {
+        state.view = 'closet';
+        render();
+        renderBulkPreview();
+        bulk.showModal();
+      } else {
+        render();
+      }
       break;
+    }
     case 'export':
       exportBackup();
       break;

@@ -323,3 +323,16 @@ button:disabled { opacity: .5; cursor: default; }
   .stage { padding: 10px; }
   .stage .avatar-svg { width: 150px; }
 }
+
+/* ----- 예시 옷 안내 ----- */
+.banner {
+  background: var(--tip); border: 1px solid #f0d58a; border-radius: var(--radius);
+  padding: 14px 16px; margin: 4px 0 14px;
+}
+.banner p { margin: 0 0 10px; font-size: 14px; }
+.thumb { position: relative; }
+.badge {
+  position: absolute; top: 4px; left: 4px; z-index: 1;
+  font-size: 10px; font-weight: 700; padding: 1px 6px; border-radius: 999px;
+  background: rgb(0 0 0 / 0.55); color: #fff;
+}
