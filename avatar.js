@@ -6,8 +6,10 @@
    왼쪽 절반만 정의한 모양은 mirror()로 오른쪽을 만들어요. (좌표계: 200 x 400)
    ========================================================= */
 
-const SKIN = '#f3d3bd';
-const HAIR = '#3b2a22';
+const SKIN = '#f6dccb';
+const HAIR = '#16110f';
+const HAIR_SHINE = '#3b322e';
+const LASH = '#1a1210';
 
 function shade(hex, amt) {
   const n = parseInt(hex.slice(1), 16);
@@ -144,21 +146,41 @@ const SHAPES = {
 
 /* ---------- 몸 ---------- */
 
+// 사막여우상 얼굴: 크고 눈꼬리가 살짝 올라간 눈, 갸름한 V라인, 긴 흑발 생머리
+function eye(side) {
+  const X = x => (side === 'R' ? 200 - x : x);
+  const p = d => (side === 'R' ? mirror(d) : d);
+  return path(p('M96.6 51.4 Q92 43.6 84.6 48.2 Q89.5 55.8 96.6 51.4 Z'), '#ffffff', 'none')
+    + `<circle cx="${X(90.6)}" cy="50" r="3.4" fill="#3a251b"/>`
+    + `<circle cx="${X(90.6)}" cy="50" r="1.7" fill="#0e0907"/>`
+    + `<circle cx="${X(90.6) + 1.3}" cy="48.6" r="1.05" fill="#ffffff"/>`
+    + `<circle cx="${X(90.6) - 1.2}" cy="51.6" r=".5" fill="#ffffff" opacity=".8"/>`
+    + `<path d="${p('M97.2 51.6 Q92 43.2 84.4 48 L81.4 45.6')}" stroke="${LASH}" stroke-width="1.5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`
+    + `<path d="${p('M86.4 52 Q90.5 55.2 95.6 52.8')}" stroke="#c99a86" stroke-width=".55" fill="none"/>`;
+}
+
 function bodyBack() {
+  const face = 'M78 43 Q78 24 100 23 Q122 24 122 43 Q122 58 113 69 Q106 77.5 100 77.5 Q94 77.5 87 69 Q78 58 78 43 Z';
+  const brow = `<path d="M83.6 42 Q89 39.6 95.4 41.2" stroke="${LASH}" stroke-width="1.1" fill="none" stroke-linecap="round"/>`;
   return `
     <ellipse cx="100" cy="378" rx="46" ry="6" fill="#000" opacity=".06"/>
-    <path d="M73 46 Q100 12 127 46 L133 126 Q100 136 67 126 Z" fill="${HAIR}"/>
-    <rect x="92" y="68" width="16" height="22" rx="5" fill="${SKIN}"/>
+    <path d="M74 44 Q73 14 100 13 Q127 14 126 44 L131 140 Q118 146 100 144 Q82 146 69 140 Z" fill="${HAIR}"/>
+    <rect x="93" y="68" width="14" height="24" rx="5" fill="${SKIN}"/>
     <path d="M71 92 L56 196 M129 92 L144 196" stroke="${SKIN}" stroke-width="13" stroke-linecap="round"/>
     <path d="M89 200 L87 362 M111 200 L113 362" stroke="${SKIN}" stroke-width="18" stroke-linecap="round"/>
     <path d="M74 90 Q100 84 126 90 L126 206 L74 206 Z" fill="${SKIN}"/>
-    <ellipse cx="100" cy="50" rx="22" ry="25" fill="${SKIN}"/>
-    <circle cx="92" cy="53" r="2.3" fill="${HAIR}"/>
-    <circle cx="108" cy="53" r="2.3" fill="${HAIR}"/>
-    <circle cx="87" cy="60" r="3.6" fill="#f2a29c" opacity=".55"/>
-    <circle cx="113" cy="60" r="3.6" fill="#f2a29c" opacity=".55"/>
-    <path d="M95 63 Q100 67 105 63" stroke="#c0605a" stroke-width="2" fill="none" stroke-linecap="round"/>
-    <path d="M77 47 Q83 23 100 24 Q118 23 124 47 Q112 35 100 37 Q87 37 77 47 Z" fill="${HAIR}"/>`;
+    <path d="${face}" fill="${SKIN}"/>
+    ${brow}${mirror(brow)}
+    ${eye('L')}${eye('R')}
+    <ellipse cx="86" cy="59.5" rx="4.2" ry="2.3" fill="#f4a39b" opacity=".42"/>
+    <ellipse cx="114" cy="59.5" rx="4.2" ry="2.3" fill="#f4a39b" opacity=".42"/>
+    <path d="M100.4 55.5 Q102 59 99.6 60.2" stroke="#d6a28c" stroke-width="1" fill="none" stroke-linecap="round"/>
+    <path d="M96.2 64.8 Q98 63.6 100 64.4 Q102 63.6 103.8 64.8 Q100 68.6 96.2 64.8 Z" fill="#e2837d"/>
+    <path d="M96.4 64.9 Q100 66 103.6 64.9" stroke="#c4605c" stroke-width=".7" fill="none"/>
+    <path d="M76 42 Q77 14 100 13.5 Q123 14 124 42 Q119 30 108 25 Q101 30 92 27 Q82 30 76 42 Z" fill="${HAIR}"/>
+    <path d="M100 17 Q83 19 78.5 40 Q76 58 80.5 78 Q78 58 85 38 Q91 26 100 24 Z" fill="${HAIR}"/>
+    <path d="M100 17 Q117 19 121.5 40 Q124 58 119.5 78 Q122 58 115 38 Q109 26 100 24 Z" fill="${HAIR}"/>
+    <path d="M86 21 Q97 15.5 110 19" stroke="${HAIR_SHINE}" stroke-width="2" fill="none" stroke-linecap="round" opacity=".8"/>`;
 }
 
 const BARE_FEET = `<ellipse cx="86" cy="367" rx="9" ry="5" fill="${SKIN}"/><ellipse cx="114" cy="367" rx="9" ry="5" fill="${SKIN}"/>`;
