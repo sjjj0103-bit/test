@@ -24,6 +24,7 @@
   <main>
     <section id="view-today" class="view active" aria-label="오늘"></section>
     <section id="view-week" class="view" aria-label="이번 주"></section>
+    <section id="view-tryon" class="view" aria-label="입혀보기"></section>
     <section id="view-closet" class="view" aria-label="내 옷장"></section>
   </main>
 
@@ -32,6 +33,7 @@
   <nav class="tabs">
     <button type="button" data-view="today" class="active"><span aria-hidden="true">☀️</span>오늘</button>
     <button type="button" data-view="week"><span aria-hidden="true">📅</span>이번 주</button>
+    <button type="button" data-view="tryon"><span aria-hidden="true">🧍‍♀️</span>입혀보기</button>
     <button type="button" data-view="closet"><span aria-hidden="true">👚</span>옷장</button>
   </nav>
 
@@ -47,6 +49,11 @@
       <fieldset>
         <legend>종류</legend>
         <div class="chips" id="f-cat"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>모양</legend>
+        <div class="chips" id="f-kind"></div>
       </fieldset>
 
       <fieldset>
@@ -78,9 +85,26 @@
     </form>
   </dialog>
 
+  <dialog id="bulk">
+    <form id="bulk-form" method="dialog">
+      <h2>글로 옷 목록 등록</h2>
+      <p class="muted">가지고 있는 옷을 <b>한 줄에 하나씩</b> "색 + 종류"로 적어 주세요.<br>
+        두께(얇은/두꺼운/기모)나 일정(출근/데이트)을 같이 적으면 알아서 반영해요.</p>
+      <textarea id="bulk-text" rows="8" placeholder="베이지 니트&#10;연청 청바지&#10;흰 셔츠 (출근)&#10;검정 슬랙스 (출근)&#10;네이비 가디건&#10;기모 맨투맨&#10;베이지 트렌치코트&#10;흰 운동화"></textarea>
+      <p class="preview-title">미리보기</p>
+      <ul id="bulk-preview" class="bulk-preview"></ul>
+      <div class="editor-actions">
+        <span class="grow"></span>
+        <button type="button" id="bulk-cancel">취소</button>
+        <button type="submit" id="bulk-save" class="primary">등록하기</button>
+      </div>
+    </form>
+  </dialog>
+
   <input type="file" id="import-file" accept="application/json,.json" hidden>
   <div id="toast" role="status" aria-live="polite"></div>
 
+  <script src="avatar.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

@@ -8,6 +8,7 @@
   --accent-ink: #ffffff;
   --accent-soft: #f8e4dd;
   --tip: #fff6e0;
+  --stage: #f3ede6;
   --danger: #c0392b;
   --radius: 16px;
   color-scheme: light;
@@ -24,6 +25,7 @@
     --accent-ink: #1c1917;
     --accent-soft: #43302a;
     --tip: #3a3122;
+    --stage: #342d29;
     --danger: #ef7d6f;
     color-scheme: dark;
   }
@@ -86,6 +88,7 @@ button.wide { width: 100%; margin: 4px 0 16px; }
 }
 
 main { max-width: 560px; margin: 0 auto; padding: 4px 16px 24px; }
+body[data-view="tryon"] main { max-width: 980px; }
 .view { display: none; }
 .view.active { display: block; }
 
@@ -239,3 +242,84 @@ legend small, .field small { font-weight: 400; color: var(--muted); margin-left:
   transition: opacity .2s, transform .2s;
 }
 #toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* ----- 사진 없는 옷: 옷 모양 그림 ----- */
+.thumb .swatch { display: flex; align-items: center; justify-content: center; background: var(--stage); }
+.thumb .swatch svg { width: 86%; height: 86%; }
+.center-row { justify-content: center; }
+
+/* ----- 추천 카드 속 작은 아바타 ----- */
+.outfit-body { display: grid; grid-template-columns: 96px 1fr; gap: 12px; align-items: start; }
+.mini-avatar { background: var(--stage); border-radius: 12px; padding: 4px; }
+.mini-avatar svg { display: block; width: 100%; height: auto; }
+.mini-avatar.small { width: 72px; }
+.week-body { display: grid; grid-template-columns: 72px 1fr; gap: 12px; align-items: start; }
+.week-items { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+.week-items li, .item-list i, .bulk-preview i, .tag i { display: flex; align-items: center; gap: 6px; }
+.week-items i, .item-list i, .bulk-preview i, .tag i {
+  width: 12px; height: 12px; border-radius: 50%; flex: none;
+  border: 1px solid rgb(0 0 0 / 0.15);
+}
+.week-links { display: flex; gap: 14px; }
+
+/* ----- 입혀보기 ----- */
+.tryon { display: grid; gap: 0 18px; }
+.stage { text-align: center; background: var(--stage); }
+.stage .avatar-svg { width: min(100%, 300px); height: auto; display: block; margin: 0 auto; }
+.worn-list { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-top: 8px; }
+.tag { font-size: 13px; padding: 4px 10px; min-height: 32px; background: var(--card); }
+.picker .chips { margin-bottom: 10px; }
+.rail { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 6px; scroll-snap-type: x proximity; }
+.pick { flex: 0 0 88px; padding: 4px; border-radius: 12px; min-height: 0; display: block; scroll-snap-align: start; }
+.pick[aria-pressed="true"] { border: 2px solid var(--accent); background: var(--accent-soft); }
+.fb-title { font-weight: 700; }
+.fb { list-style: none; padding: 0; margin: 0; font-size: 14px; }
+.fb li { padding-left: 22px; position: relative; margin-bottom: 4px; }
+.fb li.ok::before { content: "✓"; position: absolute; left: 3px; color: var(--accent); font-weight: 700; }
+.fb li.warn::before { content: "!"; position: absolute; left: 6px; color: #d08a1f; font-weight: 800; }
+.tryon .actions { margin: 0 0 14px; }
+.looks { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 10px; }
+.look { text-align: center; }
+.look-pic { display: block; width: 100%; padding: 4px; border-radius: 12px; background: var(--stage); min-height: 0; }
+.look-pic svg { display: block; width: 100%; height: auto; }
+
+@media (min-width: 760px) {
+  .tryon { grid-template-columns: minmax(280px, 380px) 1fr; align-items: start; }
+  .stage { position: sticky; top: 72px; }
+}
+
+/* ----- 옷장: 목록 보기 ----- */
+.closet-top { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 4px 0 10px; }
+.toggle { display: flex; border: 1px solid var(--line); border-radius: 999px; overflow: hidden; }
+.toggle button { border: 0; border-radius: 0; min-height: 36px; padding: 6px 14px; }
+.toggle [aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.group-title { font-weight: 700; }
+.item-list { list-style: none; padding: 0; margin: 0; }
+.item-list button {
+  width: 100%; border: 0; border-top: 1px solid var(--line); border-radius: 0;
+  justify-content: flex-start; gap: 10px; padding: 10px 2px; background: none; text-align: left;
+}
+.item-list li:first-child button { border-top: 0; }
+.item-list .nm { flex: 1; }
+.item-list .meta { font-size: 12px; color: var(--muted); }
+
+/* ----- 글로 등록 창 ----- */
+#bulk-form { padding: 18px 16px 16px; }
+#bulk-form h2 { margin: 0 0 6px; font-size: 18px; }
+#bulk-form > p { font-size: 14px; margin: 0 0 10px; }
+#bulk-text {
+  width: 100%; border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px;
+  background: var(--bg); font: inherit; line-height: 1.6; resize: vertical;
+}
+.preview-title { font-weight: 700; margin: 12px 0 6px !important; }
+.bulk-preview { list-style: none; padding: 0; margin: 0 0 14px; font-size: 14px; max-height: 240px; overflow: auto; }
+.bulk-preview li { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding: 6px 0; border-top: 1px solid var(--line); }
+.bulk-preview li:first-child { border-top: 0; }
+.bulk-preview span { color: var(--muted); font-size: 13px; }
+.bulk-preview .warn { color: #b06d0a; }
+button:disabled { opacity: .5; cursor: default; }
+
+@media (max-width: 759px) {
+  .stage { padding: 10px; }
+  .stage .avatar-svg { width: 150px; }
+}

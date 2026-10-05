@@ -16,27 +16,71 @@ const CATS = {
   shoes:  '신발',
 };
 
-// neutral: 어떤 색과도 잘 어울리는 기본색 / family: 같은 계열(톤온톤) 판단용
+// 옷 모양(종류). warmth = 기본 두께, kw = 글로 등록할 때 알아듣는 단어
+const KINDS = {
+  top: [
+    { id: 'tshirt',     name: '반팔티',   warmth: 1, kw: ['반팔', '반소매', '티셔츠', '티'] },
+    { id: 'sleeveless', name: '민소매',   warmth: 1, kw: ['나시', '슬리브리스', '캐미솔'] },
+    { id: 'longtee',    name: '긴팔티',   warmth: 2, kw: ['긴팔', '롱슬리브'] },
+    { id: 'shirt',      name: '셔츠',     warmth: 2, kw: ['남방'] },
+    { id: 'blouse',     name: '블라우스', warmth: 2, kw: [] },
+    { id: 'sweatshirt', name: '맨투맨',   warmth: 3, kw: ['스웻셔츠', '스웨트셔츠'] },
+    { id: 'hoodie',     name: '후드티',   warmth: 3, kw: ['후드'] },
+    { id: 'knit',       name: '니트',     warmth: 3, kw: ['스웨터', '폴라', '터틀넥'] },
+  ],
+  bottom: [
+    { id: 'jeans',       name: '청바지',     warmth: 3, kw: ['데님팬츠', '진'] },
+    { id: 'slacks',      name: '슬랙스',     warmth: 3, kw: ['정장바지', '와이드팬츠'] },
+    { id: 'cottonpants', name: '면바지',     warmth: 2, kw: ['치노', '바지', '팬츠'] },
+    { id: 'shorts',      name: '반바지',     warmth: 1, kw: ['쇼츠', '숏팬츠'] },
+    { id: 'miniskirt',   name: '미니스커트', warmth: 2, kw: ['미니치마', '짧은치마', '미니스커트'] },
+    { id: 'longskirt',   name: '롱스커트',   warmth: 2, kw: ['스커트', '치마', '롱치마'] },
+  ],
+  dress: [
+    { id: 'dress-long',  name: '롱원피스',   warmth: 2, kw: ['원피스', '드레스'] },
+    { id: 'dress-short', name: '미니원피스', warmth: 2, kw: ['짧은원피스'] },
+    { id: 'dress-knit',  name: '니트원피스', warmth: 3, kw: [] },
+  ],
+  outer: [
+    { id: 'cardigan', name: '가디건',     warmth: 3, kw: [] },
+    { id: 'jacket',   name: '자켓',       warmth: 4, kw: ['재킷', '블레이저'] },
+    { id: 'jumper',   name: '점퍼',       warmth: 3, kw: ['바람막이', '야상', '집업', '블루종', '항공점퍼'] },
+    { id: 'trench',   name: '트렌치코트', warmth: 4, kw: ['트렌치'] },
+    { id: 'coat',     name: '코트',       warmth: 5, kw: [] },
+    { id: 'padding',  name: '패딩',       warmth: 5, kw: ['다운', '숏패딩', '롱패딩'] },
+  ],
+  shoes: [
+    { id: 'sneakers', name: '운동화', warmth: 2, kw: ['스니커즈'] },
+    { id: 'loafers',  name: '로퍼',   warmth: 3, kw: [] },
+    { id: 'heels',    name: '구두',   warmth: 2, kw: ['힐', '펌프스', '플랫', '메리제인'] },
+    { id: 'sandals',  name: '샌들',   warmth: 1, kw: ['슬리퍼', '쪼리', '뮬'] },
+    { id: 'boots',    name: '부츠',   warmth: 4, kw: ['워커', '앵클부츠'] },
+  ],
+};
+const DEFAULT_KIND = { top: 'longtee', bottom: 'slacks', dress: 'dress-long', outer: 'cardigan', shoes: 'sneakers' };
+const findKind = (cat, id) => KINDS[cat]?.find(k => k.id === id);
+
+// neutral: 어떤 색과도 잘 어울리는 기본색 / family: 같은 계열(톤온톤) 판단용 / alias: 글로 등록할 때 알아듣는 말
 const COLORS = [
-  { id: 'black',    name: '블랙',   hex: '#222222', neutral: true },
-  { id: 'white',    name: '화이트', hex: '#f8f8f5', neutral: true },
-  { id: 'gray',     name: '그레이', hex: '#9b9b9b', neutral: true },
-  { id: 'beige',    name: '베이지', hex: '#dccbb0', neutral: true },
-  { id: 'camel',    name: '카멜',   hex: '#b5834f', neutral: true },
-  { id: 'brown',    name: '브라운', hex: '#6b4a35', neutral: true },
-  { id: 'navy',     name: '네이비', hex: '#23314f', neutral: true },
-  { id: 'denim',    name: '데님',   hex: '#5476a0', neutral: true },
-  { id: 'khaki',    name: '카키',   hex: '#76764a', neutral: true },
-  { id: 'red',      name: '레드',   hex: '#c23b32', family: 'red' },
-  { id: 'pink',     name: '핑크',   hex: '#f2aabb', family: 'red' },
-  { id: 'orange',   name: '오렌지', hex: '#e5803a', family: 'orange' },
-  { id: 'yellow',   name: '옐로우', hex: '#f0cc4a', family: 'yellow' },
-  { id: 'green',    name: '그린',   hex: '#3f8a5c', family: 'green' },
-  { id: 'mint',     name: '민트',   hex: '#a6dcc8', family: 'green' },
-  { id: 'blue',     name: '블루',   hex: '#3a74d0', family: 'blue' },
-  { id: 'skyblue',  name: '하늘',   hex: '#a4cbee', family: 'blue' },
-  { id: 'purple',   name: '퍼플',   hex: '#7e5aa8', family: 'purple' },
-  { id: 'lavender', name: '라벤더', hex: '#cbbde9', family: 'purple' },
+  { id: 'black',    name: '블랙',   hex: '#222222', neutral: true, alias: ['검정', '검은', '까만'] },
+  { id: 'white',    name: '화이트', hex: '#f8f8f5', neutral: true, alias: ['흰', '하얀', '아이보리', '크림'] },
+  { id: 'gray',     name: '그레이', hex: '#9b9b9b', neutral: true, alias: ['회색', '차콜', '멜란지', '그레이'] },
+  { id: 'beige',    name: '베이지', hex: '#dccbb0', neutral: true, alias: ['오트밀'] },
+  { id: 'camel',    name: '카멜',   hex: '#b5834f', neutral: true, alias: [] },
+  { id: 'brown',    name: '브라운', hex: '#6b4a35', neutral: true, alias: ['갈색', '초코', '모카'] },
+  { id: 'navy',     name: '네이비', hex: '#23314f', neutral: true, alias: ['남색'] },
+  { id: 'denim',    name: '데님',   hex: '#5476a0', neutral: true, alias: ['연청', '중청', '진청', '청'] },
+  { id: 'khaki',    name: '카키',   hex: '#76764a', neutral: true, alias: ['올리브'] },
+  { id: 'red',      name: '레드',   hex: '#c23b32', family: 'red',    alias: ['빨간', '빨강', '와인', '버건디'] },
+  { id: 'pink',     name: '핑크',   hex: '#f2aabb', family: 'red',    alias: ['분홍'] },
+  { id: 'orange',   name: '오렌지', hex: '#e5803a', family: 'orange', alias: ['주황'] },
+  { id: 'yellow',   name: '옐로우', hex: '#f0cc4a', family: 'yellow', alias: ['노란', '노랑', '머스타드'] },
+  { id: 'green',    name: '그린',   hex: '#3f8a5c', family: 'green',  alias: ['초록', '녹색'] },
+  { id: 'mint',     name: '민트',   hex: '#a6dcc8', family: 'green',  alias: [] },
+  { id: 'blue',     name: '블루',   hex: '#3a74d0', family: 'blue',   alias: ['파란', '파랑'] },
+  { id: 'skyblue',  name: '하늘',   hex: '#a4cbee', family: 'blue',   alias: ['스카이'] },
+  { id: 'purple',   name: '퍼플',   hex: '#7e5aa8', family: 'purple', alias: ['보라'] },
+  { id: 'lavender', name: '라벤더', hex: '#cbbde9', family: 'purple', alias: ['연보라'] },
 ];
 const COLOR = Object.fromEntries(COLORS.map(c => [c.id, c]));
 const col = id => COLOR[id] || COLOR.gray;
@@ -64,48 +108,48 @@ const WARMTH = [
 ];
 
 const OCCASIONS = {
-  work:   { name: '출근',   word: '출근룩' },
-  date:   { name: '데이트', word: '데이트룩' },
-  casual: { name: '외출',   word: '데일리룩' },
+  work:   { name: '출근',   word: '출근룩',   kw: ['출근', '회사', '학교'] },
+  date:   { name: '데이트', word: '데이트룩', kw: ['데이트', '약속'] },
+  casual: { name: '외출',   word: '데일리룩', kw: ['외출', '데일리', '주말'] },
 };
 
 const CITIES = [
-  { id: 'gps',      name: '📍 현재 위치' },
-  { id: 'seoul',    name: '서울', lat: 37.5665, lon: 126.9780 },
-  { id: 'incheon',  name: '인천', lat: 37.4563, lon: 126.7052 },
-  { id: 'suwon',    name: '수원', lat: 37.2636, lon: 127.0286 },
-  { id: 'chuncheon',name: '춘천', lat: 37.8813, lon: 127.7298 },
-  { id: 'gangneung',name: '강릉', lat: 37.7519, lon: 128.8761 },
-  { id: 'cheongju', name: '청주', lat: 36.6424, lon: 127.4890 },
-  { id: 'sejong',   name: '세종', lat: 36.4800, lon: 127.2890 },
-  { id: 'daejeon',  name: '대전', lat: 36.3504, lon: 127.3845 },
-  { id: 'jeonju',   name: '전주', lat: 35.8242, lon: 127.1480 },
-  { id: 'daegu',    name: '대구', lat: 35.8714, lon: 128.6014 },
-  { id: 'gwangju',  name: '광주', lat: 35.1595, lon: 126.8526 },
-  { id: 'ulsan',    name: '울산', lat: 35.5384, lon: 129.3114 },
-  { id: 'busan',    name: '부산', lat: 35.1796, lon: 129.0756 },
-  { id: 'jeju',     name: '제주', lat: 33.4996, lon: 126.5312 },
+  { id: 'gps',       name: '📍 현재 위치' },
+  { id: 'seoul',     name: '서울', lat: 37.5665, lon: 126.9780 },
+  { id: 'incheon',   name: '인천', lat: 37.4563, lon: 126.7052 },
+  { id: 'suwon',     name: '수원', lat: 37.2636, lon: 127.0286 },
+  { id: 'chuncheon', name: '춘천', lat: 37.8813, lon: 127.7298 },
+  { id: 'gangneung', name: '강릉', lat: 37.7519, lon: 128.8761 },
+  { id: 'cheongju',  name: '청주', lat: 36.6424, lon: 127.4890 },
+  { id: 'sejong',    name: '세종', lat: 36.4800, lon: 127.2890 },
+  { id: 'daejeon',   name: '대전', lat: 36.3504, lon: 127.3845 },
+  { id: 'jeonju',    name: '전주', lat: 35.8242, lon: 127.1480 },
+  { id: 'daegu',     name: '대구', lat: 35.8714, lon: 128.6014 },
+  { id: 'gwangju',   name: '광주', lat: 35.1595, lon: 126.8526 },
+  { id: 'ulsan',     name: '울산', lat: 35.5384, lon: 129.3114 },
+  { id: 'busan',     name: '부산', lat: 35.1796, lon: 129.0756 },
+  { id: 'jeju',      name: '제주', lat: 33.4996, lon: 126.5312 },
 ];
 
 const SAMPLES = [
-  ['화이트 셔츠',      'top',    'white',    2, ['work']],
-  ['베이지 니트',      'top',    'beige',    3, []],
-  ['네이비 맨투맨',    'top',    'navy',     3, ['casual']],
-  ['핑크 블라우스',    'top',    'pink',     2, ['work', 'date']],
-  ['블랙 반팔티',      'top',    'black',    1, []],
-  ['연청 청바지',      'bottom', 'denim',    3, []],
-  ['블랙 슬랙스',      'bottom', 'black',    3, ['work']],
-  ['베이지 롱스커트',  'bottom', 'beige',    2, ['date', 'work']],
-  ['화이트 반바지',    'bottom', 'white',    1, ['casual']],
-  ['라벤더 원피스',    'dress',  'lavender', 2, ['date']],
-  ['베이지 트렌치코트','outer',  'beige',    4, []],
-  ['네이비 가디건',    'outer',  'navy',     3, []],
-  ['블랙 울코트',      'outer',  'black',    5, []],
-  ['화이트 스니커즈',  'shoes',  'white',    2, ['casual', 'date']],
-  ['블랙 로퍼',        'shoes',  'black',    3, ['work']],
-  ['브라운 앵클부츠',  'shoes',  'brown',    4, []],
-].map(([name, cat, color, warmth, occasions], i) =>
-  ({ id: `sample-${i}`, sample: true, name, cat, color, warmth, occasions, photo: null, createdAt: i }));
+  ['화이트 셔츠',       'top',    'shirt',      'white',    2, ['work']],
+  ['베이지 니트',       'top',    'knit',       'beige',    3, []],
+  ['네이비 맨투맨',     'top',    'sweatshirt', 'navy',     3, ['casual']],
+  ['핑크 블라우스',     'top',    'blouse',     'pink',     2, ['work', 'date']],
+  ['블랙 반팔티',       'top',    'tshirt',     'black',    1, []],
+  ['연청 청바지',       'bottom', 'jeans',      'denim',    3, []],
+  ['블랙 슬랙스',       'bottom', 'slacks',     'black',    3, ['work']],
+  ['베이지 롱스커트',   'bottom', 'longskirt',  'beige',    2, ['date', 'work']],
+  ['화이트 반바지',     'bottom', 'shorts',     'white',    1, ['casual']],
+  ['라벤더 원피스',     'dress',  'dress-long', 'lavender', 2, ['date']],
+  ['베이지 트렌치코트', 'outer',  'trench',     'beige',    4, []],
+  ['네이비 가디건',     'outer',  'cardigan',   'navy',     3, []],
+  ['블랙 울코트',       'outer',  'coat',       'black',    5, []],
+  ['화이트 스니커즈',   'shoes',  'sneakers',   'white',    2, ['casual', 'date']],
+  ['블랙 로퍼',         'shoes',  'loafers',    'black',    3, ['work']],
+  ['브라운 앵클부츠',   'shoes',  'boots',      'brown',    4, []],
+].map(([name, cat, kind, color, warmth, occasions], i) =>
+  ({ id: `sample-${i}`, sample: true, name, cat, kind, color, warmth, occasions, photo: null, createdAt: i }));
 
 /* ---------- 작은 도구들 ---------- */
 
@@ -117,8 +161,6 @@ const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())
 const parseYmd = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
 const dayNum = s => Math.round(parseYmd(s).getTime() / 864e5);
 const DOW = ['일', '월', '화', '수', '목', '금', '토'];
-const defaultName = item => `${col(item.color).name} ${CATS[item.cat] || ''}`.trim();
-const itemName = item => item.name || defaultName(item);
 
 const ls = {
   get(key, fallback) {
@@ -149,6 +191,57 @@ function rand(seed, pieces) {
   return ((h >>> 0) % 1000) / 1000;
 }
 
+/* ---------- 글로 옷 등록 (예: "베이지 니트", "연청 청바지 (출근)") ---------- */
+
+const KIND_WORDS = Object.entries(KINDS).flatMap(([cat, list]) =>
+  list.flatMap(k => [k.name, ...k.kw].map(w => ({ w, value: { cat, kind: k } }))));
+const COLOR_WORDS = COLORS.flatMap(c => [c.name, ...c.alias].map(w => ({ w, value: c.id })));
+
+// 가장 긴 단어를 우선, 길이가 같으면 뒤에 나온 단어를 우선 ("반팔 셔츠" → 셔츠)
+function bestMatch(text, words) {
+  let best = null;
+  for (const { w, value } of words) {
+    const idx = text.lastIndexOf(w);
+    if (idx < 0) continue;
+    const end = idx + w.length;
+    if (!best || w.length > best.len || (w.length === best.len && end > best.end)) {
+      best = { value, len: w.length, end };
+    }
+  }
+  return best?.value;
+}
+
+function parseLine(line) {
+  const name = line.replace(/^[\s\-•·*\d.)]+/, '').replace(/\(.*?\)/g, '').trim();
+  const text = line.replace(/\s+/g, '');
+  if (!name) return null;
+  const k = bestMatch(text, KIND_WORDS);
+  if (!k) return { name, unknown: true };
+  const colorId = bestMatch(text, COLOR_WORDS);
+  let warmth = k.kind.warmth;
+  if (k.cat === 'top' && /반팔|반소매/.test(text)) warmth = 1;
+  if (/얇은|린넨|시스루|여름/.test(text)) warmth -= 1;
+  if (/두꺼운|기모|양털|플리스|겨울|울/.test(text)) warmth += 1;
+  const occasions = Object.entries(OCCASIONS).filter(([, o]) => o.kw.some(w => text.includes(w))).map(([id]) => id);
+  return {
+    name,
+    cat: k.cat,
+    kind: k.kind.id,
+    color: colorId || (k.kind.id === 'jeans' ? 'denim' : 'gray'),
+    colorFound: Boolean(colorId) || k.kind.id === 'jeans',
+    warmth: Math.min(5, Math.max(1, warmth)),
+    occasions,
+  };
+}
+
+function kindOf(item) {
+  return findKind(item.cat, item.kind)
+    || (item.name && parseLine(item.name)?.cat === item.cat && findKind(item.cat, parseLine(item.name).kind))
+    || findKind(item.cat, DEFAULT_KIND[item.cat]);
+}
+const defaultName = item => `${col(item.color).name} ${kindOf(item)?.name || CATS[item.cat] || ''}`.trim();
+const itemName = item => item.name || defaultName(item);
+
 /* ---------- 옷장 저장소 (IndexedDB) ---------- */
 
 const store = {
@@ -171,10 +264,15 @@ const store = {
       t.onabort = () => reject(t.error);
     });
   },
-  all()      { return this.db ? this.tx('readonly',  s => s.getAll())     : Promise.resolve([]); },
-  put(item)  { return this.db ? this.tx('readwrite', s => s.put(item))    : Promise.resolve(); },
-  del(id)    { return this.db ? this.tx('readwrite', s => s.delete(id))   : Promise.resolve(); },
+  all()     { return this.db ? this.tx('readonly',  s => s.getAll())   : Promise.resolve([]); },
+  put(item) { return this.db ? this.tx('readwrite', s => s.put(item))  : Promise.resolve(); },
+  putMany(items) {
+    return this.db ? this.tx('readwrite', s => { items.forEach(i => s.put(i)); }) : Promise.resolve();
+  },
+  del(id)   { return this.db ? this.tx('readwrite', s => s.delete(id)) : Promise.resolve(); },
 };
+
+const newId = () => `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
 
 /* ---------- 입은 옷 기록 ---------- */
 
@@ -259,14 +357,14 @@ async function loadWeather(force) {
 
 // 한국에서 흔히 쓰는 "기온별 옷차림표"를 두께 단계(1~5)로 옮긴 것
 function guideFor(t) {
-  if (t >= 28) return { label: '민소매·반팔·반바지·원피스',    top: [1, 1], bottom: [1, 2], outer: 'none',     outerR: [1, 2], shoes: [1, 2] };
-  if (t >= 23) return { label: '반팔·얇은 셔츠·반바지·면바지', top: [1, 2], bottom: [1, 2], outer: 'none',     outerR: [1, 2], shoes: [1, 3] };
+  if (t >= 28) return { label: '민소매·반팔·반바지·원피스',     top: [1, 1], bottom: [1, 2], outer: 'none',     outerR: [1, 2], shoes: [1, 2] };
+  if (t >= 23) return { label: '반팔·얇은 셔츠·반바지·면바지',  top: [1, 2], bottom: [1, 2], outer: 'none',     outerR: [1, 2], shoes: [1, 3] };
   if (t >= 20) return { label: '블라우스·긴팔티·면바지·슬랙스', top: [2, 2], bottom: [2, 3], outer: 'optional', outerR: [2, 3], shoes: [2, 3] };
   if (t >= 17) return { label: '얇은 니트·가디건·맨투맨·청바지', top: [2, 3], bottom: [2, 3], outer: 'optional', outerR: [3, 3], shoes: [2, 4] };
-  if (t >= 12) return { label: '자켓·가디건·셔츠·청바지',      top: [2, 3], bottom: [3, 3], outer: 'required', outerR: [3, 4], shoes: [3, 4] };
-  if (t >= 9)  return { label: '트렌치코트·야상·점퍼·니트',    top: [3, 3], bottom: [3, 4], outer: 'required', outerR: [4, 4], shoes: [3, 4] };
-  if (t >= 5)  return { label: '울코트·가죽자켓·히트텍·니트',  top: [3, 4], bottom: [3, 4], outer: 'required', outerR: [4, 5], shoes: [3, 5] };
-  return             { label: '패딩·두꺼운 코트·목도리·기모',  top: [3, 4], bottom: [4, 5], outer: 'required', outerR: [5, 5], shoes: [4, 5] };
+  if (t >= 12) return { label: '자켓·가디건·셔츠·청바지',       top: [2, 3], bottom: [3, 3], outer: 'required', outerR: [3, 4], shoes: [3, 4] };
+  if (t >= 9)  return { label: '트렌치코트·야상·점퍼·니트',     top: [3, 3], bottom: [3, 4], outer: 'required', outerR: [4, 4], shoes: [3, 4] };
+  if (t >= 5)  return { label: '울코트·가죽자켓·히트텍·니트',   top: [3, 4], bottom: [3, 4], outer: 'required', outerR: [4, 5], shoes: [3, 5] };
+  return             { label: '패딩·두꺼운 코트·목도리·기모',   top: [3, 4], bottom: [4, 5], outer: 'required', outerR: [5, 5], shoes: [4, 5] };
 }
 
 function fit(warmth, [lo, hi]) {
@@ -410,10 +508,66 @@ function recommend(ctx) {
   });
 }
 
-function pinterestUrl(outfit, occasion) {
-  const words = outfit.pieces.map(itemName);
+function pinterestUrl(pieces, occasion) {
+  const words = pieces.filter(p => p.cat !== 'shoes').map(itemName);
   const q = `${words.join(' ')} ${OCCASIONS[occasion].word}`;
   return 'https://www.pinterest.co.kr/search/pins/?q=' + encodeURIComponent(q);
+}
+
+/* ---------- 입혀보기 ---------- */
+
+// ids 목록 → { top, bottom, dress, outer, shoes } 아이템
+function lookFromIds(ids) {
+  const look = {};
+  for (const id of ids) {
+    const item = state.items.find(i => i.id === id);
+    if (item) look[item.cat] = item;
+  }
+  if (look.dress) { delete look.top; delete look.bottom; }
+  return look;
+}
+const currentLook = () => lookFromIds(Object.values(state.look));
+const lookPieces = look => ['dress', 'top', 'bottom', 'outer', 'shoes'].map(c => look[c]).filter(Boolean);
+
+function setLook(look) {
+  state.look = Object.fromEntries(Object.entries(look).filter(([, v]) => v).map(([k, v]) => [k, v.id ?? v]));
+  ls.set('look', state.look);
+}
+
+function evaluateLook(look, day) {
+  const main = ['dress', 'top', 'bottom', 'outer'].map(c => look[c]).filter(Boolean);
+  if (!main.length) return [[false, '아래에서 상의·하의나 원피스를 골라 입혀 보세요']];
+  const out = [];
+  if (!look.dress && !look.top) out.push([false, '상의를 골라 보세요']);
+  if (!look.dress && !look.bottom) out.push([false, '하의를 골라 보세요']);
+
+  if (day) {
+    const g = guideFor(day.feel);
+    let allFit = true;
+    for (const p of [...main, look.shoes].filter(Boolean)) {
+      const [lo, hi] = rangeFor(p, g);
+      const gap = p.warmth < lo ? lo - p.warmth : p.warmth > hi ? p.warmth - hi : 0;
+      if (!gap) continue;
+      allFit = false;
+      const how = gap === 1 ? '조금 ' : '';
+      out.push([false, `${itemName(p)}: 오늘 날씨엔 ${how}${p.warmth < lo ? '얇아요' : '더울 수 있어요'}`]);
+    }
+    if (g.outer === 'required' && !look.outer) {
+      allFit = false;
+      out.push([false, `체감 ${day.feel}°라 겉옷을 걸치는 게 좋아요`]);
+    }
+    if (g.outer === 'none' && look.outer) {
+      allFit = false;
+      out.push([false, '오늘은 겉옷 없이도 괜찮아요']);
+    }
+    if (allFit) out.unshift([true, `체감 ${day.feel}°에 딱 맞는 두께예요`]);
+    if (look.outer && day.max - day.min >= 10) out.push([true, `일교차가 ${day.max - day.min}°라 겉옷 챙긴 거 좋아요`]);
+  }
+
+  const c = colorScore([...main, look.shoes].filter(Boolean));
+  c.reasons.forEach(r => out.push([true, r]));
+  if (c.score < 0) out.push([false, '눈에 띄는 색이 여러 개예요. 하나를 기본색(블랙·화이트·베이지 등)으로 바꿔 보세요']);
+  return out;
 }
 
 /* ---------- 화면 상태 ---------- */
@@ -426,6 +580,9 @@ const state = {
   occasion: ls.get('occasion', 'work'),
   page: 0,
   filter: 'all',
+  closetMode: ls.get('closetMode', 'grid'),
+  look: ls.get('look', {}),
+  tryCat: 'top',
   draft: null,
 };
 
@@ -434,8 +591,14 @@ const state = {
 function thumb(item) {
   const inner = item.photo
     ? `<img src="${item.photo}" alt="">`
-    : `<span class="swatch" style="background:${col(item.color).hex}"></span>`;
+    : `<span class="swatch">${miniAvatarPiece(item)}</span>`;
   return `<figure class="thumb">${inner}<figcaption>${esc(itemName(item))}</figcaption></figure>`;
+}
+
+// 사진이 없는 옷은 색 카드 위에 옷 모양을 작게 그려서 보여줌
+function miniAvatarPiece(item) {
+  const box = { top: '40 76 120 130', bottom: '40 160 120 210', dress: '35 76 130 270', outer: '30 76 140 230', shoes: '66 350 68 30' }[item.cat];
+  return `<svg viewBox="${box}" aria-hidden="true">${garment(item)}</svg>`;
 }
 
 function dayLabel(dateStr, i) {
@@ -458,8 +621,11 @@ function emptyCloset() {
     <div class="card empty">
       <p class="big">👗</p>
       <p><b>옷장이 아직 비어 있어요.</b></p>
-      <p class="muted">아래 ＋ 버튼으로 옷 사진을 올려 주세요.<br>먼저 체험해 보고 싶다면 예시 옷을 넣어 볼 수 있어요.</p>
-      <button type="button" class="primary" data-act="sample-add">예시 옷으로 체험하기</button>
+      <p class="muted">가지고 있는 옷을 <b>글로 쭉 적어서</b> 한 번에 넣거나,<br>＋ 버튼으로 사진을 찍어 올려 주세요.</p>
+      <div class="actions center-row">
+        <button type="button" class="primary" data-act="bulk">📝 글로 옷 목록 등록</button>
+        <button type="button" data-act="sample-add">예시 옷으로 체험</button>
+      </div>
     </div>`;
 }
 
@@ -469,12 +635,18 @@ function outfitCard(o, idx, occasion) {
   return `
     <article class="card outfit">
       <div class="outfit-head"><b>추천 ${idx + 1}</b></div>
-      <div class="pieces">${pieces.map(thumb).join('')}</div>
-      <ul class="reasons">${o.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
-      ${o.notes.map(n => `<p class="note">${esc(n)}</p>`).join('')}
+      <div class="outfit-body">
+        <div class="mini-avatar">${drawAvatar(lookFromIds(pieces.map(p => p.id)), `추천 ${idx + 1} 아바타`)}</div>
+        <div>
+          <div class="pieces">${pieces.map(thumb).join('')}</div>
+          <ul class="reasons">${o.reasons.map(r => `<li>${esc(r)}</li>`).join('')}</ul>
+          ${o.notes.map(n => `<p class="note">${esc(n)}</p>`).join('')}
+        </div>
+      </div>
       <div class="actions">
         <button type="button" class="primary" data-act="wear" data-ids="${ids}">이거 입을래요</button>
-        <a class="btn" href="${pinterestUrl(o, occasion)}" target="_blank" rel="noopener">핀터레스트에서 비슷한 코디 보기 ↗</a>
+        <button type="button" data-act="tryon" data-ids="${ids}">👗 입혀보기</button>
+        <a class="btn" href="${pinterestUrl(pieces, occasion)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
       </div>
     </article>`;
 }
@@ -597,10 +769,19 @@ function renderWeek() {
       } else {
         pickShoes(best, shoes, ctx);
         best.pieces.forEach(p => { if (p.cat !== 'outer') used.set(p.id, (used.get(p.id) || 0) + 1); });
+        const pieces = [...best.pieces, best.shoes].filter(Boolean);
         body = `
-          <div class="pieces small">${[...best.pieces, best.shoes].filter(Boolean).map(thumb).join('')}</div>
-          ${best.reasons[0] ? `<p class="reason-line">✓ ${esc(best.reasons[0])}</p>` : ''}
-          <a class="link" href="${pinterestUrl(best, occ)}" target="_blank" rel="noopener">핀터레스트에서 보기 ↗</a>`;
+          <div class="week-body">
+            <div class="mini-avatar small">${drawAvatar(lookFromIds(pieces.map(p => p.id)))}</div>
+            <div>
+              <ul class="week-items">${pieces.map(p => `<li><i style="background:${col(p.color).hex}"></i>${esc(itemName(p))}</li>`).join('')}</ul>
+              ${best.reasons[0] ? `<p class="reason-line">✓ ${esc(best.reasons[0])}</p>` : ''}
+              <div class="week-links">
+                <button type="button" class="link" data-act="tryon" data-ids="${pieces.map(p => p.id).join(',')}">입혀보기</button>
+                <a class="link" href="${pinterestUrl(pieces, occ)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
+              </div>
+            </div>
+          </div>`;
       }
     }
     html += `
@@ -616,6 +797,75 @@ function renderWeek() {
   el.innerHTML = html;
 }
 
+function renderTryon() {
+  const el = $('#view-tryon');
+  if (!state.items.length) {
+    el.innerHTML = `<p class="intro">옷장에 옷을 넣으면 아바타에게 직접 입혀 볼 수 있어요.</p>` + emptyCloset();
+    return;
+  }
+  const rail = el.querySelector('.rail');
+  const railScroll = rail ? rail.scrollLeft : 0;
+
+  const look = currentLook();
+  const pieces = lookPieces(look);
+  const day = state.weather?.days[0];
+  const feedback = evaluateLook(look, day);
+  const counts = {};
+  for (const i of state.items) counts[i.cat] = (counts[i.cat] || 0) + 1;
+  const items = state.items
+    .filter(i => i.cat === state.tryCat)
+    .sort((a, b) => itemName(a).localeCompare(itemName(b), 'ko'));
+  const wornIds = new Set(pieces.map(p => p.id));
+  const looks = ls.get('looks', []);
+
+  el.innerHTML = `
+    <div class="tryon">
+      <div class="card stage">
+        ${drawAvatar(look)}
+        <div class="worn-list">${pieces.length
+          ? pieces.map(p => `<button type="button" class="tag" data-act="puton" data-id="${esc(p.id)}" title="벗기기"><i style="background:${col(p.color).hex}"></i>${esc(itemName(p))} ✕</button>`).join('')
+          : '<span class="muted">오른쪽(아래)에서 옷을 눌러 입혀 보세요</span>'}</div>
+      </div>
+
+      <div class="controls">
+        <div class="card picker">
+          <div class="chips">${Object.entries(CATS).map(([id, name]) =>
+            `<button type="button" class="chip" data-act="trycat" data-cat="${id}" aria-pressed="${state.tryCat === id}">${name} ${counts[id] || 0}</button>`).join('')}</div>
+          ${items.length
+            ? `<div class="rail">${items.map(i => `
+                <button type="button" class="pick" data-act="puton" data-id="${esc(i.id)}" aria-pressed="${wornIds.has(i.id)}">${thumb(i)}</button>`).join('')}</div>`
+            : `<p class="muted">옷장에 ${CATS[state.tryCat]}이(가) 아직 없어요.</p>`}
+        </div>
+
+        <div class="card feedback">
+          <p class="fb-title">${day ? `오늘(체감 ${day.feel}°) 기준으로 보면` : '조합 평가'}</p>
+          <ul class="fb">${feedback.map(([ok, t]) => `<li class="${ok ? 'ok' : 'warn'}">${esc(t)}</li>`).join('')}</ul>
+        </div>
+
+        <div class="actions">
+          ${pieces.length ? `
+            <button type="button" class="primary" data-act="wear" data-ids="${pieces.map(p => p.id).join(',')}">오늘 이거 입을래요</button>
+            <button type="button" data-act="save-look">⭐ 코디 저장</button>
+            <a class="btn" href="${pinterestUrl(pieces, state.occasion)}" target="_blank" rel="noopener">핀터레스트 ↗</a>
+            <button type="button" data-act="undress">다 벗기기</button>` : ''}
+        </div>
+
+        ${looks.length ? `
+          <div class="card">
+            <p><b>⭐ 저장한 코디</b> <small class="muted">${looks.length}개</small></p>
+            <div class="looks">${looks.map(l => `
+              <div class="look">
+                <button type="button" class="look-pic" data-act="load-look" data-id="${esc(l.id)}" aria-label="이 코디 입혀보기">${drawAvatar(lookFromIds(l.ids))}</button>
+                <button type="button" class="link danger" data-act="del-look" data-id="${esc(l.id)}">삭제</button>
+              </div>`).join('')}</div>
+          </div>` : ''}
+      </div>
+    </div>`;
+
+  const newRail = el.querySelector('.rail');
+  if (newRail) newRail.scrollLeft = railScroll;
+}
+
 function renderCloset() {
   const el = $('#view-closet');
   const counts = { all: state.items.length };
@@ -623,9 +873,17 @@ function renderCloset() {
   const filters = [['all', '전체'], ...Object.entries(CATS)];
   const hasSamples = state.items.some(i => i.sample);
 
-  let html = `<div class="filter-row">${filters.map(([id, name]) =>
-    `<button type="button" class="chip" data-act="filter" data-cat="${id}" aria-pressed="${state.filter === id}">${name} ${counts[id] || 0}</button>`,
-  ).join('')}</div>`;
+  let html = `
+    <div class="closet-top">
+      <button type="button" class="primary" data-act="bulk">📝 글로 옷 목록 등록</button>
+      <div class="toggle">
+        <button type="button" data-act="mode" data-mode="grid" aria-pressed="${state.closetMode === 'grid'}">사진</button>
+        <button type="button" data-act="mode" data-mode="list" aria-pressed="${state.closetMode === 'list'}">목록</button>
+      </div>
+    </div>
+    <div class="filter-row">${filters.map(([id, name]) =>
+      `<button type="button" class="chip" data-act="filter" data-cat="${id}" aria-pressed="${state.filter === id}">${name} ${counts[id] || 0}</button>`,
+    ).join('')}</div>`;
 
   if (!state.items.length) {
     html += emptyCloset();
@@ -633,18 +891,34 @@ function renderCloset() {
     const list = state.items
       .filter(i => state.filter === 'all' || i.cat === state.filter)
       .sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-    html += list.length
-      ? `<div class="grid">${list.map(i => `
-          <button type="button" class="item" data-act="edit" data-id="${esc(i.id)}">
-            ${thumb(i)}
-            <span class="meta">${CATS[i.cat]} · ${WARMTH[i.warmth]?.name || ''}</span>
-          </button>`).join('')}</div>`
-      : '<p class="muted center">이 종류의 옷이 아직 없어요.</p>';
+    if (!list.length) {
+      html += '<p class="muted center">이 종류의 옷이 아직 없어요.</p>';
+    } else if (state.closetMode === 'list') {
+      const groups = Object.keys(CATS).filter(c => list.some(i => i.cat === c));
+      html += groups.map(c => `
+        <div class="card list-group">
+          <p class="group-title">${CATS[c]} <small class="muted">${list.filter(i => i.cat === c).length}벌</small></p>
+          <ul class="item-list">${list.filter(i => i.cat === c)
+            .sort((a, b) => itemName(a).localeCompare(itemName(b), 'ko'))
+            .map(i => `
+            <li><button type="button" data-act="edit" data-id="${esc(i.id)}">
+              <i style="background:${col(i.color).hex}"></i>
+              <span class="nm">${esc(itemName(i))}</span>
+              <span class="meta">${'●'.repeat(i.warmth)}${'○'.repeat(5 - i.warmth)}${i.occasions?.length ? ' · ' + i.occasions.map(o => OCCASIONS[o]?.name).join('·') : ''}</span>
+            </button></li>`).join('')}</ul>
+        </div>`).join('');
+    } else {
+      html += `<div class="grid">${list.map(i => `
+        <button type="button" class="item" data-act="edit" data-id="${esc(i.id)}">
+          ${thumb(i)}
+          <span class="meta">${kindOf(i)?.name || CATS[i.cat]} · ${WARMTH[i.warmth]?.name || ''}</span>
+        </button>`).join('')}</div>`;
+    }
   }
 
   html += `
     <div class="card tools">
-      <p class="muted">📌 사진은 <b>이 휴대폰 브라우저에만</b> 저장돼요. 폰을 바꾸거나 인터넷 기록을 지우기 전에 백업 파일을 저장해 두세요.</p>
+      <p class="muted">📌 옷 정보와 사진은 <b>이 기기의 브라우저에만</b> 저장돼요. 기기를 바꾸거나 인터넷 기록을 지우기 전에 백업 파일을 저장해 두세요.</p>
       <div class="actions">
         <button type="button" data-act="export">백업 파일 저장</button>
         <button type="button" data-act="import">백업 불러오기</button>
@@ -657,8 +931,10 @@ function renderCloset() {
 function render() {
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id === `view-${state.view}`));
   document.querySelectorAll('.tabs button').forEach(b => b.classList.toggle('active', b.dataset.view === state.view));
+  document.body.dataset.view = state.view;
   if (state.view === 'today') renderToday();
   else if (state.view === 'week') renderWeek();
+  else if (state.view === 'tryon') renderTryon();
   else renderCloset();
 }
 
@@ -668,8 +944,8 @@ const editor = $('#editor');
 
 function openEditor(item) {
   state.draft = item
-    ? { ...item, occasions: [...(item.occasions || [])] }
-    : { id: null, photo: null, cat: 'top', color: 'gray', warmth: 3, occasions: [], name: '' };
+    ? { ...item, kind: kindOf(item).id, occasions: [...(item.occasions || [])] }
+    : { id: null, photo: null, cat: 'top', kind: DEFAULT_KIND.top, color: 'gray', warmth: 2, occasions: [], name: '' };
   $('#editor-title').textContent = item ? '옷 정보 수정' : '옷 추가';
   $('#btn-delete').hidden = !item;
   $('#f-name').value = state.draft.name || '';
@@ -683,9 +959,11 @@ function renderEditor() {
   const d = state.draft;
   $('#photo-preview').innerHTML = d.photo
     ? `<img src="${d.photo}" alt="옷 사진">`
-    : '<span>📷<br>사진 찍기 / 앨범에서 고르기</span>';
+    : '<span>📷<br>사진 찍기 / 앨범에서 고르기<br><small>사진 없이 저장해도 괜찮아요</small></span>';
   $('#f-cat').innerHTML = Object.entries(CATS).map(([id, name]) =>
     `<button type="button" class="chip" data-field="cat" data-val="${id}" aria-pressed="${d.cat === id}">${name}</button>`).join('');
+  $('#f-kind').innerHTML = KINDS[d.cat].map(k =>
+    `<button type="button" class="chip" data-field="kind" data-val="${k.id}" aria-pressed="${d.kind === k.id}">${k.name}</button>`).join('');
   $('#f-color').innerHTML = COLORS.map(c =>
     `<button type="button" class="color" data-field="color" data-val="${c.id}" aria-pressed="${d.color === c.id}" title="${c.name}">
        <span style="background:${c.hex}"></span>${c.name}</button>`).join('');
@@ -702,7 +980,15 @@ editor.addEventListener('click', e => {
   if (!b) return;
   const d = state.draft;
   const v = b.dataset.val;
-  if (b.dataset.field === 'cat') d.cat = v;
+  if (b.dataset.field === 'cat' && d.cat !== v) {
+    d.cat = v;
+    d.kind = DEFAULT_KIND[v];
+    d.warmth = findKind(v, d.kind).warmth;
+  }
+  if (b.dataset.field === 'kind') {
+    d.kind = v;
+    d.warmth = findKind(d.cat, v).warmth;
+  }
   if (b.dataset.field === 'color') { d.color = v; $('#color-hint').textContent = ''; }
   if (b.dataset.field === 'warmth') d.warmth = Number(v);
   if (b.dataset.field === 'occ') {
@@ -730,7 +1016,7 @@ $('#editor-form').addEventListener('submit', async e => {
   const d = state.draft;
   const item = {
     ...d,
-    id: d.id || `item-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    id: d.id || newId(),
     name: $('#f-name').value.trim(),
     createdAt: d.createdAt || Date.now(),
   };
@@ -756,6 +1042,56 @@ $('#btn-delete').addEventListener('click', async () => {
   state.items = state.items.filter(i => i.id !== d.id);
   editor.close();
   toast('지웠어요');
+  render();
+});
+
+/* ---------- 글로 한 번에 등록하는 창 ---------- */
+
+const bulk = $('#bulk');
+let bulkParsed = [];
+
+function renderBulkPreview() {
+  const lines = $('#bulk-text').value.split(/\n|,/).map(s => s.trim()).filter(Boolean);
+  bulkParsed = lines.map(parseLine).filter(Boolean);
+  const ok = bulkParsed.filter(p => !p.unknown);
+  $('#bulk-preview').innerHTML = bulkParsed.length
+    ? bulkParsed.map(p => p.unknown
+      ? `<li class="warn"><b>${esc(p.name)}</b> — 종류를 모르겠어요. "니트", "청바지"처럼 종류를 같이 적어 주세요</li>`
+      : `<li><i style="background:${col(p.color).hex}"></i><b>${esc(p.name)}</b>
+           <span>${CATS[p.cat]} · ${findKind(p.cat, p.kind).name} · ${col(p.color).name}${p.colorFound ? '' : '(색 못 찾음)'} · ${WARMTH[p.warmth].name}${p.occasions.length ? ' · ' + p.occasions.map(o => OCCASIONS[o].name).join('·') : ''}</span></li>`).join('')
+    : '<li class="muted">적은 내용이 여기에서 어떻게 등록될지 미리 보여요.</li>';
+  $('#bulk-save').textContent = ok.length ? `${ok.length}벌 등록하기` : '등록하기';
+  $('#bulk-save').disabled = !ok.length;
+}
+
+$('#bulk-text').addEventListener('input', renderBulkPreview);
+$('#bulk-cancel').addEventListener('click', () => bulk.close());
+$('#bulk-form').addEventListener('submit', async e => {
+  e.preventDefault();
+  const now = Date.now();
+  const items = bulkParsed.filter(p => !p.unknown).map((p, i) => ({
+    id: newId() + i,
+    name: p.name,
+    cat: p.cat,
+    kind: p.kind,
+    color: p.color,
+    warmth: p.warmth,
+    occasions: p.occasions,
+    photo: null,
+    createdAt: now + i,
+  }));
+  if (!items.length) return;
+  try {
+    await store.putMany(items);
+  } catch {
+    toast('저장하지 못했어요. 다시 시도해 주세요');
+    return;
+  }
+  state.items.push(...items);
+  bulk.close();
+  $('#bulk-text').value = '';
+  toast(`옷 ${items.length}벌을 옷장에 넣었어요! 사진은 나중에 옷을 눌러 추가할 수 있어요`);
+  state.view = 'closet';
   render();
 });
 
@@ -818,7 +1154,10 @@ async function processPhoto(file) {
 /* ---------- 백업 ---------- */
 
 function exportBackup() {
-  const data = { app: 'what-to-wear', version: 1, exportedAt: new Date().toISOString(), items: state.items, wornLog: wornLog() };
+  const data = {
+    app: 'what-to-wear', version: 2, exportedAt: new Date().toISOString(),
+    items: state.items, wornLog: wornLog(), looks: ls.get('looks', []),
+  };
   const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -836,8 +1175,12 @@ $('#import-file').addEventListener('change', async e => {
     const data = JSON.parse(await file.text());
     if (!Array.isArray(data.items)) throw new Error('bad file');
     const items = data.items.filter(i => i && i.id && CATS[i.cat]);
-    for (const item of items) await store.put(item);
+    await store.putMany(items);
     if (data.wornLog) ls.set('wornLog', { ...data.wornLog, ...wornLog() });
+    if (Array.isArray(data.looks)) {
+      const mine = ls.get('looks', []);
+      ls.set('looks', [...mine, ...data.looks.filter(l => !mine.some(m => m.id === l.id))]);
+    }
     state.items = await store.all();
     toast(`옷 ${items.length}벌을 불러왔어요`);
     render();
@@ -848,14 +1191,15 @@ $('#import-file').addEventListener('change', async e => {
 
 /* ---------- 버튼 동작 ---------- */
 
+function goTo(view) {
+  state.view = view;
+  render();
+  window.scrollTo(0, 0);
+}
+
 document.addEventListener('click', async e => {
   const nav = e.target.closest('.tabs button');
-  if (nav) {
-    state.view = nav.dataset.view;
-    render();
-    window.scrollTo(0, 0);
-    return;
-  }
+  if (nav) { goTo(nav.dataset.view); return; }
   const b = e.target.closest('[data-act]');
   if (!b) return;
   const today = state.weather?.days[0].date || ymd(new Date());
@@ -879,8 +1223,7 @@ document.addEventListener('click', async e => {
       for (const k of Object.keys(log)) if (k < cutoff) delete log[k];
       ls.set('wornLog', log);
       toast('기록했어요! 며칠 동안은 겹치지 않게 추천할게요');
-      render();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+      goTo('today');
       break;
     }
     case 'unwear': {
@@ -897,21 +1240,77 @@ document.addEventListener('click', async e => {
       render();
       break;
     }
+    case 'tryon':
+      setLook(lookFromIds(b.dataset.ids.split(',')));
+      goTo('tryon');
+      break;
+    case 'trycat':
+      state.tryCat = b.dataset.cat;
+      render();
+      break;
+    case 'puton': {
+      const item = state.items.find(i => i.id === b.dataset.id);
+      if (!item) break;
+      const look = currentLook();
+      if (look[item.cat]?.id === item.id) {
+        delete look[item.cat];
+      } else {
+        look[item.cat] = item;
+        if (item.cat === 'dress') { delete look.top; delete look.bottom; }
+        if (item.cat === 'top' || item.cat === 'bottom') delete look.dress;
+      }
+      setLook(look);
+      render();
+      break;
+    }
+    case 'undress':
+      setLook({});
+      render();
+      break;
+    case 'save-look': {
+      const looks = ls.get('looks', []);
+      const ids = Object.values(state.look);
+      const key = [...ids].sort().join(',');
+      if (looks.some(l => [...l.ids].sort().join(',') === key)) { toast('이미 저장한 코디예요'); break; }
+      looks.unshift({ id: `look-${Date.now()}`, ids, at: Date.now() });
+      ls.set('looks', looks.slice(0, 40));
+      toast('코디를 저장했어요 ⭐');
+      render();
+      break;
+    }
+    case 'load-look': {
+      const l = ls.get('looks', []).find(x => x.id === b.dataset.id);
+      if (l) { setLook(lookFromIds(l.ids)); render(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      break;
+    }
+    case 'del-look':
+      ls.set('looks', ls.get('looks', []).filter(x => x.id !== b.dataset.id));
+      render();
+      break;
     case 'filter':
       state.filter = b.dataset.cat;
+      render();
+      break;
+    case 'mode':
+      state.closetMode = b.dataset.mode;
+      ls.set('closetMode', state.closetMode);
       render();
       break;
     case 'edit':
       openEditor(state.items.find(i => i.id === b.dataset.id));
       break;
+    case 'bulk':
+      renderBulkPreview();
+      bulk.showModal();
+      break;
     case 'sample-add':
-      for (const s of SAMPLES) await store.put(s);
+      await store.putMany(SAMPLES);
       state.items = await store.all();
-      toast('예시 옷 16벌을 넣었어요. 오늘 탭에서 추천을 확인해 보세요!');
+      toast('예시 옷 16벌을 넣었어요. 오늘·입혀보기 탭에서 확인해 보세요!');
       render();
       break;
     case 'sample-del':
-      if (!confirm('예시 옷을 모두 지울까요? 직접 올린 옷은 그대로 남아요.')) return;
+      if (!confirm('예시 옷을 모두 지울까요? 직접 넣은 옷은 그대로 남아요.')) return;
       for (const s of state.items.filter(i => i.sample)) await store.del(s.id);
       state.items = state.items.filter(i => !i.sample);
       render();
