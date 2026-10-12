@@ -1,0 +1,218 @@
+<title>Number Reading</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;800&family=Nunito:wght@600;800&display=swap">
+<style>
+/* Layout: one classroom chalkboard filling the screen, number on the board, controls on the chalk tray below. Single deliberate chalkboard look. */
+:root {
+  --board: #22382f;
+  --board-edge: #5b3f26;
+  --chalk: #f3f1e7;
+  --chalk-dim: #a9b8ae;
+  --thousand: #ffd36b;
+  --ones: #8fd3ff;
+  --btn: #f3f1e7;
+  --btn-ink: #1d2e27;
+  --display: "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif;
+  --body: "Nunito", system-ui, sans-serif;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body {
+  background: var(--board-edge);
+  color: var(--chalk);
+  font-family: var(--body);
+  margin: 0;
+  padding-inline: 16px;
+  padding-block: 16px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.board {
+  flex: 1;
+  min-height: 0;
+  background: radial-gradient(ellipse at 50% 40%, #2b463b 0%, var(--board) 70%);
+  border-radius: 10px;
+  box-shadow: inset 0 0 40px rgba(0,0,0,.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2vh;
+  padding: 24px 16px;
+  cursor: pointer;
+  user-select: none;
+  text-align: center;
+  -webkit-tap-highlight-color: transparent;
+}
+.board:focus-visible { outline: 4px solid var(--thousand); outline-offset: 4px; }
+.num {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: clamp(64px, 17vw, 220px);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: .02em;
+  text-shadow: 0 0 2px rgba(255,255,255,.35);
+}
+.num .t { color: var(--thousand); }
+.num .o { color: var(--ones); }
+.words {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: clamp(22px, 4.2vw, 52px);
+  line-height: 1.3;
+  max-width: 22em;
+  text-wrap: balance;
+  min-height: 2.6em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.words .t { color: var(--thousand); }
+.words .o { color: var(--ones); }
+.hint { color: var(--chalk-dim); font-size: clamp(16px, 2.2vw, 22px); font-weight: 600; }
+.reveal { animation: write .35s ease-out; }
+@keyframes write { from { opacity: .2; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .reveal { animation: none; } }
+
+.tray {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: center;
+}
+button, select {
+  font-family: var(--body);
+  font-weight: 800;
+  font-size: 18px;
+  border: 0;
+  border-radius: 999px;
+  padding: 12px 22px;
+  background: var(--btn);
+  color: var(--btn-ink);
+  cursor: pointer;
+}
+button:focus-visible, select:focus-visible { outline: 3px solid var(--thousand); outline-offset: 2px; }
+button.ghost { background: transparent; color: var(--chalk); box-shadow: inset 0 0 0 2px var(--chalk); }
+button:disabled { opacity: .4; cursor: default; }
+label { font-weight: 800; color: var(--chalk); display: flex; align-items: center; gap: 8px; }
+</style>
+
+<div class="board" id="board" tabindex="0" role="button" aria-label="Show the next step">
+  <div class="num" id="num"></div>
+  <div class="words" id="words"></div>
+  <div class="hint" id="hint"></div>
+</div>
+
+<div class="tray">
+  <label for="range">범위
+    <select id="range">
+      <option value="100">0 ~ 100</option>
+      <option value="1000">0 ~ 1,000</option>
+      <option value="10000">0 ~ 10,000</option>
+      <option value="100000">0 ~ 100,000</option>
+      <option value="999000" selected>0 ~ 999,000</option>
+    </select>
+  </label>
+  <button class="ghost" id="again" disabled>🔊 다시 듣기</button>
+  <button id="next">다음 숫자 ▶</button>
+</div>
+
+<script>
+const ONES = ["zero","one","two","three","four","five","six","seven","eight","nine","ten",
+  "eleven","twelve","thirteen","fourteen","fifteen","sixteen","seventeen","eighteen","nineteen"];
+const TENS = ["","","twenty","thirty","forty","fifty","sixty","seventy","eighty","ninety"];
+
+// 0–999 -> words (American style, no "and")
+function under1000(n) {
+  const parts = [];
+  const h = Math.floor(n / 100), r = n % 100;
+  if (h) parts.push(ONES[h] + " hundred");
+  if (r) {
+    if (r < 20) parts.push(ONES[r]);
+    else parts.push(TENS[Math.floor(r / 10)] + (r % 10 ? "-" + ONES[r % 10] : ""));
+  }
+  return parts.join(" ");
+}
+
+// returns {thousand, ones} word chunks so they can be colour-matched to the digits
+function toWords(n) {
+  if (n === 0) return { thousand: "", ones: "zero" };
+  const th = Math.floor(n / 1000), rest = n % 1000;
+  return { thousand: th ? under1000(th) + " thousand" : "", ones: rest ? under1000(rest) : "" };
+}
+
+const $ = id => document.getElementById(id);
+const numEl = $("num"), wordsEl = $("words"), hintEl = $("hint");
+let current = 0, revealed = false;
+
+function esc(s) { return s.replace(/[&<>]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;"}[c])); }
+
+function renderNumber(n) {
+  const s = n.toLocaleString("en-US");
+  if (n >= 1000) {
+    const i = s.length - 4; // position of the thousands comma
+    numEl.innerHTML = `<span class="t">${s.slice(0, i)}</span>,<span class="o">${s.slice(i + 1)}</span>`;
+  } else {
+    numEl.innerHTML = `<span class="o">${s}</span>`;
+  }
+}
+
+function speak() {
+  if (!("speechSynthesis" in window)) return;
+  const w = toWords(current);
+  const text = [w.thousand, w.ones].filter(Boolean).join(" ");
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.lang = "en-US";
+  u.rate = 0.8;
+  const v = speechSynthesis.getVoices().find(v => v.lang === "en-US") ||
+            speechSynthesis.getVoices().find(v => v.lang.startsWith("en"));
+  if (v) u.voice = v;
+  speechSynthesis.speak(u);
+}
+
+function newNumber() {
+  const max = +$("range").value;
+  let n;
+  do { n = Math.floor(Math.random() * (max + 1)); } while (n === current && max > 0);
+  current = n;
+  revealed = false;
+  renderNumber(n);
+  numEl.classList.remove("reveal"); void numEl.offsetWidth; numEl.classList.add("reveal");
+  wordsEl.textContent = "";
+  hintEl.textContent = "영어로 읽어 보세요! 화면을 누르면 정답이 나와요.";
+  $("again").disabled = true;
+  if ("speechSynthesis" in window) speechSynthesis.cancel();
+}
+
+function reveal() {
+  const w = toWords(current);
+  wordsEl.innerHTML = [
+    w.thousand && `<span class="t">${esc(w.thousand)}</span>`,
+    w.ones && `<span class="o">${esc(w.ones)}</span>`
+  ].filter(Boolean).join("&nbsp;");
+  wordsEl.classList.remove("reveal"); void wordsEl.offsetWidth; wordsEl.classList.add("reveal");
+  hintEl.textContent = "화면을 한 번 더 누르면 다음 숫자!";
+  revealed = true;
+  $("again").disabled = false;
+  speak();
+}
+
+function step() { revealed ? newNumber() : reveal(); }
+
+$("board").addEventListener("click", step);
+$("board").addEventListener("keydown", e => {
+  if (e.key === "Enter" || e.key === " ") { e.preventDefault(); step(); }
+});
+$("next").addEventListener("click", newNumber);
+$("again").addEventListener("click", speak);
+$("range").addEventListener("change", newNumber);
+if ("speechSynthesis" in window) speechSynthesis.getVoices(); // warm up voice list
+
+newNumber();
+</script>
