@@ -46,3 +46,9 @@
 | `cutout.js` | AI 배경 지우기와 손으로 다듬기 |
 | `vendor/` | AI 엔진(ONNX Runtime Web)과 배경 지우기 모델 — 자세한 출처는 `vendor/README.md` |
 | `manifest.json`, `icon.svg` | 홈 화면에 추가할 때 쓰는 앱 이름과 아이콘 |
+
+---
+
+## 📝 영어 단어 받아쓰기 (선생님용)
+
+크롬북으로 영어 단어 받아쓰기를 하고 결과를 구글 시트로 받는 프로그램은 [`dictation/`](dictation/) 폴더에 있어요. 설정 방법은 [dictation/README.md](dictation/README.md)를 보세요.
