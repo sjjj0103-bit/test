@@ -1,0 +1,1087 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- ARTIFACT-START -->
+<title>하루 건강수첩</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="영양제·식단·물·카페인·수면·컨디션·생리 주기를 하루 한 번 기록하는 자기관리 수첩">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=IBM+Plex+Mono:wght@500&family=IBM+Plex+Sans+KR:wght@400;500;600&display=swap">
+<style>
+/* Layout: sticky header + tab bar, then a masonry of category cards (1 column on phones, 2 from 760px). */
+:root {
+  --bg: #F3F2F6;
+  --surface: #FFFFFF;
+  --sunk: #EBE9F0;
+  --ink: #221E2A;
+  --muted: #676172;
+  --line: #DEDAE5;
+  --accent: #9C2F5A;
+  --on-c: #FFFFFF;
+  --c-cond: #9C2F5A;
+  --c-sleep: #4A4FA3;
+  --c-water: #2273AE;
+  --c-supp: #2C7F55;
+  --c-food: #A8620F;
+  --c-caf: #7B5434;
+  --c-alc: #B23E3E;
+  --c-move: #1C7F80;
+  --c-cycle: #C2346E;
+  --good: #2C7F55;
+  --warn: #A8620F;
+  --bad: #B23E3E;
+  --f-display: "Gowun Batang", "Nanum Myeongjo", "AppleMyungjo", serif;
+  --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --f-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 14px;
+  color-scheme: light;
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15131A; --surface: #1F1C26; --sunk: #2A2633; --ink: #ECE8F3; --muted: #A49DB1; --line: #363142;
+    --accent: #E683AB; --on-c: #15131A;
+    --c-cond: #E683AB; --c-sleep: #9AA0F2; --c-water: #66B4EE; --c-supp: #6FCB98; --c-food: #E9A653;
+    --c-caf: #CFA47E; --c-alc: #F08585; --c-move: #62CDCD; --c-cycle: #F086B3;
+    --good: #6FCB98; --warn: #E9A653; --bad: #F08585;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15131A; --surface: #1F1C26; --sunk: #2A2633; --ink: #ECE8F3; --muted: #A49DB1; --line: #363142;
+  --accent: #E683AB; --on-c: #15131A;
+  --c-cond: #E683AB; --c-sleep: #9AA0F2; --c-water: #66B4EE; --c-supp: #6FCB98; --c-food: #E9A653;
+  --c-caf: #CFA47E; --c-alc: #F08585; --c-move: #62CDCD; --c-cycle: #F086B3;
+  --good: #6FCB98; --warn: #E9A653; --bad: #F08585;
+  color-scheme: dark;
+}
+[hidden] { display: none !important; }
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font: 15px/1.55 var(--f-body);
+}
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap {
+  max-width: 1000px; margin: 0 auto;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+
+/* Header */
+.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { padding-block: 10px 0; display: flex; flex-direction: column; gap: 8px; }
+.brand { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.brand h1 { font: 700 21px/1.2 var(--f-display); margin: 0; letter-spacing: -0.01em; }
+.brand .spacer { flex: 1; }
+.who { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--muted); }
+.who select {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 999px;
+  padding: 5px 10px; font-size: 14px; font-weight: 600; max-width: 150px;
+}
+.sync { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 5px; }
+.sync::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.sync.ok::before { background: var(--good); }
+.sync.saving::before { background: var(--warn); }
+.sync.error::before { background: var(--bad); }
+.tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.tabs button {
+  border: 0; background: none; padding: 8px 14px 10px; font-weight: 500; color: var(--muted);
+  border-bottom: 2px solid transparent; white-space: nowrap;
+}
+.tabs button[aria-current="page"] { color: var(--ink); border-bottom-color: var(--accent); font-weight: 600; }
+
+main.wrap { padding-block: 16px 64px; display: flex; flex-direction: column; gap: 16px; }
+
+/* Day bar + summary */
+.daybar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.daybar .lbl { display: flex; flex-direction: column; min-width: 0; }
+.daybar .lbl strong { font: 700 20px/1.2 var(--f-display); }
+.daybar .lbl span { font-size: 12.5px; color: var(--muted); }
+.iconbtn {
+  width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--line); background: var(--surface);
+  font-size: 18px; line-height: 1; display: inline-grid; place-items: center;
+}
+.iconbtn:disabled { opacity: .35; cursor: default; }
+.btn {
+  border: 1px solid var(--line); background: var(--surface); border-radius: 10px; padding: 7px 12px;
+  font-size: 14px; font-weight: 500;
+}
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--on-c); font-weight: 600; }
+.btn.danger { color: var(--bad); border-color: color-mix(in srgb, var(--bad) 45%, var(--line)); }
+.btn.small { padding: 4px 10px; font-size: 13px; }
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(118px, 1fr)); gap: 8px; }
+.pill {
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px;
+  display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.pill small { font-size: 12px; color: var(--muted); }
+.pill b { font: 500 16px/1.3 var(--f-num); font-variant-numeric: tabular-nums; }
+.pill.good b { color: var(--good); }
+.pill.warn b { color: var(--warn); }
+.pill.bad b { color: var(--bad); }
+.pill.empty b { color: var(--muted); font-family: var(--f-body); font-weight: 400; font-size: 14px; }
+
+/* Cards */
+.cards { columns: 1; column-gap: 16px; }
+@media (min-width: 760px) { .cards { columns: 2; } }
+.card {
+  --c: var(--accent);
+  break-inside: avoid; margin: 0 0 16px; display: flex; flex-direction: column; gap: 12px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px;
+  min-width: 0;
+}
+.card > header { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+.card h2 { margin: 0; font: 700 17px/1.3 var(--f-display); display: flex; align-items: center; gap: 8px; }
+.card h2::before { content: ""; width: 9px; height: 9px; border-radius: 3px; background: var(--c); flex: none; }
+.card header .meta { margin-left: auto; font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.card[data-c="cond"] { --c: var(--c-cond); }
+.card[data-c="sleep"] { --c: var(--c-sleep); }
+.card[data-c="water"] { --c: var(--c-water); }
+.card[data-c="supp"] { --c: var(--c-supp); }
+.card[data-c="food"] { --c: var(--c-food); }
+.card[data-c="caf"] { --c: var(--c-caf); }
+.card[data-c="move"] { --c: var(--c-move); }
+.card[data-c="cycle"] { --c: var(--c-cycle); }
+.sub { font-size: 13px; font-weight: 600; color: var(--muted); letter-spacing: .02em; margin: 0; }
+.hint { font-size: 12.5px; color: var(--muted); margin: 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.field { display: flex; flex-direction: column; gap: 4px; min-width: 0; flex: 1 1 120px; }
+.field > span { font-size: 12.5px; color: var(--muted); }
+.field input, .field select, .field textarea, textarea.note {
+  width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 10px;
+  min-width: 0;
+}
+textarea { resize: vertical; min-height: 64px; }
+.check { display: flex; gap: 8px; align-items: center; font-size: 14px; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+
+.scale { display: flex; gap: 4px; }
+.scale button {
+  flex: 1 1 0; min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 9px;
+  padding: 7px 2px; font-size: 12.5px; line-height: 1.25;
+}
+.scale button.on { background: var(--c); border-color: var(--c); color: var(--on-c); font-weight: 600; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip {
+  border: 1px solid var(--line); background: var(--bg); border-radius: 999px; padding: 4px 11px; font-size: 13px;
+}
+.chip.on { background: color-mix(in srgb, var(--c) 16%, var(--surface)); border-color: var(--c); font-weight: 600; }
+.chip .x { margin-left: 4px; color: var(--muted); }
+
+.big { font: 500 30px/1 var(--f-num); font-variant-numeric: tabular-nums; }
+.big small { font: 400 14px var(--f-body); color: var(--muted); margin-left: 4px; }
+.stepper { display: flex; align-items: center; gap: 12px; }
+.stepper .iconbtn { width: 42px; height: 42px; font-size: 22px; }
+.cups { display: flex; flex-wrap: wrap; gap: 5px; }
+.cup {
+  width: 20px; height: 26px; border: 1.5px solid var(--c); border-radius: 3px 3px 6px 6px; background: transparent;
+}
+.cup.on { background: var(--c); }
+.cup.extra { border-style: dashed; }
+.meter { height: 8px; border-radius: 99px; background: var(--sunk); overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--c); border-radius: 99px; }
+.meter.over i { background: var(--bad); }
+
+.supps { display: flex; flex-direction: column; gap: 6px; }
+.supp {
+  display: flex; align-items: center; gap: 10px; text-align: left; width: 100%;
+  border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 8px 10px;
+}
+.supp .box {
+  width: 20px; height: 20px; border-radius: 6px; border: 1.5px solid var(--c); flex: none;
+  display: grid; place-items: center; font-size: 13px; color: var(--on-c);
+}
+.supp.on .box { background: var(--c); }
+.supp.on .nm { text-decoration: line-through; text-decoration-color: var(--muted); }
+.supp .nm { flex: 1; min-width: 0; }
+.supp .tm { font-size: 12px; color: var(--muted); }
+
+.meals { display: grid; grid-template-columns: 52px 1fr; gap: 6px 8px; align-items: center; }
+.meals label { font-size: 13px; color: var(--muted); }
+.meals input { border: 1px solid var(--line); background: var(--bg); border-radius: 10px; padding: 7px 10px; width: 100%; min-width: 0; }
+
+.split { display: flex; flex-direction: column; gap: 10px; padding-top: 12px; border-top: 1px dashed var(--line); }
+.split:first-of-type { border-top: 0; padding-top: 0; }
+.addrow { display: flex; flex-wrap: wrap; gap: 6px; }
+.addrow button { border: 1px dashed var(--c); background: none; border-radius: 999px; padding: 4px 10px; font-size: 13px; }
+.addrow button small { color: var(--muted); font-family: var(--f-num); font-size: 11px; margin-left: 3px; }
+
+/* History */
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 8px; }
+.chart { width: 100%; height: auto; display: block; overflow: visible; }
+.chart text { fill: var(--muted); font: 9px var(--f-num); }
+.chart .v { fill: var(--ink); font-size: 9.5px; }
+.chart .grid { stroke: var(--line); stroke-width: 1; }
+.chart .goal { stroke: var(--ink); stroke-dasharray: 3 3; stroke-width: 1; opacity: .5; }
+.chart .bar { fill: var(--c); }
+.chart .bar.last { fill: var(--c); stroke: var(--ink); stroke-width: .8; }
+.chart .none { fill: var(--sunk); }
+.moodcal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.moodcal .wd { font-size: 11px; color: var(--muted); text-align: center; }
+.moodcal .d {
+  aspect-ratio: 1; max-width: 100%; border-radius: 8px; background: var(--sunk);
+  display: grid; place-items: center; font: 500 12px var(--f-num); color: var(--muted);
+}
+.moodcal .d[data-m] { color: var(--ink); }
+.moodcal .d[data-m="1"] { background: color-mix(in srgb, var(--c-cond) 12%, var(--surface)); }
+.moodcal .d[data-m="2"] { background: color-mix(in srgb, var(--c-cond) 26%, var(--surface)); }
+.moodcal .d[data-m="3"] { background: color-mix(in srgb, var(--c-cond) 42%, var(--surface)); }
+.moodcal .d[data-m="4"] { background: color-mix(in srgb, var(--c-cond) 62%, var(--surface)); color: var(--on-c); }
+.moodcal .d[data-m="5"] { background: var(--c-cond); color: var(--on-c); }
+.moodcal .d.blank { background: none; }
+.legend { display: flex; gap: 10px; flex-wrap: wrap; font-size: 12px; color: var(--muted); align-items: center; }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 4px; vertical-align: -2px; margin-right: 4px; }
+
+/* Cycle calendar */
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.cal .wd { font-size: 11px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.cal button {
+  aspect-ratio: 1; max-width: 100%; border: 1px solid transparent; background: var(--bg); border-radius: 50%;
+  font: 500 13px var(--f-num); display: grid; place-items: center; padding: 0;
+}
+.cal button:disabled { cursor: default; }
+.cal button.fut { color: var(--muted); }
+.cal button.p1 { background: color-mix(in srgb, var(--c-cycle) 30%, var(--surface)); }
+.cal button.p2 { background: color-mix(in srgb, var(--c-cycle) 60%, var(--surface)); color: var(--on-c); }
+.cal button.p3 { background: var(--c-cycle); color: var(--on-c); }
+.cal button.pred { border: 1.5px dashed var(--c-cycle); }
+.cal button.fert { background: color-mix(in srgb, var(--c-sleep) 16%, var(--surface)); }
+.cal button.ov { border: 1.5px solid var(--c-sleep); }
+.cal button.today { box-shadow: 0 0 0 2px var(--ink); }
+.cal .blank { aspect-ratio: 1; }
+
+/* Profile */
+.people { display: flex; flex-wrap: wrap; gap: 6px; }
+.people .chip.on { --c: var(--accent); }
+.list { display: flex; flex-direction: column; gap: 6px; padding: 0; margin: 0; list-style: none; }
+.list li { display: flex; gap: 8px; align-items: center; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+.list li .nm { flex: 1; min-width: 0; }
+.list li small { color: var(--muted); }
+.confirm { border: 1px solid var(--bad); border-radius: 10px; padding: 10px 12px; display: flex; flex-direction: column; gap: 8px; }
+.formgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
+
+/* Welcome */
+.welcome { max-width: 560px; margin: 8px auto 0; display: flex; flex-direction: column; gap: 16px; }
+.welcome h2 { font: 700 26px/1.3 var(--f-display); margin: 0; text-wrap: balance; }
+.welcome ul { margin: 0; padding-left: 18px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+
+.toast {
+  position: fixed; left: 50%; transform: translateX(-50%);
+  bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 10;
+  background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 999px; font-size: 14px;
+  max-width: calc(100% - 32px);
+}
+.disclaimer { font-size: 12px; color: var(--muted); }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="wrap">
+    <div class="brand">
+      <h1>하루 건강수첩</h1>
+      <span class="spacer"></span>
+      <span id="sync" class="sync"></span>
+      <label class="who" id="whoWrap" hidden><span>사용자</span><select id="who"></select></label>
+    </div>
+    <nav class="tabs" id="tabs" aria-label="메뉴"></nav>
+  </div>
+</header>
+<main class="wrap" id="app"></main>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+'use strict';
+/* ---------- 작은 도구들 ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const pad = n => String(n).padStart(2, '0');
+const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+const parseD = s => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+const addDays = (s, n) => { const d = parseD(s); d.setDate(d.getDate() + n); return ymd(d); };
+const diffDays = (a, b) => Math.round((parseD(a) - parseD(b)) / 86400000);
+const today = () => ymd(new Date());
+const WD = ['일', '월', '화', '수', '목', '금', '토'];
+const fmtDate = s => { const d = parseD(s); return `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`; };
+const fmtShort = s => { const d = parseD(s); return `${d.getMonth() + 1}/${d.getDate()}`; };
+const newId = () => Math.random().toString(36).slice(2, 9);
+const sum = (arr, f) => (arr || []).reduce((a, x) => a + f(x), 0);
+const avg = arr => { const v = arr.filter(x => x != null); return v.length ? v.reduce((a, b) => a + b, 0) / v.length : null; };
+const round1 = n => Math.round(n * 10) / 10;
+const fmtMin = m => m == null ? '-' : `${Math.floor(m / 60)}시간${m % 60 ? ` ${m % 60}분` : ''}`;
+
+/* ---------- 기준 값 ---------- */
+const CAFFEINE = [
+  { k: 'americano', label: '아메리카노', mg: 150 },
+  { k: 'latte', label: '라떼', mg: 150 },
+  { k: 'coldbrew', label: '콜드브루', mg: 200 },
+  { k: 'mix', label: '믹스커피', mg: 50 },
+  { k: 'tea', label: '녹차·홍차', mg: 40 },
+  { k: 'energy', label: '에너지드링크', mg: 80 },
+  { k: 'decaf', label: '디카페인', mg: 5 },
+];
+const ALCOHOL = [
+  { k: 'soju', label: '소주 1잔', ml: 50, abv: 16.5 },
+  { k: 'beer', label: '맥주 500cc', ml: 500, abv: 4.5 },
+  { k: 'wine', label: '와인 1잔', ml: 150, abv: 12 },
+  { k: 'makgeolli', label: '막걸리 1사발', ml: 300, abv: 6 },
+  { k: 'highball', label: '하이볼 1잔', ml: 350, abv: 7 },
+].map(a => ({ ...a, g: round1(a.ml * a.abv / 100 * 0.79) }));
+const SYMPTOMS = ['두통', '피로', '소화불량', '변비', '생리통', '붓기', '피부 트러블', '근육통', '불안·우울', '감기 기운'];
+const FOOD_TAGS = ['채소·과일', '단백질 충분', '야식', '배달·외식', '단 음식·디저트', '끼니 거름'];
+const SUPP_TIMES = ['아침', '점심', '저녁', '자기 전'];
+const SCALES = {
+  mood: ['아주 나쁨', '나쁨', '보통', '좋음', '아주 좋음'],
+  energy: ['방전', '피곤', '보통', '괜찮음', '쌩쌩'],
+  stress: ['없음', '조금', '보통', '많음', '매우 많음'],
+  sleepQ: ['뒤척임', '얕음', '보통', '푹 잠', '개운'],
+};
+const FLOW = ['없음', '적음', '보통', '많음'];
+
+/* ---------- 저장소: Claude 계정(가능하면) 또는 이 기기 브라우저 ---------- */
+const Store = (() => {
+  const PFX = 'healthbook:v1:';
+  const mem = new Map();
+  const timers = {}, busy = {};
+  let db = null, uid = null, mode = 'local', status = 'ok';
+  const statusFns = [];
+  const lsGet = k => { try { const v = localStorage.getItem(PFX + k); return v ? JSON.parse(v) : null; } catch (e) { return null; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(PFX + k, JSON.stringify(v)); } catch (e) { /* 저장 불가 */ } };
+  const lsDel = k => { try { localStorage.removeItem(PFX + k); } catch (e) { /* 무시 */ } };
+  const lsKeys = () => {
+    const out = [];
+    try { for (let i = 0; i < localStorage.length; i++) { const k = localStorage.key(i); if (k && k.startsWith(PFX)) out.push(k.slice(PFX.length)); } } catch (e) { /* 무시 */ }
+    return out;
+  };
+  const ref = k => db.doc('data/users/' + uid + '/' + k);
+  const clone = v => v == null ? null : JSON.parse(JSON.stringify(v));
+  const setStatus = s => { status = s; statusFns.forEach(f => f()); };
+
+  async function get(k) {
+    if (mem.has(k)) return mem.get(k);
+    let v = null;
+    if (db) {
+      let fromDb = null;
+      try { const s = await ref(k).get(); if (s.exists) fromDb = clone(s.data().v); } catch (e) { setStatus('error'); }
+      if (mem.has(k)) return mem.get(k);
+      if (fromDb != null) { v = fromDb; lsSet(k, v); }
+      else { v = lsGet(k); if (v != null) { mem.set(k, v); queue(k); return v; } }
+    } else v = lsGet(k);
+    mem.set(k, v);
+    return v;
+  }
+  const peek = k => mem.has(k) ? mem.get(k) : null;
+  function queue(k) { clearTimeout(timers[k]); timers[k] = setTimeout(() => flush(k), 700); }
+  async function flush(k) {
+    if (busy[k]) { queue(k); return; }
+    busy[k] = true; setStatus('saving');
+    try { await ref(k).set({ v: mem.get(k), at: Date.now() }); setStatus('ok'); }
+    catch (e) { setStatus(e && e.code === 'quota_exceeded' ? 'full' : 'error'); }
+    busy[k] = false;
+  }
+  function set(k, v) { mem.set(k, v); lsSet(k, v); if (db) queue(k); }
+  async function remove(k) {
+    mem.delete(k); lsDel(k); clearTimeout(timers[k]);
+    if (db) { try { await ref(k).delete(); } catch (e) { /* 무시 */ } }
+  }
+  async function keys() {
+    const all = new Set(lsKeys());
+    if (db) { try { const q = await db.collection('data/users/' + uid).get(); q.docs.forEach(d => all.add(d.id)); } catch (e) { /* 무시 */ } }
+    mem.forEach((v, k) => all.add(k));
+    return [...all];
+  }
+  async function connect() {
+    if (!window.claude || typeof window.claude.use !== 'function') return false;
+    try {
+      const [d, u] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+      if (!d || !u) return false;
+      const id = await u.id();
+      if (!id) return false;
+      db = d; uid = id; mode = 'account'; mem.clear(); setStatus('ok');
+      return true;
+    } catch (e) { return false; }
+  }
+  async function migrateLocal() { for (const k of lsKeys()) await get(k); }
+  return {
+    get, peek, set, remove, keys, connect, migrateLocal,
+    onStatus: f => statusFns.push(f),
+    get mode() { return mode; }, get status() { return status; },
+  };
+})();
+
+/* ---------- 상태 ---------- */
+const S = { meta: null, tab: 'today', date: today(), calMonth: today().slice(0, 7), confirm: null, backup: '' };
+const P = () => S.meta.profiles.find(p => p.id === S.meta.activeId) || S.meta.profiles[0];
+const mk = (date, pid = P().id) => `d.${pid}.${date.slice(0, 7)}`;
+const getDay = date => { const m = Store.peek(mk(date)); return (m && m[date]) || {}; };
+function editDay(date, fn) {
+  const k = mk(date);
+  const m = Object.assign({}, Store.peek(k) || {});
+  const r = JSON.parse(JSON.stringify(m[date] || {}));
+  fn(r);
+  m[date] = r;
+  Store.set(k, m);
+}
+const saveMeta = () => Store.set('meta', S.meta);
+async function ensureRange(from, to) {
+  const ks = new Set([mk(to)]);
+  for (let d = from; d <= to; d = addDays(d, 1)) ks.add(mk(d));
+  await Promise.all([...ks].map(k => Store.get(k)));
+}
+function newProfile(name) {
+  return {
+    id: newId(), name, birthYear: null, height: null, weight: null,
+    waterGoal: 8, sleepGoal: 7, caffeineLimit: 400, alcoholWeekLimit: null,
+    trackCycle: true, cycleLength: 28, periodLength: 5, supplements: [], periods: {},
+  };
+}
+function normalize(m) {
+  m = m && typeof m === 'object' ? m : {};
+  m.v = 1;
+  m.profiles = Array.isArray(m.profiles) ? m.profiles : [];
+  m.profiles = m.profiles.map(p => Object.assign(newProfile(p.name || '나'), p));
+  if (!m.profiles.find(p => p.id === m.activeId)) m.activeId = m.profiles[0] ? m.profiles[0].id : null;
+  return m;
+}
+function setPath(obj, path, val) {
+  const parts = path.split('.');
+  let o = obj;
+  for (let i = 0; i < parts.length - 1; i++) o = o[parts[i]] = (o[parts[i]] && typeof o[parts[i]] === 'object') ? o[parts[i]] : {};
+  const last = parts[parts.length - 1];
+  if (val === '' || val == null || Number.isNaN(val)) delete o[last]; else o[last] = val;
+}
+const getPath = (obj, path) => path.split('.').reduce((o, k) => (o == null ? undefined : o[k]), obj);
+
+function sleepMin(s) {
+  if (!s || !s.bed || !s.wake) return null;
+  const [bh, bm] = s.bed.split(':').map(Number), [wh, wm] = s.wake.split(':').map(Number);
+  let m = (wh * 60 + wm) - (bh * 60 + bm);
+  if (m <= 0) m += 1440;
+  return m;
+}
+const hasAny = r => r && Object.keys(r).length > 0;
+
+/* ---------- 생리 주기 계산 ---------- */
+function periodStarts(p) {
+  const per = p.periods || {};
+  const days = Object.keys(per).filter(k => per[k] > 0).sort();
+  return days.filter(d => !(per[addDays(d, -1)] > 0) && !(per[addDays(d, -2)] > 0));
+}
+function cycleInfo(p, ref) {
+  const starts = periodStarts(p).filter(d => d <= ref);
+  const lens = [];
+  for (let i = 1; i < starts.length; i++) { const L = diffDays(starts[i], starts[i - 1]); if (L >= 18 && L <= 60) lens.push(L); }
+  const recent = lens.slice(-6);
+  const avgLen = recent.length ? Math.round(avg(recent)) : (p.cycleLength || 28);
+  if (!starts.length) return { starts, lens, avgLen, last: null };
+  const last = starts[starts.length - 1];
+  const day = diffDays(ref, last) + 1;
+  const next = addDays(last, avgLen);
+  const ov = addDays(next, -14);
+  const fertFrom = addDays(ov, -5), fertTo = addDays(ov, 1);
+  let phase;
+  if (day <= (p.periodLength || 5)) phase = '월경기';
+  else if (ref >= fertFrom && ref <= fertTo) phase = '배란기 (추정)';
+  else if (ref < fertFrom) phase = '난포기';
+  else phase = '황체기';
+  let upOv = ov;
+  while (addDays(upOv, 1) < ref) upOv = addDays(upOv, avgLen);
+  return { starts, lens, avgLen, last, day, next, ov, fertFrom, fertTo, phase, dLeft: diffDays(next, ref), upOv, upFrom: addDays(upOv, -5), upTo: addDays(upOv, 1) };
+}
+function predictedSets(p, ci) {
+  const period = new Set(), fert = new Set(), ov = new Set();
+  if (!ci || !ci.last) return { period, fert, ov };
+  const t = today();
+  let start = ci.next;
+  while (start < t) start = addDays(start, ci.avgLen);
+  for (let c = 0; c < 3; c++) {
+    const s = c === 0 ? start : addDays(start, ci.avgLen * c);
+    for (let i = 0; i < (p.periodLength || 5); i++) period.add(addDays(s, i));
+    const o = addDays(s, -14);
+    ov.add(o);
+    for (let i = -5; i <= 1; i++) fert.add(addDays(o, i));
+  }
+  if (ci.next > t) { const o = ci.ov; ov.add(o); for (let i = -5; i <= 1; i++) fert.add(addDays(o, i)); }
+  return { period, fert, ov };
+}
+
+/* ---------- 화면: 시작 ---------- */
+function viewWelcome() {
+  return `<section class="welcome">
+    <h2>매일 1분, 내 몸 상태를 한곳에 적어 두는 수첩</h2>
+    <p class="hint" style="font-size:14.5px">영양제, 식단, 물, 커피·술·담배, 수면, 컨디션, 생리 주기, 운동·체중을 하루 단위로 기록하고 2주 흐름을 그래프로 봐요. 가족이나 친구도 사용자로 따로 추가할 수 있어요.</p>
+    <div class="card" data-c="cond">
+      <header><h2>나부터 등록하기</h2></header>
+      <div class="formgrid">
+        <label class="field"><span>이름 또는 별명</span><input id="w-name" maxlength="20" placeholder="예: 지수"></label>
+        <label class="field"><span>출생연도 (선택)</span><input id="w-year" type="number" inputmode="numeric" placeholder="1997"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="w-cycle" checked> 생리 주기도 기록할게요</label>
+      <div class="row"><button class="btn primary" data-act="start">시작하기</button>
+      <button class="btn" data-act="demo">예시 기록으로 먼저 둘러보기</button></div>
+      <p class="hint">예시는 2~3주치 가짜 기록이 들어간 '예시' 사용자로 만들어져요. 사용자 탭에서 언제든 지울 수 있어요.</p>
+    </div>
+    <ul>
+      <li>${Store.mode === 'account' ? '기록은 내 Claude 계정에 저장돼서 다른 기기에서 열어도 그대로 보여요.' : '기록은 이 기기 브라우저에만 저장돼요. 사용자 탭의 백업으로 옮길 수 있어요.'}</li>
+      <li>의료 진단 도구가 아니에요. 몸이 계속 안 좋으면 병원 상담을 받아 주세요.</li>
+    </ul>
+  </section>`;
+}
+
+/* ---------- 화면: 오늘 ---------- */
+function scaleHtml(field, val, labels) {
+  return `<div class="scale" role="group">${labels.map((l, i) => {
+    const on = val === i + 1;
+    return `<button type="button" data-act="scale" data-f="${field}" data-v="${i + 1}" class="${on ? 'on' : ''}" aria-pressed="${on}">${l}</button>`;
+  }).join('')}</div>`;
+}
+function chipsHtml(list, selected, opts) {
+  const sel = selected || [];
+  return `<div class="chips">${opts.map(o => {
+    const on = sel.includes(o);
+    return `<button type="button" class="chip ${on ? 'on' : ''}" data-act="chip" data-list="${list}" data-v="${esc(o)}" aria-pressed="${on}">${esc(o)}</button>`;
+  }).join('')}</div>`;
+}
+function pill(label, value, state) { return `<div class="pill ${state || ''}"><small>${label}</small><b>${value}</b></div>`; }
+
+function viewToday() {
+  const p = P(), d = S.date, r = getDay(d), t = today();
+  const goal = p.waterGoal || 8, water = r.water || 0;
+  const sm = sleepMin(r.sleep);
+  const supps = p.supplements || [];
+  const taken = supps.filter(s => r.supps && r.supps[s.id]).length;
+  const caf = sum(r.caffeine, x => x.mg);
+  const alc = round1(sum(r.alcohol, x => x.g));
+  let weekAlc = 0;
+  for (let i = 0; i < 7; i++) weekAlc += sum(getDay(addDays(d, -i)).alcohol, x => x.g);
+  weekAlc = round1(weekAlc);
+  const cafLimit = p.caffeineLimit || 400;
+  const ci = p.trackCycle ? cycleInfo(p, d) : null;
+  const rel = d === t ? '오늘' : `${-diffDays(d, t)}일 전 기록`;
+
+  const sleepState = sm == null ? 'empty' : sm >= p.sleepGoal * 60 - 30 ? 'good' : sm < (p.sleepGoal - 1.5) * 60 ? 'bad' : 'warn';
+  const summary = `<div class="summary">
+    ${pill('물', `${water}/${goal}잔`, water === 0 ? 'empty' : water >= goal ? 'good' : '')}
+    ${pill('수면', sm == null ? '기록 전' : fmtMin(sm), sleepState)}
+    ${supps.length ? pill('영양제', `${taken}/${supps.length}`, taken === supps.length ? 'good' : taken ? '' : 'empty') : ''}
+    ${pill('카페인', `${caf}mg`, caf > cafLimit ? 'bad' : caf ? '' : 'empty')}
+    ${pill('기분', r.mood ? SCALES.mood[r.mood - 1] : '기록 전', r.mood ? (r.mood >= 4 ? 'good' : r.mood <= 2 ? 'warn' : '') : 'empty')}
+    ${ci && ci.last ? pill('주기', `${ci.day}일째`, '') : ''}
+  </div>`;
+
+  const cups = [];
+  for (let i = 0; i < Math.max(goal, water); i++) cups.push(`<span class="cup ${i < water ? 'on' : ''} ${i >= goal ? 'extra' : ''}"></span>`);
+
+  const byTime = SUPP_TIMES.map(tm => ({ tm, list: supps.filter(s => s.time === tm) })).filter(g => g.list.length);
+  const other = supps.filter(s => !SUPP_TIMES.includes(s.time));
+  if (other.length) byTime.push({ tm: '기타', list: other });
+
+  return `
+  <div class="daybar">
+    <button class="iconbtn" data-act="day" data-v="-1" aria-label="전날">‹</button>
+    <div class="lbl"><strong>${fmtDate(d)}</strong><span>${esc(p.name)}의 ${rel}</span></div>
+    <button class="iconbtn" data-act="day" data-v="1" aria-label="다음 날" ${d >= t ? 'disabled' : ''}>›</button>
+    ${d !== t ? '<button class="btn small" data-act="gotoday">오늘로</button>' : ''}
+  </div>
+  ${summary}
+  <div class="cards">
+    <section class="card" data-c="cond">
+      <header><h2>컨디션</h2></header>
+      <p class="sub">기분</p>${scaleHtml('mood', r.mood, SCALES.mood)}
+      <p class="sub">에너지</p>${scaleHtml('energy', r.energy, SCALES.energy)}
+      <p class="sub">스트레스</p>${scaleHtml('stress', r.stress, SCALES.stress)}
+      <p class="sub">몸 신호</p>${chipsHtml('symptoms', r.symptoms, SYMPTOMS)}
+      <textarea class="note" data-field="note" id="f-note" rows="2" placeholder="한 줄 메모 (예: 오후에 두통, 수업 후 피곤)">${esc(r.note)}</textarea>
+    </section>
+
+    <section class="card" data-c="water">
+      <header><h2>물</h2><span class="meta">1잔 = 250ml</span></header>
+      <div class="stepper">
+        <button class="iconbtn" data-act="water" data-v="-1" aria-label="한 잔 빼기">−</button>
+        <div class="big">${water}<small>/ ${goal}잔 · ${(water * 0.25).toFixed(2).replace(/0$/, '')}L</small></div>
+        <button class="iconbtn" data-act="water" data-v="1" aria-label="한 잔 더하기">+</button>
+      </div>
+      <div class="cups" aria-hidden="true">${cups.join('')}</div>
+      <p class="hint">커피·술은 물로 치지 않아요. 목표 잔 수는 사용자 탭에서 바꿀 수 있어요.</p>
+    </section>
+
+    <section class="card" data-c="sleep">
+      <header><h2>수면</h2><span class="meta">${sm == null ? `목표 ${p.sleepGoal}시간` : `${fmtMin(sm)} / 목표 ${p.sleepGoal}시간`}</span></header>
+      <div class="row">
+        <label class="field"><span>어젯밤 잠든 시각</span><input type="time" id="f-bed" data-field="sleep.bed" value="${esc(getPath(r, 'sleep.bed') || '')}"></label>
+        <label class="field"><span>오늘 일어난 시각</span><input type="time" id="f-wake" data-field="sleep.wake" value="${esc(getPath(r, 'sleep.wake') || '')}"></label>
+      </div>
+      <p class="sub">잠의 질</p>${scaleHtml('sleepQ', r.sleepQ, SCALES.sleepQ)}
+    </section>
+
+    <section class="card" data-c="supp">
+      <header><h2>영양제</h2><span class="meta">${supps.length ? `${taken}/${supps.length} 먹음` : ''}</span></header>
+      ${supps.length ? byTime.map(g => `<p class="sub">${g.tm}</p><div class="supps">${g.list.map(s => {
+        const on = !!(r.supps && r.supps[s.id]);
+        return `<button type="button" class="supp ${on ? 'on' : ''}" data-act="supp" data-id="${s.id}" aria-pressed="${on}">
+          <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(s.name)}</span><span class="tm">${esc(s.dose || '')}</span></button>`;
+      }).join('')}</div>`).join('') + `<div class="row"><button class="btn small" data-act="suppall">전부 먹었어요</button></div>`
+      : `<p class="hint">아직 등록한 영양제가 없어요.</p><div class="row"><button class="btn small" data-tab="profile">사용자 탭에서 영양제 등록하기</button></div>`}
+    </section>
+
+    <section class="card" data-c="food">
+      <header><h2>식단</h2></header>
+      <div class="meals">
+        ${[['breakfast', '아침'], ['lunch', '점심'], ['dinner', '저녁'], ['snack', '간식']].map(([k, l]) =>
+          `<label for="f-${k}">${l}</label><input id="f-${k}" data-field="meals.${k}" value="${esc(getPath(r, 'meals.' + k) || '')}" placeholder="${k === 'lunch' ? '예: 급식 (잡곡밥, 된장국, 불고기)' : ''}">`).join('')}
+      </div>
+      <p class="sub">오늘 식사 특징</p>${chipsHtml('foodTags', r.foodTags, FOOD_TAGS)}
+    </section>
+
+    <section class="card" data-c="caf">
+      <header><h2>커피 · 술 · 담배</h2></header>
+      <div class="split">
+        <div class="row" style="justify-content:space-between"><p class="sub">카페인</p><span class="hint">${caf}mg / 하루 한도 ${cafLimit}mg</span></div>
+        <div class="meter ${caf > cafLimit ? 'over' : ''}"><i style="width:${Math.min(100, caf / cafLimit * 100)}%"></i></div>
+        <div class="addrow">${CAFFEINE.map(c => `<button type="button" data-act="caf" data-k="${c.k}">+ ${c.label}<small>${c.mg}</small></button>`).join('')}</div>
+        ${(r.caffeine || []).length ? `<div class="chips">${r.caffeine.map((x, i) => `<button type="button" class="chip" data-act="cafdel" data-i="${i}" aria-label="${esc(labelOf(CAFFEINE, x.k))} 지우기">${esc(labelOf(CAFFEINE, x.k))}<span class="x">×</span></button>`).join('')}</div>` : ''}
+      </div>
+      <div class="split" style="--c:var(--c-alc)">
+        <div class="row" style="justify-content:space-between"><p class="sub">술</p><span class="hint">오늘 알코올 ${alc}g · 최근 7일 ${weekAlc}g${p.alcoholWeekLimit ? ` / 목표 ${p.alcoholWeekLimit}g` : ''}</span></div>
+        <div class="addrow">${ALCOHOL.map(a => `<button type="button" data-act="alc" data-k="${a.k}">+ ${a.label}<small>${a.g}g</small></button>`).join('')}</div>
+        ${(r.alcohol || []).length ? `<div class="chips">${r.alcohol.map((x, i) => `<button type="button" class="chip" data-act="alcdel" data-i="${i}" aria-label="${esc(labelOf(ALCOHOL, x.k))} 지우기">${esc(labelOf(ALCOHOL, x.k))}<span class="x">×</span></button>`).join('')}</div>` : ''}
+      </div>
+      <div class="split" style="--c:var(--muted)">
+        <div class="row" style="justify-content:space-between"><p class="sub">담배</p>
+          <div class="stepper"><button class="iconbtn" data-act="cig" data-v="-1" aria-label="한 개비 빼기">−</button><span class="big" style="font-size:22px">${r.cigs || 0}<small>개비</small></span><button class="iconbtn" data-act="cig" data-v="1" aria-label="한 개비 더하기">+</button></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" data-c="move">
+      <header><h2>운동 · 몸</h2></header>
+      <div class="formgrid">
+        <label class="field"><span>운동 종류</span><input id="f-ex" data-field="exercise.type" value="${esc(getPath(r, 'exercise.type') || '')}" placeholder="예: 걷기, 필라테스"></label>
+        <label class="field"><span>운동 시간 (분)</span><input type="number" inputmode="numeric" min="0" id="f-exmin" data-field="exercise.min" value="${getPath(r, 'exercise.min') ?? ''}"></label>
+        <label class="field"><span>걸음 수</span><input type="number" inputmode="numeric" min="0" id="f-steps" data-field="exercise.steps" value="${getPath(r, 'exercise.steps') ?? ''}"></label>
+        <label class="field"><span>체중 (kg)</span><input type="number" inputmode="decimal" step="0.1" min="0" id="f-weight" data-field="weight" value="${r.weight ?? ''}"></label>
+      </div>
+    </section>
+
+    ${p.trackCycle ? `<section class="card" data-c="cycle">
+      <header><h2>생리</h2><span class="meta">${ci && ci.last ? `${ci.day}일째 · ${ci.phase}` : ''}</span></header>
+      <p class="sub">이날 생리 양</p>
+      <div class="scale" role="group">${FLOW.map((l, i) => {
+        const on = ((p.periods || {})[d] || 0) === i;
+        return `<button type="button" data-act="period" data-v="${i}" class="${on ? 'on' : ''}" aria-pressed="${on}">${l}</button>`;
+      }).join('')}</div>
+      <p class="hint">${ci && ci.last ? (ci.dLeft > 0 ? `다음 생리 예정일은 ${fmtDate(ci.next)}, ${ci.dLeft}일 남았어요.` : ci.dLeft === 0 ? '오늘이 생리 예정일이에요.' : `예정일(${fmtShort(ci.next)})이 ${-ci.dLeft}일 지났어요. 시작하면 여기에 표시해 주세요.`) : '생리가 시작된 날에 양을 표시하면 다음 예정일을 계산해 드려요.'}</p>
+    </section>` : ''}
+  </div>`;
+}
+const labelOf = (list, k) => (list.find(x => x.k === k) || { label: k }).label;
+
+/* ---------- 화면: 기록(그래프) ---------- */
+function bars(vals, days, { goal, fmt, label, maxMin }) {
+  const N = vals.length, step = 24, W = N * step, top = 14, ch = 78, H = top + ch + 16;
+  const present = vals.filter(v => v != null);
+  const max = Math.max(maxMin || 0, goal || 0, ...present, 1);
+  let lastIdx = -1;
+  vals.forEach((v, i) => { if (v != null) lastIdx = i; });
+  const parts = [`<line class="grid" x1="0" x2="${W}" y1="${top + ch}" y2="${top + ch}"></line>`];
+  vals.forEach((v, i) => {
+    const x = i * step + 5, bw = step - 10;
+    if (v == null || v === 0) parts.push(`<rect class="none" x="${x}" y="${top + ch - 3}" width="${bw}" height="3" rx="1.5"></rect>`);
+    else {
+      const h = Math.max(3, v / max * ch);
+      parts.push(`<rect class="bar ${i === lastIdx ? 'last' : ''}" x="${x}" y="${top + ch - h}" width="${bw}" height="${h}" rx="3"></rect>`);
+      if (i === lastIdx) parts.push(`<text class="v" x="${x + bw / 2}" y="${top + ch - h - 4}" text-anchor="middle">${fmt(v)}</text>`);
+    }
+    parts.push(`<text x="${x + bw / 2}" y="${H - 3}" text-anchor="middle">${parseD(days[i]).getDate()}</text>`);
+  });
+  if (goal) { const y = top + ch - goal / max * ch; parts.push(`<line class="goal" x1="0" x2="${W}" y1="${y}" y2="${y}"></line>`); }
+  return `<svg class="chart" viewBox="0 -4 ${W} ${H + 4}" role="img" aria-label="${esc(label)}">${parts.join('')}</svg>`;
+}
+function viewHistory() {
+  const p = P(), t = today(), N = 14;
+  const days = []; for (let i = N - 1; i >= 0; i--) days.push(addDays(t, -i));
+  const recs = days.map(getDay);
+  const sleepH = recs.map(r => { const m = sleepMin(r.sleep); return m == null ? null : round1(m / 60); });
+  const water = recs.map(r => hasAny(r) ? (r.water || 0) : null);
+  const caf = recs.map(r => hasAny(r) ? sum(r.caffeine, x => x.mg) : null);
+  const exMin = recs.map(r => getPath(r, 'exercise.min') ?? (hasAny(r) ? 0 : null));
+  const supps = p.supplements || [];
+  const suppRate = supps.length ? recs.filter(hasAny).map(r => supps.filter(s => r.supps && r.supps[s.id]).length / supps.length) : [];
+  const logged = recs.filter(hasAny).length;
+  const moodAvg = avg(recs.map(r => r.mood ?? null));
+  const alc7 = round1(recs.slice(-7).reduce((a, r) => a + sum(r.alcohol, x => x.g), 0));
+  const symptomCount = {};
+  recs.forEach(r => (r.symptoms || []).forEach(s => { symptomCount[s] = (symptomCount[s] || 0) + 1; }));
+  const topSym = Object.entries(symptomCount).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const weights = recs.map(r => r.weight ?? null).filter(v => v != null);
+
+  // 4주 컨디션 달력 (일요일 시작)
+  const calStart = addDays(t, -27 - parseD(addDays(t, -27)).getDay());
+  const cells = [];
+  for (let d = calStart; d <= t; d = addDays(d, 1)) {
+    const r = getDay(d);
+    cells.push(`<div class="d" ${r.mood ? `data-m="${r.mood}"` : ''} title="${fmtDate(d)}${r.mood ? ' · ' + SCALES.mood[r.mood - 1] : ''}">${parseD(d).getDate()}</div>`);
+  }
+
+  const tile = (label, value, note) => `<div class="pill"><small>${label}</small><b>${value}</b>${note ? `<small>${note}</small>` : ''}</div>`;
+  const a = avg(sleepH), w = avg(water), c = avg(caf);
+  return `
+  <div class="daybar"><div class="lbl"><strong>최근 2주</strong><span>${esc(p.name)} · ${fmtShort(days[0])} ~ ${fmtShort(t)} · ${logged}일 기록</span></div></div>
+  <div class="tiles">
+    ${tile('평균 수면', a == null ? '-' : `${round1(a)}시간`, `목표 ${p.sleepGoal}시간`)}
+    ${tile('평균 물', w == null ? '-' : `${round1(w)}잔`, `목표 ${p.waterGoal}잔`)}
+    ${tile('영양제 복용률', suppRate.length ? `${Math.round(avg(suppRate) * 100)}%` : '-', supps.length ? '기록한 날 기준' : '영양제 미등록')}
+    ${tile('평균 카페인', c == null ? '-' : `${Math.round(c)}mg`, `한도 ${p.caffeineLimit}mg`)}
+    ${tile('평균 기분', moodAvg == null ? '-' : SCALES.mood[Math.round(moodAvg) - 1], moodAvg == null ? '' : `5점 중 ${round1(moodAvg)}`)}
+    ${tile('최근 7일 알코올', `${alc7}g`, p.alcoholWeekLimit ? `목표 ${p.alcoholWeekLimit}g 이하` : '')}
+    ${weights.length ? tile('최근 체중', `${weights[weights.length - 1]}kg`, weights.length > 1 ? `2주 전보다 ${round1(weights[weights.length - 1] - weights[0]) >= 0 ? '+' : ''}${round1(weights[weights.length - 1] - weights[0])}kg` : '') : ''}
+  </div>
+  <div class="cards">
+    <section class="card" data-c="sleep"><header><h2>수면 시간</h2><span class="meta">점선 = 목표</span></header>
+      ${bars(sleepH, days, { goal: p.sleepGoal, fmt: v => v + 'h', label: '최근 14일 수면 시간' })}</section>
+    <section class="card" data-c="water"><header><h2>물</h2><span class="meta">잔 · 점선 = 목표</span></header>
+      ${bars(water, days, { goal: p.waterGoal, fmt: v => v + '잔', label: '최근 14일 물 섭취' })}</section>
+    <section class="card" data-c="caf"><header><h2>카페인</h2><span class="meta">mg · 점선 = 한도</span></header>
+      ${bars(caf, days, { goal: p.caffeineLimit, fmt: v => v + '', label: '최근 14일 카페인' })}</section>
+    <section class="card" data-c="move"><header><h2>운동 시간</h2><span class="meta">분</span></header>
+      ${bars(exMin, days, { maxMin: 30, fmt: v => v + '분', label: '최근 14일 운동 시간' })}</section>
+    <section class="card" data-c="cond"><header><h2>4주 기분 달력</h2></header>
+      <div class="moodcal">${WD.map(x => `<div class="wd">${x}</div>`).join('')}${cells.join('')}</div>
+      <div class="legend"><span><i style="background:var(--sunk)"></i>기록 없음</span><span><i style="background:color-mix(in srgb, var(--c-cond) 12%, var(--surface))"></i>아주 나쁨</span><span><i style="background:var(--c-cond)"></i>아주 좋음</span></div>
+    </section>
+    <section class="card" data-c="cond"><header><h2>자주 나타난 몸 신호</h2></header>
+      ${topSym.length ? `<ul class="list">${topSym.map(([s, n]) => `<li><span class="nm">${esc(s)}</span><small>${n}일</small></li>`).join('')}</ul><p class="hint">같은 신호가 반복되면 수면·카페인·생리 주기와 겹치는 날이 있는지 비교해 보세요.</p>` : '<p class="hint">2주 동안 기록된 몸 신호가 없어요.</p>'}
+    </section>
+  </div>`;
+}
+
+/* ---------- 화면: 주기 ---------- */
+function viewCycle() {
+  const p = P(), t = today();
+  if (!p.trackCycle) return `<section class="card" data-c="cycle"><header><h2>생리 주기</h2></header><p class="hint">${esc(p.name)}님은 생리 주기 기록이 꺼져 있어요.</p><div class="row"><button class="btn" data-tab="profile">사용자 탭에서 켜기</button></div></section>`;
+  const ci = cycleInfo(p, t);
+  const pred = predictedSets(p, ci);
+  const [y, m] = S.calMonth.split('-').map(Number);
+  const first = new Date(y, m - 1, 1), dim = new Date(y, m, 0).getDate();
+  const cells = [];
+  for (let i = 0; i < first.getDay(); i++) cells.push('<span class="blank"></span>');
+  for (let i = 1; i <= dim; i++) {
+    const d = `${S.calMonth}-${pad(i)}`;
+    const lv = (p.periods || {})[d] || 0;
+    const cls = [lv ? 'p' + lv : '', d > t ? 'fut' : '', d === t ? 'today' : '',
+      !lv && d > t && pred.period.has(d) ? 'pred' : '', !lv && pred.fert.has(d) && d >= t ? 'fert' : '', pred.ov.has(d) && d >= t ? 'ov' : ''].join(' ');
+    cells.push(`<button type="button" class="${cls}" data-act="caltoggle" data-date="${d}" ${d > t ? 'disabled' : ''} aria-label="${fmtDate(d)}${lv ? ' 생리 ' + FLOW[lv] : ''}">${i}</button>`);
+  }
+  const recent = ci.starts.slice(-6).map((s, i, arr) => {
+    const idx = ci.starts.indexOf(s);
+    const nextS = ci.starts[idx + 1];
+    let len = 0; for (let k = 0; k < 10; k++) if ((p.periods || {})[addDays(s, k)] > 0) len = k + 1;
+    return `<li><span class="nm">${fmtDate(s)} 시작</span><small>${len}일간${nextS ? ` · 주기 ${diffDays(nextS, s)}일` : ' · 진행 중인 주기'}</small></li>`;
+  }).reverse();
+
+  return `
+  <div class="tiles">
+    ${ci.last ? `
+    <div class="pill"><small>지금</small><b>${ci.day}일째</b><small>${ci.phase}</small></div>
+    <div class="pill ${ci.dLeft < 0 ? 'warn' : ''}"><small>다음 생리 예정</small><b>${ci.dLeft > 0 ? 'D-' + ci.dLeft : ci.dLeft === 0 ? '오늘' : `${-ci.dLeft}일 지남`}</b><small>${fmtDate(ci.next)}</small></div>
+    <div class="pill"><small>평균 주기</small><b>${ci.avgLen}일</b><small>${ci.lens.length ? `최근 ${Math.min(6, ci.lens.length)}번 평균` : '기본값 (기록이 쌓이면 바뀌어요)'}</small></div>
+    <div class="pill"><small>가임기 (추정)</small><b>${fmtShort(ci.upFrom)}~${fmtShort(ci.upTo)}</b><small>배란 예상 ${fmtShort(ci.upOv)}</small></div>`
+    : `<div class="pill empty"><small>시작하기</small><b>아래 달력에서 최근 생리한 날을 눌러 주세요</b></div>`}
+  </div>
+  <div class="cards">
+    <section class="card" data-c="cycle">
+      <header><h2>${y}년 ${m}월</h2>
+        <span class="meta row"><button class="iconbtn" data-act="cal" data-v="-1" aria-label="이전 달">‹</button><button class="iconbtn" data-act="cal" data-v="1" aria-label="다음 달">›</button></span></header>
+      <div class="cal">${WD.map(x => `<span class="wd">${x}</span>`).join('')}${cells.join('')}</div>
+      <div class="legend">
+        <span><i style="background:var(--c-cycle)"></i>생리한 날</span>
+        <span><i style="border:1.5px dashed var(--c-cycle)"></i>예정일</span>
+        <span><i style="background:color-mix(in srgb, var(--c-sleep) 16%, var(--surface))"></i>가임기(추정)</span>
+        <span><i style="border:1.5px solid var(--c-sleep)"></i>배란 예상일</span>
+      </div>
+      <p class="hint">지난 날짜를 누르면 생리한 날로 표시되고, 한 번 더 누르면 지워져요. 양은 오늘 탭에서 고를 수 있어요.</p>
+    </section>
+    <section class="card" data-c="cycle">
+      <header><h2>최근 주기</h2></header>
+      ${recent.length ? `<ul class="list">${recent.join('')}</ul>` : '<p class="hint">아직 기록이 없어요.</p>'}
+      <p class="disclaimer">예정일·가임기는 지난 기록의 평균으로 계산한 추정치예요. 피임이나 임신 계획의 근거로 쓰지 말고, 주기가 21일보다 짧거나 35일보다 길게 반복되면 산부인과 상담을 받아 보세요.</p>
+    </section>
+  </div>`;
+}
+
+/* ---------- 화면: 사용자 ---------- */
+function numField(key, label, val, attrs = '') {
+  return `<label class="field"><span>${label}</span><input type="number" inputmode="decimal" id="pf-${key}" data-pf="${key}" value="${val ?? ''}" ${attrs}></label>`;
+}
+function viewProfile() {
+  const p = P();
+  const suggest = p.weight ? Math.round(p.weight * 30 / 250) : null;
+  const inArtifact = !!(window.claude && window.claude.use);
+  return `
+  <div class="cards">
+    <section class="card" data-c="cond">
+      <header><h2>사용자</h2><span class="meta">${S.meta.profiles.length}명</span></header>
+      <div class="people">${S.meta.profiles.map(x => `<button type="button" class="chip ${x.id === p.id ? 'on' : ''}" data-act="switch" data-id="${x.id}" aria-pressed="${x.id === p.id}">${esc(x.name)}</button>`).join('')}
+        <button type="button" class="chip" data-act="addprof">+ 사용자 추가</button></div>
+      <p class="hint">가족·친구도 따로 추가할 수 있어요. 위쪽 '사용자' 칸에서 바꿔 가며 기록해요.</p>
+    </section>
+
+    <section class="card" data-c="cond">
+      <header><h2>${esc(p.name)}님의 정보와 목표</h2></header>
+      <div class="formgrid">
+        <label class="field"><span>이름 또는 별명</span><input id="pf-name" data-pf="name" maxlength="20" value="${esc(p.name)}"></label>
+        ${numField('birthYear', '출생연도', p.birthYear, 'min="1900" max="2100"')}
+        ${numField('height', '키 (cm)', p.height)}
+        ${numField('weight', '평소 체중 (kg)', p.weight)}
+        ${numField('waterGoal', '물 목표 (잔/일)', p.waterGoal, 'min="1" max="30"')}
+        ${numField('sleepGoal', '수면 목표 (시간)', p.sleepGoal, 'min="3" max="14" step="0.5"')}
+        ${numField('caffeineLimit', '카페인 한도 (mg/일)', p.caffeineLimit, 'min="0" step="10"')}
+        ${numField('alcoholWeekLimit', '술 목표 (g/주, 선택)', p.alcoholWeekLimit, 'min="0"')}
+      </div>
+      <p class="hint">${suggest ? `몸무게 기준 하루 물 권장량은 약 ${suggest}잔(체중×30ml)이에요. ` : ''}성인 카페인은 하루 400mg 이하, 임신 중이면 300mg 이하가 식약처 권고예요. 소주 1잔은 알코올 약 6.5g이에요.</p>
+      <label class="check"><input type="checkbox" id="pf-trackCycle" data-pf="trackCycle" ${p.trackCycle ? 'checked' : ''}> 생리 주기 기록하기</label>
+      ${p.trackCycle ? `<div class="formgrid">${numField('cycleLength', '평소 주기 (일)', p.cycleLength, 'min="18" max="60"')}${numField('periodLength', '생리 기간 (일)', p.periodLength, 'min="1" max="10"')}</div>
+      <p class="hint">기록이 2번 이상 쌓이면 실제 평균 주기로 자동 계산해요.</p>` : ''}
+    </section>
+
+    <section class="card" data-c="supp">
+      <header><h2>영양제 목록</h2><span class="meta">${(p.supplements || []).length}개</span></header>
+      ${(p.supplements || []).length ? `<ul class="list">${p.supplements.map(s => `<li><span class="nm">${esc(s.name)} ${s.dose ? `<small>${esc(s.dose)}</small>` : ''}</span><small>${esc(s.time)}</small>
+        <button class="btn small" data-act="delsupp" data-id="${s.id}" aria-label="${esc(s.name)} 지우기">삭제</button></li>`).join('')}</ul>` : '<p class="hint">먹고 있는 영양제·약을 등록하면 오늘 탭에 체크리스트가 생겨요.</p>'}
+      <div class="formgrid">
+        <label class="field"><span>이름</span><input id="s-name" maxlength="30" placeholder="예: 비타민D"></label>
+        <label class="field"><span>용량 (선택)</span><input id="s-dose" maxlength="20" placeholder="예: 1000IU, 1알"></label>
+        <label class="field"><span>먹는 때</span><select id="s-time">${SUPP_TIMES.map(x => `<option>${x}</option>`).join('')}</select></label>
+      </div>
+      <div class="row"><button class="btn primary" data-act="addsupp">영양제 추가</button></div>
+    </section>
+
+    <section class="card" data-c="water">
+      <header><h2>저장과 백업</h2></header>
+      <p class="hint">${Store.mode === 'account' ? '지금 기록은 내 Claude 계정에 저장되고 있어요. 다른 기기에서 이 페이지를 열어도 그대로 보여요. 나만 볼 수 있어요.' : '지금 기록은 이 기기 브라우저에만 저장돼요. 인터넷 기록을 지우거나 폰을 바꾸기 전에 백업 내용을 복사해 메모장이나 카톡 나에게 보내기에 붙여 두세요.'}</p>
+      <div class="row"><button class="btn" data-act="backup">백업 내용 만들기</button></div>
+      ${S.backup ? `<textarea class="note" id="backupOut" readonly rows="4">${esc(S.backup)}</textarea>
+        <div class="row"><button class="btn small" data-act="copy">복사하기</button>${inArtifact ? '' : '<button class="btn small" data-act="download">파일로 저장</button>'}</div>` : ''}
+      <p class="sub">백업으로 되살리기</p>
+      <textarea class="note" id="restoreIn" rows="3" placeholder="복사해 둔 백업 내용을 여기에 붙여 넣으세요"></textarea>
+      ${S.confirm === 'restore' ? `<div class="confirm"><span>지금 기록이 백업 내용으로 바뀌어요. 계속할까요?</span><div class="row"><button class="btn danger" data-act="restore-yes">되살리기</button><button class="btn" data-act="cancel">취소</button></div></div>`
+        : '<div class="row"><button class="btn small" data-act="restore-ask">되살리기</button></div>'}
+    </section>
+
+    <section class="card" data-c="alc" style="--c:var(--bad)">
+      <header><h2>${esc(p.name)} 삭제</h2></header>
+      ${S.confirm === 'delprof' ? `<div class="confirm"><span>${esc(p.name)}님의 모든 기록이 지워지고 되돌릴 수 없어요.</span><div class="row"><button class="btn danger" data-act="delprof-yes">삭제</button><button class="btn" data-act="cancel">취소</button></div></div>`
+        : `<p class="hint">이 사용자와 기록 전체를 지워요.</p><div class="row"><button class="btn danger small" data-act="delprof">사용자 삭제</button></div>`}
+    </section>
+  </div>`;
+}
+
+/* ---------- 그리기 ---------- */
+let renderSeq = 0;
+function renderHeader() {
+  const has = S.meta && S.meta.profiles.length;
+  const tabs = [['today', '오늘'], ['history', '기록'], ...(has && P().trackCycle ? [['cycle', '주기']] : []), ['profile', '사용자']];
+  $('#tabs').innerHTML = has ? tabs.map(([k, l]) => `<button type="button" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${l}</button>`).join('') : '';
+  $('#whoWrap').hidden = !has;
+  if (has) $('#who').innerHTML = S.meta.profiles.map(x => `<option value="${x.id}" ${x.id === P().id ? 'selected' : ''}>${esc(x.name)}</option>`).join('');
+  renderSync();
+}
+function renderSync() {
+  const el = $('#sync');
+  const st = Store.status;
+  if (Store.mode !== 'account') { el.className = 'sync'; el.textContent = '이 기기에 저장'; return; }
+  el.className = 'sync ' + (st === 'ok' ? 'ok' : st === 'saving' ? 'saving' : 'error');
+  el.textContent = st === 'ok' ? '계정에 저장됨' : st === 'saving' ? '저장 중…' : st === 'full' ? '저장 공간 가득 참' : '저장 실패, 다시 시도 중';
+}
+async function render() {
+  const seq = ++renderSeq;
+  const root = $('#app');
+  if (!S.meta || !S.meta.profiles.length) { root.innerHTML = viewWelcome(); renderHeader(); return; }
+  if (S.tab === 'cycle' && !P().trackCycle) S.tab = 'today';
+  if (S.tab === 'today') await ensureRange(addDays(S.date, -6), S.date);
+  if (S.tab === 'history') await ensureRange(addDays(today(), -34), today());
+  if (seq !== renderSeq) return;
+  const html = S.tab === 'history' ? viewHistory() : S.tab === 'cycle' ? viewCycle() : S.tab === 'profile' ? viewProfile() : viewToday();
+  root.innerHTML = html;
+  renderHeader();
+}
+let toastTimer;
+function toast(msg) {
+  const el = $('#toast'); el.textContent = msg; el.hidden = false;
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2400);
+}
+
+/* ---------- 예시 데이터 ---------- */
+function makeDemo() {
+  let seed = 11;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const pick = arr => arr[Math.floor(rnd() * arr.length)];
+  const p = newProfile('예시');
+  p.birthYear = 1997; p.height = 162; p.weight = 54; p.waterGoal = 7;
+  p.supplements = [
+    { id: newId(), name: '종합비타민', dose: '1알', time: '아침' },
+    { id: newId(), name: '유산균', dose: '1포', time: '아침' },
+    { id: newId(), name: '오메가3', dose: '1000mg', time: '점심' },
+    { id: newId(), name: '마그네슘', dose: '1알', time: '자기 전' },
+  ];
+  const t = today();
+  [-83, -55, -27].forEach((off, ci) => { for (let i = 0; i < 5; i++) p.periods[addDays(t, off + i)] = [2, 3, 2, 1, 1][i] - (ci === 1 && i === 1 ? 1 : 0); });
+  S.meta.profiles.push(p); S.meta.activeId = p.id;
+  const meals = { breakfast: ['요거트, 바나나', '토스트, 커피', '', '삶은 달걀 2개'], lunch: ['급식 (현미밥, 미역국, 제육)', '급식 (카레, 샐러드)', '급식 (비빔밥, 된장국)'], dinner: ['닭가슴살 샐러드', '김치찌개, 밥', '떡볶이 (배달)', '연어 포케', '라면'], snack: ['', '과자', '아이스크림', '견과류'] };
+  for (let i = 20; i >= 0; i--) {
+    const d = addDays(t, -i);
+    if (i > 0 && rnd() < 0.12) continue;
+    editDay(d, r => {
+      const tired = rnd();
+      r.mood = 2 + Math.floor(rnd() * 4); r.energy = 1 + Math.floor(rnd() * 5); r.stress = 1 + Math.floor(rnd() * 4);
+      if (tired < 0.35) r.symptoms = [pick(['피로', '두통', '소화불량', '피부 트러블'])];
+      const bedM = 23 * 60 + Math.floor(rnd() * 120) - 30, sleepLen = 300 + Math.floor(rnd() * 150);
+      const wakeM = (bedM + sleepLen) % 1440;
+      r.sleep = { bed: `${pad(Math.floor(bedM / 60) % 24)}:${pad(bedM % 60 - bedM % 5)}`, wake: `${pad(Math.floor(wakeM / 60))}:${pad(wakeM % 60 - wakeM % 5)}` };
+      r.sleepQ = 2 + Math.floor(rnd() * 4);
+      r.water = i === 0 ? 3 : 3 + Math.floor(rnd() * 6);
+      r.supps = {}; p.supplements.forEach(s => { if (rnd() < (i === 0 ? 0.5 : 0.75)) r.supps[s.id] = true; });
+      r.meals = { breakfast: pick(meals.breakfast), lunch: pick(meals.lunch) };
+      if (i > 0) { r.meals.dinner = pick(meals.dinner); r.meals.snack = pick(meals.snack); }
+      r.foodTags = rnd() < 0.5 ? ['채소·과일'] : ['배달·외식'];
+      r.caffeine = [{ k: 'americano', mg: 150 }]; if (rnd() < 0.4) r.caffeine.push({ k: pick(['latte', 'mix', 'tea']), mg: 50 + Math.floor(rnd() * 3) * 50 });
+      r.caffeine = r.caffeine.map(x => ({ k: x.k, mg: (CAFFEINE.find(c => c.k === x.k) || x).mg }));
+      if (rnd() < 0.18) r.alcohol = [{ k: 'beer', g: ALCOHOL[1].g }, { k: 'soju', g: ALCOHOL[0].g }];
+      if (rnd() < 0.5) r.exercise = { type: pick(['걷기', '필라테스', '홈트']), min: 20 + Math.floor(rnd() * 5) * 10, steps: 4000 + Math.floor(rnd() * 7000) };
+      if (i % 3 === 0) r.weight = round1(54 + (rnd() - 0.5) * 1.2);
+      if (i === 0) r.note = '예시 기록이에요. 지우려면 사용자 탭에서 예시 사용자를 삭제하세요.';
+    });
+  }
+  saveMeta();
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener('click', async e => {
+  const b = e.target.closest('[data-act],[data-tab]');
+  if (!b || b.disabled) return;
+  if (b.dataset.tab) { S.tab = b.dataset.tab; S.confirm = null; await render(); window.scrollTo(0, 0); return; }
+  const a = b.dataset.act, d = S.date, n = Number(b.dataset.v);
+  const p = S.meta && S.meta.profiles.length ? P() : null;
+  switch (a) {
+    case 'day': { const nd = addDays(d, n); S.date = nd > today() ? today() : nd; break; }
+    case 'gotoday': S.date = today(); break;
+    case 'scale': editDay(d, r => { r[b.dataset.f] = r[b.dataset.f] === n ? undefined : n; }); break;
+    case 'chip': editDay(d, r => { const arr = r[b.dataset.list] || []; const i = arr.indexOf(b.dataset.v); if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.v); r[b.dataset.list] = arr; }); break;
+    case 'water': editDay(d, r => { r.water = Math.max(0, (r.water || 0) + n); }); break;
+    case 'supp': editDay(d, r => { r.supps = r.supps || {}; if (r.supps[b.dataset.id]) delete r.supps[b.dataset.id]; else r.supps[b.dataset.id] = true; }); break;
+    case 'suppall': editDay(d, r => { r.supps = {}; p.supplements.forEach(s => { r.supps[s.id] = true; }); }); break;
+    case 'caf': { const c = CAFFEINE.find(x => x.k === b.dataset.k); editDay(d, r => { (r.caffeine = r.caffeine || []).push({ k: c.k, mg: c.mg }); }); break; }
+    case 'cafdel': editDay(d, r => { (r.caffeine || []).splice(Number(b.dataset.i), 1); }); break;
+    case 'alc': { const c = ALCOHOL.find(x => x.k === b.dataset.k); editDay(d, r => { (r.alcohol = r.alcohol || []).push({ k: c.k, g: c.g }); }); break; }
+    case 'alcdel': editDay(d, r => { (r.alcohol || []).splice(Number(b.dataset.i), 1); }); break;
+    case 'cig': editDay(d, r => { r.cigs = Math.max(0, (r.cigs || 0) + n); }); break;
+    case 'period': { p.periods = p.periods || {}; if (n > 0) p.periods[d] = n; else delete p.periods[d]; saveMeta(); break; }
+    case 'cal': { const [y, m] = S.calMonth.split('-').map(Number); const dt = new Date(y, m - 1 + n, 1); S.calMonth = `${dt.getFullYear()}-${pad(dt.getMonth() + 1)}`; break; }
+    case 'caltoggle': { const dd = b.dataset.date; p.periods = p.periods || {}; if (p.periods[dd]) delete p.periods[dd]; else p.periods[dd] = 2; saveMeta(); break; }
+    case 'switch': S.meta.activeId = b.dataset.id; S.confirm = null; saveMeta(); break;
+    case 'addprof': { const np = newProfile(`사용자 ${S.meta.profiles.length + 1}`); S.meta.profiles.push(np); S.meta.activeId = np.id; saveMeta(); toast('새 사용자를 만들었어요. 이름을 바꿔 주세요.'); break; }
+    case 'addsupp': {
+      const name = $('#s-name').value.trim();
+      if (!name) { toast('영양제 이름을 적어 주세요.'); $('#s-name').focus(); return; }
+      p.supplements.push({ id: newId(), name, dose: $('#s-dose').value.trim(), time: $('#s-time').value });
+      saveMeta(); toast(`${name}을(를) 추가했어요.`); break;
+    }
+    case 'delsupp': p.supplements = p.supplements.filter(s => s.id !== b.dataset.id); saveMeta(); break;
+    case 'delprof': S.confirm = 'delprof'; break;
+    case 'restore-ask': if (!$('#restoreIn').value.trim()) { toast('먼저 백업 내용을 붙여 넣어 주세요.'); return; } S.restoreText = $('#restoreIn').value; S.confirm = 'restore'; break;
+    case 'cancel': S.confirm = null; break;
+    case 'delprof-yes': {
+      const id = p.id;
+      S.meta.profiles = S.meta.profiles.filter(x => x.id !== id);
+      S.meta.activeId = S.meta.profiles[0] ? S.meta.profiles[0].id : null;
+      S.confirm = null; saveMeta();
+      (await Store.keys()).filter(k => k.startsWith(`d.${id}.`)).forEach(k => Store.remove(k));
+      toast('사용자를 삭제했어요.'); S.tab = S.meta.profiles.length ? 'profile' : 'today'; break;
+    }
+    case 'restore-yes': {
+      try {
+        const data = JSON.parse(S.restoreText || '');
+        if (!data || data.app !== 'healthbook' || !data.data || !data.data.meta) throw new Error('형식');
+        Object.entries(data.data).forEach(([k, v]) => { if (k === 'meta' || k.startsWith('d.')) Store.set(k, v); });
+        S.meta = normalize(JSON.parse(JSON.stringify(data.data.meta))); saveMeta();
+        S.confirm = null; S.restoreText = ''; toast('백업으로 되살렸어요.');
+      } catch (err) { S.confirm = null; toast('백업 내용을 읽지 못했어요. 처음부터 끝까지 빠짐없이 붙여 넣었는지 확인해 주세요.'); }
+      break;
+    }
+    case 'backup': {
+      const out = {};
+      for (const k of await Store.keys()) { if (k === 'meta' || k.startsWith('d.')) { const v = await Store.get(k); if (v != null) out[k] = v; } }
+      S.backup = JSON.stringify({ app: 'healthbook', v: 1, exportedAt: new Date().toISOString(), data: out });
+      break;
+    }
+    case 'copy': {
+      const ta = $('#backupOut');
+      try { await navigator.clipboard.writeText(S.backup); toast('복사했어요. 메모장에 붙여 두세요.'); }
+      catch (err) { ta.focus(); ta.select(); toast('글자가 선택됐어요. 길게 눌러 복사해 주세요.'); }
+      return;
+    }
+    case 'download': {
+      const url = URL.createObjectURL(new Blob([S.backup], { type: 'application/json' }));
+      const link = document.createElement('a'); link.href = url; link.download = `건강수첩-백업-${today()}.json`; link.click();
+      setTimeout(() => URL.revokeObjectURL(url), 2000); return;
+    }
+    case 'start': {
+      S.meta = normalize(S.meta);
+      const np = newProfile(($('#w-name').value.trim() || '나').slice(0, 20));
+      const yv = Number($('#w-year').value); if (yv > 1900) np.birthYear = yv;
+      np.trackCycle = $('#w-cycle').checked;
+      S.meta.profiles.push(np); S.meta.activeId = np.id; saveMeta();
+      S.tab = 'today'; toast(`${np.name}님, 환영해요. 영양제는 사용자 탭에서 등록해요.`); break;
+    }
+    case 'demo': S.meta = normalize(S.meta); makeDemo(); S.tab = 'today'; S.date = today(); break;
+    default: return;
+  }
+  render();
+});
+document.addEventListener('input', e => {
+  const el = e.target;
+  if (el.dataset.field && el.type !== 'time' && el.type !== 'number') editDay(S.date, r => setPath(r, el.dataset.field, el.value));
+});
+document.addEventListener('change', e => {
+  const el = e.target;
+  if (el.id === 'who') { S.meta.activeId = el.value; S.confirm = null; saveMeta(); render(); return; }
+  if (el.dataset.field && (el.type === 'time' || el.type === 'number')) {
+    const val = el.type === 'number' ? (el.value === '' ? undefined : Number(el.value)) : el.value;
+    editDay(S.date, r => setPath(r, el.dataset.field, val)); render(); return;
+  }
+  if (el.dataset.pf) {
+    const p = P(), k = el.dataset.pf;
+    if (el.type === 'checkbox') p[k] = el.checked;
+    else if (el.type === 'number') p[k] = el.value === '' ? null : Number(el.value);
+    else p[k] = el.value.trim().slice(0, 20) || p[k];
+    saveMeta(); render();
+  }
+});
+
+/* ---------- 시작 ---------- */
+Store.onStatus(renderSync);
+(async function boot() {
+  S.meta = normalize(await Store.get('meta'));
+  await render();
+  if (await Store.connect()) {
+    S.meta = normalize(await Store.get('meta'));
+    await render();
+    Store.migrateLocal();
+  }
+})();
+</script>
+</body>
+</html>
