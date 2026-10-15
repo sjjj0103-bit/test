@@ -182,7 +182,7 @@ main.wrap { padding-block: 8px calc(100px + env(safe-area-inset-bottom, 0px)); d
 .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; flex: 1 1 130px; }
 .field > span { font-size: 13px; color: var(--muted); }
-.card > .field, .card > .row > .field { flex: none; width: 100%; }
+.card > .field, .card > .row > .field, .sheet > .field { flex: none; width: 100%; }
 .field input, .field select, .field textarea, textarea.note, .meals input {
   width: 100%; border: 0; background: var(--sunk); border-radius: 12px; padding: 11px 12px;
   min-width: 0; font-size: 16px; min-height: 44px;
@@ -401,6 +401,36 @@ textarea { resize: vertical; min-height: 72px; }
 .supp .nm small { display: block; font-size: 12px; color: var(--muted); text-decoration: none; }
 .habit-group { display: flex; flex-direction: column; gap: 8px; }
 .done-msg { background: var(--sunk); border-radius: 14px; padding: 10px 14px; font-size: 14px; font-weight: 500; text-align: center; }
+/* Quick add: floating button + bottom sheet */
+.fab {
+  position: fixed; z-index: 7; right: max(16px, env(safe-area-inset-right, 0px));
+  bottom: calc(76px + env(safe-area-inset-bottom, 0px));
+  width: 56px; height: 56px; border-radius: 50%; border: 0; background: var(--ink); color: var(--on-ink);
+  font-size: 30px; font-weight: 300; line-height: 1; display: grid; place-items: center;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, .22);
+}
+.fab:active { transform: scale(.94); }
+.scrim { position: fixed; inset: 0; z-index: 20; background: rgba(0, 0, 0, .32); animation: fade .2s ease; }
+.sheet {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 21; max-height: 86%; overflow-y: auto;
+  background: var(--surface); border-radius: 22px 22px 0 0;
+  padding: 10px max(20px, env(safe-area-inset-right, 0px)) calc(24px + env(safe-area-inset-bottom, 0px)) max(20px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; animation: rise .25s ease;
+  max-width: 640px; margin: 0 auto;
+}
+.sheet .grab { width: 38px; height: 5px; border-radius: 3px; background: var(--line); margin: 0 auto 4px; }
+.sheet h2 { margin: 0; font: 700 22px/1.25 var(--f-display); letter-spacing: -0.025em; }
+.sheet .head { display: flex; align-items: center; gap: 8px; }
+.sheet .head h2 { flex: 1; }
+.menu { display: flex; flex-direction: column; background: var(--bg); border-radius: 14px; overflow: hidden; }
+.menu button { display: flex; align-items: center; gap: 12px; border: 0; background: none; padding: 14px 16px; min-height: 54px; text-align: left; border-bottom: .5px solid var(--hair); font-size: 16px; }
+.menu button:last-child { border-bottom: 0; }
+.menu button span { flex: 1; }
+.menu button small { color: var(--muted); font-size: 13px; }
+.menu svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; flex: none; }
+.chip .x { cursor: pointer; }
+@keyframes rise { from { transform: translateY(40px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
 .disclaimer { font-size: 12.5px; color: var(--muted); margin: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -418,6 +448,8 @@ textarea { resize: vertical; min-height: 72px; }
 </header>
 <main class="wrap" id="app"></main>
 <nav class="tabbar" id="tabs" aria-label="메뉴" hidden></nav>
+<button class="fab" id="fab" type="button" data-act="sheet" data-v="menu" aria-label="빠르게 추가하기" hidden>＋</button>
+<div id="sheetRoot"></div>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -1045,13 +1077,13 @@ function viewToday() {
   ${summary}
   <div class="cards">
     <section class="card">
-      <header><h2>작은 습관</h2><span class="meta">${habits.length ? `${habits.filter(h => r.habits && r.habits[h.id]).length}/${habits.length}` : ''}</span></header>
+      <header><h2>작은 습관</h2><span class="meta row">${habits.length ? `${habits.filter(h => r.habits && r.habits[h.id]).length}/${habits.length}` : ''}<button class="btn small" data-act="sheet" data-v="habit">+ 추가</button></span></header>
       ${habits.length ? HABIT_SLOTS.map(sl => { const list = habits.filter(h => (HABIT_SLOTS.includes(h.slot) ? h.slot : '언제든') === sl); return list.length ? `<div class="habit-group"><p class="sub">${sl}</p><div class="supps">${list.map(h => {
         const on = !!(r.habits && r.habits[h.id]);
         const n = streak(x => !!(x.habits && x.habits[h.id]), d);
         return `<button type="button" class="supp ${on ? 'on' : ''} ${S.popId === h.id ? 'pop' : ''}" data-act="habit" data-id="${h.id}" aria-pressed="${on}">
           <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(h.name)}</span><span class="streak">${n ? `<b>${n}일</b> 연속` : ''}</span></button>`;
-      }).join('')}</div></div>` : ''; }).join('') + (habits.every(h => r.habits && r.habits[h.id]) ? '<div class="done-msg">오늘 습관을 모두 해냈어요. 정말 잘했어요!</div>' : '') + '<div class="row"><button class="btn small" data-tab="profile">습관 더 고르기</button></div>'
+      }).join('')}</div></div>` : ''; }).join('') + (habits.every(h => r.habits && r.habits[h.id]) ? '<div class="done-msg">오늘 습관을 모두 해냈어요. 정말 잘했어요!</div>' : '') + '<div class="row"><button class="btn small" data-act="sheet" data-v="habit">습관 더 고르기</button></div>'
       : `<p class="hint">5분 안에 끝나는 것부터 골라 보세요. 나 탭에서 30가지가 넘는 습관 중에 고르거나 직접 만들 수 있어요.</p>
       <div class="chips">${['일어나자마자 물 한 잔', '10분 걷기', '아침 햇빛 10분', '채소 반찬 2번 먹기', '감사한 일 1개 적기', '자기 전 폰 내려놓기', '가계부 쓰기'].map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>`}
     </section>
@@ -1095,13 +1127,13 @@ function viewToday() {
     </section>
 
     <section class="card" data-c="supp">
-      <header><h2>영양제</h2><span class="meta">${supps.length ? `${taken}/${supps.length} 먹음` : ''}</span></header>
+      <header><h2>영양제</h2><span class="meta row">${supps.length ? `${taken}/${supps.length} 먹음` : ''}<button class="btn small" data-act="sheet" data-v="supp">+ 추가</button></span></header>
       ${supps.length ? byTime.map(g => `<p class="sub">${g.tm}</p><div class="supps">${g.list.map(s => {
         const on = !!(r.supps && r.supps[s.id]);
         return `<button type="button" class="supp ${on ? 'on' : ''}" data-act="supp" data-id="${s.id}" aria-pressed="${on}">
           <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(s.name)}${(() => { const info = matchSupp(s.name); return info && !info.best.includes(s.time) ? `<small>${info.best.join('·')}에 먹는 게 더 좋아요</small>` : ''; })()}${typeof (r.supps || {})[s.id] === 'string' ? `<small>${r.supps[s.id]}에 먹음</small>` : ''}</span><span class="tm">${esc(s.dose || '')}</span></button>`;
       }).join('')}</div>`).join('') + `<div class="row"><button class="btn small" data-act="suppall">전부 먹었어요</button></div>`
-      : `<p class="hint">아직 등록한 영양제가 없어요. 가이드 탭에서 나에게 맞는 영양제와 먹을 시간을 추천받을 수 있어요.</p><div class="row"><button class="btn small" data-tab="guide">추천 보기</button><button class="btn small" data-tab="profile">직접 등록하기</button></div>`}
+      : `<p class="hint">아직 등록한 영양제가 없어요. 가이드 탭에서 나에게 맞는 영양제와 먹을 시간을 추천받을 수 있어요.</p><div class="row"><button class="btn small" data-tab="guide">추천 보기</button><button class="btn small" data-act="sheet" data-v="supp">바로 추가하기</button></div>`}
     </section>
 
     <section class="card" data-c="food">
@@ -1236,6 +1268,45 @@ function viewHistory() {
       ${topSym.length ? `<ul class="list">${topSym.map(([s, n]) => `<li><span class="nm">${esc(s)}</span><small>${n}일</small></li>`).join('')}</ul><p class="hint">같은 신호가 반복되면 수면·카페인·생리 주기와 겹치는 날이 있는지 비교해 보세요.</p>` : '<p class="hint">2주 동안 기록된 몸 신호가 없어요.</p>'}
     </section>
   </div>`;
+}
+
+/* ---------- 빠른 추가 시트 ---------- */
+const SUPP_PRESETS = ['비타민D', '오메가3', '마그네슘', '유산균', '종합비타민', '비타민C', '비타민B', '철분', '칼슘', '루테인'];
+function viewSheet() {
+  if (!S.sheet || !S.meta || !S.meta.profiles.length) return '';
+  const p = P();
+  const head = (title, back) => `<div class="grab"></div><div class="head">${back ? '<button class="iconbtn" data-act="sheet" data-v="menu" aria-label="뒤로">‹</button>' : ''}<h2>${title}</h2><button class="btn small" data-act="sheet" data-v="" >닫기</button></div>`;
+  let body = '';
+  if (S.sheet === 'menu') {
+    const ic = d => `<svg viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+    body = head('무엇을 추가할까요?') + `<div class="menu">
+      <button data-act="sheet" data-v="habit">${ic('<circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.2l2.6 2.6 4.9-5.4"/>')}<span>작은 습관 추가</span><small>${(p.habits || []).length}개</small></button>
+      <button data-act="sheet" data-v="supp">${ic('<rect x="3.5" y="9" width="17" height="7" rx="3.5" transform="rotate(-35 12 12.5)"/><path d="M9.6 8.9l4.8 6.9"/>')}<span>영양제 추가</span><small>${(p.supplements || []).length}개</small></button>
+      <button data-act="quickspend">${ic('<rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10h17M15.5 14.5h2"/>')}<span>지출 기록하기</span><small>소비 탭</small></button>
+      <button data-act="quickwater">${ic('<path d="M12 3.5c3.3 4 5.6 7.2 5.6 10.1a5.6 5.6 0 0 1-11.2 0C6.4 10.7 8.7 7.5 12 3.5z"/>')}<span>물 한 잔 마셨어요</span><small>${getDay(today()).water || 0}/${p.waterGoal}잔</small></button>
+    </div>`;
+  } else if (S.sheet === 'habit') {
+    const mine = p.habits || [];
+    body = head('작은 습관 추가', true) + `
+      <div class="formgrid"><label class="field"><span>습관 이름</span><input id="q-name" maxlength="24" placeholder="예: 점심 먹고 계단 오르기" autocomplete="off"></label>
+      <label class="field"><span>언제</span><select id="q-slot">${HABIT_SLOTS.map(x => `<option>${x}</option>`).join('')}</select></label></div>
+      <button class="btn primary" data-act="qadd" data-v="habit">추가하기</button>
+      <p class="sub">눌러서 바로 추가</p>
+      <div class="chips">${HABIT_PRESETS.filter(x => !mine.some(h => h.name === x)).slice(0, 14).map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>
+      ${mine.length ? `<p class="sub">지금 내 습관 (×를 누르면 빠져요)</p><div class="chips">${mine.map(h => `<button type="button" class="chip on" data-act="delhabit" data-id="${h.id}" aria-label="${esc(h.name)} 빼기">${esc(h.name)}<span class="x">×</span></button>`).join('')}</div>` : ''}`;
+  } else if (S.sheet === 'supp') {
+    const mine = p.supplements || [];
+    body = head('영양제 추가', true) + `
+      <div class="formgrid"><label class="field"><span>이름</span><input id="q-name" maxlength="30" placeholder="예: 비타민D" autocomplete="off"></label>
+      <label class="field"><span>용량 (선택)</span><input id="q-dose" maxlength="20" placeholder="예: 1알"></label></div>
+      <label class="field"><span>먹는 때</span><select id="q-slot">${SUPP_TIMES.map(x => `<option>${x}</option>`).join('')}</select></label>
+      <p class="hint" id="q-hint">이름을 적으면 먹기 좋은 때를 골라 드려요.</p>
+      <button class="btn primary" data-act="qadd" data-v="supp">추가하기</button>
+      <p class="sub">눌러서 바로 추가 (권장 시간으로)</p>
+      <div class="chips">${SUPP_PRESETS.filter(x => !mine.some(sp => (matchSupp(sp.name) || {}).key === (matchSupp(x) || {}).key)).map(x => `<button type="button" class="chip" data-act="supppreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>
+      ${mine.length ? `<p class="sub">지금 내 영양제 (×를 누르면 빠져요)</p><div class="chips">${mine.map(sp => `<button type="button" class="chip on" data-act="delsupp" data-id="${sp.id}" aria-label="${esc(sp.name)} 빼기">${esc(sp.name)} · ${esc(sp.time)}<span class="x">×</span></button>`).join('')}</div>` : ''}`;
+  }
+  return `<div class="scrim" data-act="sheet" data-v=""></div><div class="sheet" role="dialog" aria-modal="true" aria-label="빠르게 추가하기">${body}</div>`;
 }
 
 /* ---------- 화면: 가이드 ---------- */
@@ -1629,6 +1700,14 @@ function renderHeader() {
   }
   renderSync();
 }
+function renderSheet() {
+  const has = S.meta && S.meta.profiles.length;
+  $('#fab').hidden = !has || !!S.sheet;
+  const wasOpen = !!$('#sheetRoot').innerHTML;
+  $('#sheetRoot').innerHTML = has ? viewSheet() : '';
+  document.body.style.overflow = S.sheet ? 'hidden' : '';
+  if (S.sheet && S.sheet !== 'menu' && !wasOpen) { const n = $('#q-name'); if (n) n.focus(); }
+}
 function renderSync() {
   const el = $('#sync');
   const st = Store.status;
@@ -1653,6 +1732,7 @@ async function render() {
   const html = S.tab === 'spend' ? viewSpend() : S.tab === 'guide' ? viewGuide() : S.tab === 'history' ? seg + (S.histView === 'cycle' ? viewCycle() : viewHistory()) : S.tab === 'profile' ? viewProfile() : viewToday();
   root.innerHTML = html;
   renderHeader();
+  renderSheet();
 }
 let toastTimer;
 function toast(msg) {
@@ -1739,6 +1819,25 @@ document.addEventListener('click', async e => {
     case 'suppmove': { const s = p.supplements.find(x => x.id === b.dataset.id); if (s) { s.time = b.dataset.v; saveMeta(); toast(`${s.name}을(를) ${b.dataset.v}로 옮겼어요.`); } break; }
     case 'addrec': { const info = SUPP_BY_KEY[b.dataset.k]; p.supplements.push({ id: newId(), name: info.label, dose: '', time: info.best[0] }); saveMeta(); toast(`${info.label}을(를) ${info.best[0]}에 추가했어요.`); break; }
     case 'histview': S.histView = b.dataset.v; break;
+    case 'sheet': S.sheet = b.dataset.v || null; renderSheet(); return;
+    case 'quickwater': {
+      const t = today(), before = getDay(t).water || 0;
+      editDay(t, r => { r.water = (r.water || 0) + 1; });
+      S.sheet = null; toast(before + 1 >= p.waterGoal ? '물 목표 달성! 물병이 아주 행복해해요' : `물 ${before + 1}잔째! ${p.waterGoal - before - 1}잔 남았어요`); break;
+    }
+    case 'quickspend': S.sheet = null; S.tab = 'spend'; S.date = today(); await render(); window.scrollTo(0, 0); { const a = $('#sp-amt'); if (a) a.focus(); } return;
+    case 'qadd': {
+      const name = ($('#q-name').value || '').trim();
+      if (!name) { toast('이름을 적어 주세요.'); $('#q-name').focus(); return; }
+      if (b.dataset.v === 'habit') { (p.habits = p.habits || []).push({ id: newId(), name: name.slice(0, 24), slot: $('#q-slot').value }); toast(`'${name}' 습관을 추가했어요.`); }
+      else { p.supplements.push({ id: newId(), name: name.slice(0, 30), dose: $('#q-dose').value.trim().slice(0, 20), time: $('#q-slot').value }); toast(`${name}을(를) ${$('#q-slot').value}에 추가했어요.`); }
+      saveMeta(); break;
+    }
+    case 'supppreset': {
+      const info = matchSupp(b.dataset.v);
+      p.supplements.push({ id: newId(), name: b.dataset.v, dose: '', time: info ? info.best[0] : '아침' });
+      saveMeta(); toast(`${b.dataset.v}을(를) ${info ? info.best[0] : '아침'}에 추가했어요.`); break;
+    }
     case 'gocycle': S.tab = 'history'; S.histView = 'cycle'; await render(); window.scrollTo(0, 0); return;
     case 'aikcal': {
       const r0 = getDay(d), meals = MEALS.filter(([k]) => (getPath(r0, 'meals.' + k) || '').trim());
@@ -1860,10 +1959,17 @@ document.addEventListener('input', e => {
       const meta = $('#kc-meta'); if (meta) meta.textContent = dk ? `약 ${dk.kcal.toLocaleString('ko-KR')}kcal` : '';
     }
   }
+  if (el.id === 'q-name' && S.sheet === 'supp') {
+    const info = matchSupp(el.value), hint = $('#q-hint');
+    if (info) { $('#q-slot').value = info.best[0]; hint.innerHTML = `<b style="color:var(--ink)">${info.label}</b>은(는) ${info.best.join('·')}에 먹는 게 좋아요. ${info.why}`; }
+    else hint.textContent = '이름을 적으면 먹기 좋은 때를 골라 드려요.';
+  }
   if (el.id === 's-name') { const info = matchSupp(el.value); if (info && $('#s-time')) $('#s-time').value = info.best[0]; }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.target.id === 'sp-amt' || e.target.id === 'sp-memo')) { e.preventDefault(); $('[data-act=addspend]').click(); }
+  if (e.key === 'Enter' && (e.target.id === 'q-name' || e.target.id === 'q-dose')) { e.preventDefault(); const q = $('[data-act=qadd]'); if (q) q.click(); }
+  if (e.key === 'Escape' && S.sheet) { S.sheet = null; renderSheet(); }
 });
 document.addEventListener('change', e => {
   const el = e.target;
