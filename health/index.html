@@ -146,8 +146,8 @@ main.wrap { padding-block: 8px calc(100px + env(safe-area-inset-bottom, 0px)); d
   display: grid; grid-template-columns: 128px 1fr; gap: 20px; align-items: center;
 }
 .hero svg { width: 128px; height: 128px; display: block; }
-.hero .ring-track { stroke: var(--sunk); }
-.hero .ring { stroke: var(--ink); transition: stroke-dashoffset .5s ease; }
+.ring-track { stroke: var(--sunk); }
+.ring { stroke: var(--ink); transition: stroke-dashoffset .5s ease; }
 .legend-rows { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .legend-rows div { display: flex; flex-direction: column; min-width: 0; }
 .legend-rows small { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
@@ -337,6 +337,70 @@ textarea { resize: vertical; min-height: 72px; }
 .insights li::before { content: ""; position: absolute; left: 0; top: .62em; width: 5px; height: 5px; border-radius: 50%; background: var(--ink); }
 .streak { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .streak b { color: var(--ink); }
+/* Water bottle */
+:root { --water: #8CC4EE; --water2: #B9DBF5; --blush: #F5B3C3; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --water: #3D7DB3; --water2: #2D5F8A; --blush: #C9708A; } }
+:root[data-theme="dark"] { --water: #3D7DB3; --water2: #2D5F8A; --blush: #C9708A; }
+.bottle-wrap { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: center; }
+.bottle-btn { border: 0; background: none; padding: 0; width: 112px; }
+.bottle-btn svg { width: 112px; height: auto; display: block; overflow: visible; }
+.bottle-btn:active svg { transform: scale(.96); }
+.bottle-btn svg { transition: transform .15s ease; }
+.wave { animation: wave 3.2s linear infinite; }
+.wave.b { animation-duration: 4.6s; animation-direction: reverse; }
+@keyframes wave { from { transform: translateX(0); } to { transform: translateX(-60px); } }
+.sparkle { animation: twinkle 1.6s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.sparkle.d2 { animation-delay: .5s; } .sparkle.d3 { animation-delay: 1s; }
+@keyframes twinkle { 0%, 100% { opacity: .2; transform: scale(.6); } 50% { opacity: 1; transform: scale(1); } }
+.bubble { position: relative; background: var(--sunk); border-radius: 16px; padding: 10px 14px; font-size: 14.5px; font-weight: 500; line-height: 1.45; }
+.bubble::before { content: ""; position: absolute; left: -6px; top: 18px; border: 6px solid transparent; border-left: 0; border-right-color: var(--sunk); }
+.water-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+@keyframes pop { 0% { transform: scale(1); } 40% { transform: scale(1.25); } 100% { transform: scale(1); } }
+.pop .box { animation: pop .35s ease; }
+
+/* Calories */
+.meals { grid-template-columns: 44px 1fr auto; }
+.meals .kc { font-size: 12.5px; color: var(--muted); font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
+.kcal-total { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.kcal-total b { font: 700 24px/1.1 var(--f-num); letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.kcal-total b small { font-size: 14px; font-weight: 500; color: var(--muted); margin-left: 3px; }
+
+/* Guide */
+.st { display: inline-block; font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: 99px; white-space: nowrap; }
+.st.good { background: var(--ink); color: var(--on-ink); }
+.st.near { background: var(--sunk); color: var(--ink); }
+.st.poor { box-shadow: inset 0 0 0 1px var(--bad); color: var(--bad); }
+.st.none { color: var(--muted); background: none; box-shadow: inset 0 0 0 1px var(--line); }
+.goals { display: flex; flex-direction: column; }
+.goal-row { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; padding: 14px 0; border-bottom: .5px solid var(--hair); }
+.goal-row:last-child { border-bottom: 0; }
+.goal-row h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.goal-row .ideal { grid-column: 1 / -1; font-size: 13.5px; color: var(--muted); }
+.goal-row .mine { grid-column: 1 / -1; font-size: 14px; }
+.goal-row .mine b { font-variant-numeric: tabular-nums; }
+.timeline { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.timeline li { display: grid; grid-template-columns: 52px 14px 1fr; gap: 10px; min-height: 52px; }
+.timeline time { font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; padding-top: 1px; }
+.timeline .dot { position: relative; }
+.timeline .dot::before { content: ""; position: absolute; left: 3px; top: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--ink); }
+.timeline .dot::after { content: ""; position: absolute; left: 6.5px; top: 18px; bottom: -4px; width: 1px; background: var(--line); }
+.timeline li:last-child .dot::after { display: none; }
+.timeline .what { padding-bottom: 14px; min-width: 0; }
+.timeline .what b { font-weight: 600; display: block; }
+.timeline .what span { font-size: 13px; color: var(--muted); }
+.score { display: grid; grid-template-columns: 112px 1fr; gap: 18px; align-items: center; }
+.score svg { width: 112px; height: 112px; }
+.score .num { font: 700 44px/1 var(--f-num); letter-spacing: -0.04em; }
+.score .num small { font-size: 17px; font-weight: 600; margin-left: 2px; }
+.rec { display: flex; flex-direction: column; gap: 6px; padding: 14px 0; border-bottom: .5px solid var(--hair); }
+.rec:last-child { border-bottom: 0; }
+.rec .top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.rec h3 { margin: 0; font-size: 16px; font-weight: 600; }
+.rec p { margin: 0; font-size: 14px; line-height: 1.5; }
+.rec .when { font-size: 13px; color: var(--muted); }
+.supp .nm small { display: block; font-size: 12px; color: var(--muted); text-decoration: none; }
+.habit-group { display: flex; flex-direction: column; gap: 8px; }
+.done-msg { background: var(--sunk); border-radius: 14px; padding: 10px 14px; font-size: 14px; font-weight: 500; text-align: center; }
 .disclaimer { font-size: 12.5px; color: var(--muted); margin: 0; }
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
@@ -404,7 +468,280 @@ const SCALES = {
 };
 const FLOW = ['없음', '적음', '보통', '많음'];
 const SPEND_CATS = ['식비', '카페·간식', '배달', '쇼핑', '교통', '생활용품', '건강·병원', '문화·여가', '경조사·선물', '기타'];
-const HABIT_PRESETS = ['아침에 물 한 잔', '10분 걷기', '스트레칭 5분', '자기 전 폰 내려놓기', '12시 전에 눕기', '감사한 일 1개 적기', '책 10쪽 읽기'];
+const HABIT_SLOTS = ['아침', '낮', '저녁', '언제든'];
+const HABIT_GROUPS = [
+  { g: '아침 루틴', slot: '아침', items: ['일어나자마자 물 한 잔', '이불 정리', '아침 햇빛 10분', '아침 스트레칭 5분', '아침 챙겨 먹기', '오늘 할 일 3개 적기'] },
+  { g: '몸 움직이기', slot: '낮', items: ['10분 걷기', '엘리베이터 대신 계단', '스쿼트 20개', '플랭크 1분', '거북목 스트레칭', '7천 보 걷기', '요가·필라테스'] },
+  { g: '식습관', slot: '언제든', items: ['채소 반찬 2번 먹기', '단 음료 대신 물', '천천히 20분 식사', '과일 한 번 먹기', '야식 안 먹기'] },
+  { g: '마음 챙기기', slot: '저녁', items: ['감사한 일 1개 적기', '5분 명상·호흡', '한 줄 일기', '나 칭찬 1개 하기', 'SNS 30분 이하'] },
+  { g: '잠', slot: '저녁', items: ['오후 2시 이후 커피 안 마시기', '자기 전 폰 내려놓기', '12시 전에 눕기', '샤워 후 바로 불 끄기'] },
+  { g: '성장·돈', slot: '언제든', items: ['책 10쪽 읽기', '영어 10분', '가계부 쓰기', '무지출 챌린지', '부업·공부 30분', '주식·경제 뉴스 1개 읽기'] },
+];
+const HABIT_PRESETS = HABIT_GROUPS.flatMap(g => g.items);
+const presetSlot = name => (HABIT_GROUPS.find(g => g.items.includes(name)) || { slot: '언제든' }).slot;
+
+/* 음식 칼로리 표: 이름(쉼표 대신 /로 동의어)|1인분 kcal|단백질 g|1개당 kcal(셀 수 있는 음식) */
+const FOOD_SRC = `밥/공기밥/흰밥/쌀밥|300|5
+현미밥/잡곡밥/보리밥/귀리밥/흑미밥|290|6
+김밥/야채김밥|480|12
+참치김밥/참치마요김밥/돈까스김밥|550|16
+삼각김밥|200|5|200
+주먹밥|200|5|200
+볶음밥/김치볶음밥/새우볶음밥|650|15
+비빔밥/돌솥비빔밥|600|18
+제육덮밥|750|28
+덮밥/돈부리/규동/텐동|700|25
+카레/카레라이스|650|15
+오므라이스|700|18
+죽/전복죽/호박죽|350|10
+컵밥|600|15
+초밥/스시|500|25
+포케/포케볼|550|30
+유부초밥|350|8
+컵라면|300|6
+라면/신라면/짜파게티|500|10
+짜장면/짜장|800|20
+짬뽕|700|25
+우동|450|12
+칼국수/수제비|600|18
+비빔냉면|600|15
+냉면/물냉면|550|15
+쌀국수|450|20
+크림파스타/까르보나라|850|22
+파스타/스파게티/알리오올리오|700|22
+잔치국수/국수|450|12
+비빔국수|500|12
+쫄면|550|12
+로제떡볶이/로제|650|12
+라볶이|650|13
+떡볶이/엽떡|500|10
+소바/메밀|400|14
+마라샹궈|1000|30
+마라탕|800|30
+김치찌개|250|15
+된장찌개|180|12
+순두부찌개/순두부|250|15
+부대찌개|500|22
+미역국|100|6
+된장국/시래기국/아욱국|80|5
+콩나물국|50|4
+북엇국/황태국|120|14
+육개장|300|25
+갈비탕|450|30
+설렁탕/곰탕|450|30
+삼계탕|900|60
+감자탕|600|40
+순대국/순댓국|550|28
+해장국/뼈해장국|400|25
+떡국|600|20
+만둣국|550|20
+국|80|5
+찌개|250|14
+소불고기/불고기|300|22
+제육볶음/제육/돼지불백|400|25
+닭갈비|450|35
+삼겹살|650|20
+목살|550|25
+소고기/한우|400|30
+스테이크|500|45
+치즈돈까스|850|32
+돈까스/돈가스/돈카츠/카츠|700|28
+양념치킨|700|35|235
+치킨/후라이드|600|35|200
+닭가슴살|120|23
+닭강정|500|20
+생선구이/생선/조기|250|25
+고등어|300|25
+연어|200|22
+회덮밥|600|25
+회/사시미|200|30
+계란말이/달걀말이|150|10
+계란후라이/계란프라이/달걀프라이/달걀후라이|100|6|100
+계란찜/달걀찜|120|9
+계란/달걀/삶은계란/구운계란/삶은달걀|75|6|75
+두부/두부조림|90|9
+김치/깍두기/겉절이|15|1
+나물/시금치/콩나물무침/무생채|40|2
+닭가슴살샐러드|300|28
+샐러드/그린샐러드|150|5
+잡채|300|6
+부침개/파전/김치전/감자전/동그랑땡|300|8
+김|30|2
+멸치볶음|80|7
+감자조림|120|2
+장조림|150|15
+소시지/비엔나|200|7
+햄버거/버거|550|25
+스팸/햄|250|10
+순대|450|15
+튀김/오징어튀김|400|6
+군만두|350|10|70
+만두/물만두/교자|300|12|60
+토스트|300|10
+샌드위치/서브웨이|400|18
+크로와상/크루아상|250|5|250
+베이글|280|10|280
+식빵|100|3|100
+도넛/도너츠|300|4|300
+케이크/케익|400|5
+쿠키|80|1|80
+과자/스낵/감자칩|250|3
+초콜릿/초코|200|3
+아이스크림|200|4
+마카롱|100|1|100
+와플|300|5
+붕어빵|150|4|150
+호떡|250|4|250
+떡/인절미|200|4
+핫도그|300|9
+피자|600|24|300
+빵/모닝빵/소금빵|250|7
+시리얼/콘푸레이크|200|5
+그래놀라|200|5
+그릭요거트|150|12
+요거트/요구르트|100|5
+우유|130|6
+두유|130|7
+치즈|60|4|60
+견과류/아몬드/호두/땅콩|170|6
+프로틴바/단백질바|200|15|200
+프로틴/단백질쉐이크/쉐이크|150|20
+고구마|130|2|130
+감자|100|2|100
+옥수수|150|5|150
+바나나|90|1|90
+사과|100|0|100
+귤/감귤/한라봉|40|1|40
+딸기|50|1
+포도/샤인머스캣|150|1
+블루베리|50|1
+키위|50|1|50
+방울토마토|30|1
+토마토|30|1|30
+수박|100|1
+과일|100|1
+바닐라라떼|250|8
+카페모카/모카|300|9
+녹차라떼/말차라떼|300|8
+라떼/카페라떼/카푸치노|180|9
+믹스커피|50|1|50
+아메리카노/커피/콜드브루|10|0
+프라푸치노|350|5
+버블티/밀크티/흑당|450|5
+스무디|300|4
+주스/오렌지주스|150|1
+제로콜라/제로사이다/제로음료|0|0
+콜라/사이다/탄산음료|140|0
+맥주|200|2
+소주|400|0
+와인|120|0
+막걸리|170|2
+하이볼|150|0
+족발|700|50
+보쌈|600|45
+곱창/막창|800|30
+타코|300|12|300
+부리또|700|28
+도시락|700|25
+급식|700|28
+떡갈비|450|25
+갈비찜/LA갈비/갈비|500|30
+탕수육/꿔바로우/깐풍기|600|20
+찜닭/닭볶음탕|650|45
+오리고기/훈제오리|450|30
+어묵탕/오뎅탕|200|10
+어묵/오뎅|150|8
+함박스테이크/함박|600|25
+오트밀|150|5
+짜장밥|750|18
+비빔면|550|9
+쌈밥|600|20`;
+const FOOD = FOOD_SRC.split('\n').map(line => {
+  const [names, k, pr, each] = line.split('|');
+  return { names: names.split('/'), label: names.split('/')[0], kcal: Number(k), p: Number(pr), each: each ? Number(each) : null };
+});
+const FOOD_KEYS = FOOD.flatMap(f => f.names.map(n => ({ n, f }))).sort((a, b) => b.n.length - a.n.length);
+const FOOD_STOP = new Set(['조금', '약간', '오늘', '아침', '점심', '저녁', '간식', '반', '먹음', '먹었음', '정도', '그리고', '같이', '많이', '외식', '배달', '집밥', '1인분', '정식', '세트', '조금씩', '이랑']);
+function estimateMeal(text) {
+  const src = String(text || '');
+  const used = new Array(src.length).fill(false);
+  let found = [];
+  for (const { n, f } of FOOD_KEYS) {
+    let from = 0, i;
+    while ((i = src.indexOf(n, from)) >= 0) {
+      from = i + n.length;
+      if (used.slice(i, i + n.length).some(Boolean)) continue;
+      for (let k = i; k < i + n.length; k++) used[k] = true;
+      const after = src.slice(i + n.length, i + n.length + 8), before = src.slice(Math.max(0, i - 4), i);
+      let q = 1;
+      const UNIT = '(개|조각|장|알|공기|그릇|잔|인분|줄|봉|캔|병|쪽|컵|접시|마리)';
+      const m = after.match(new RegExp('^\\s*(\\d+(?:\\.\\d+)?)\\s*' + UNIT + '?'));
+      const half = after.match(new RegExp('^\\s*반\\s*' + UNIT + '?'));
+      const eat = len => { for (let k = i + n.length; k < Math.min(src.length, i + n.length + len); k++) used[k] = true; };
+      if (m) { q = Number(m[1]); eat(m[0].length); }
+      else if (half) { q = 0.5; eat(half[0].length); }
+      else if (/반\s*$/.test(before)) q = 0.5;
+      const kcal = f.each ? (m ? q * f.each : f.kcal) : q * f.kcal;
+      const pr = f.each ? (m ? q * f.p * f.each / f.kcal || 0 : f.p) : q * f.p;
+      found.push({ name: f.label, kcal: Math.round(kcal), p: Math.round(pr || 0), generic: f.label === '급식' || f.label === '도시락' });
+    }
+  }
+  if (found.some(x => !x.generic)) found = found.filter(x => !x.generic);
+  const rest = src.split('').map((c, i) => used[i] ? ' ' : c).join('');
+  const unknown = rest.split(/[\s,·/+()\[\]&.~\d]+|와|과|랑|하고/).map(x => x.trim())
+    .filter(x => x.length >= 2 && /[가-힣]/.test(x) && !FOOD_STOP.has(x) && !/^(개|조각|공기|그릇|잔|인분|마리)$/.test(x)).slice(0, 4);
+  return { kcal: sum(found, x => x.kcal), protein: sum(found, x => x.p), items: found, unknown };
+}
+const MEALS = [['breakfast', '아침'], ['lunch', '점심'], ['dinner', '저녁'], ['snack', '간식']];
+function mealKcal(r, k) {
+  const text = getPath(r, 'meals.' + k);
+  if (!text || !text.trim()) return null;
+  const ai = getPath(r, 'kcalAI.' + k);
+  if (ai && ai.t === text) return { kcal: ai.kcal, protein: ai.protein, items: [], unknown: [], ai: true };
+  return estimateMeal(text);
+}
+function dayKcal(r) {
+  const ms = MEALS.map(([k]) => mealKcal(r, k)).filter(Boolean);
+  if (!ms.length) return null;
+  return { kcal: sum(ms, m => m.kcal), protein: sum(ms, m => m.protein), unknown: ms.flatMap(m => m.unknown), ai: ms.some(m => m.ai) };
+}
+const ACTIVITY = { '거의 안 움직여요': 1.2, '조금 움직여요': 1.375, '보통이에요': 1.55, '많이 움직여요': 1.725 };
+function kcalTarget(p) {
+  const female = p.sex !== '남';
+  const age = p.birthYear ? new Date().getFullYear() - p.birthYear : 30;
+  const w = p.weight || (female ? 55 : 70), h = p.height || (female ? 161 : 174);
+  const bmr = 10 * w + 6.25 * h - 5 * age + (female ? -161 : 5);
+  return Math.round(bmr * (ACTIVITY[p.activity] || 1.375) / 50) * 50;
+}
+const proteinTarget = p => Math.round(p.weight || (p.sex === '남' ? 70 : 55));
+
+/* 영양제 지식: 먹기 좋은 때와 이유 */
+const SUPP_DB = [
+  { key: 'multi', names: ['종합비타민', '멀티비타민', '종합영양제', '멀티'], label: '종합비타민', best: ['아침', '점심'], why: '비타민B군이 들어 있어 낮에, 흡수를 위해 식사 직후에 먹는 게 좋아요.' },
+  { key: 'vitd', names: ['비타민d', '비타민 d', 'd3', '비타민디'], label: '비타민D', best: ['아침', '점심'], why: '기름에 녹는 비타민이라 기름기 있는 식사 직후에 흡수가 잘 돼요.' },
+  { key: 'omega3', names: ['오메가3', '오메가 3', 'rtg', '크릴', '피쉬오일'], label: '오메가3', best: ['점심', '저녁'], why: '지방과 함께 먹어야 흡수되고, 식후에 먹으면 비린 트림이 줄어요.' },
+  { key: 'mg', names: ['마그네슘'], label: '마그네슘', best: ['저녁', '자기 전'], why: '근육 긴장을 풀어 줘서 저녁이나 자기 전이 좋아요.' },
+  { key: 'iron', names: ['철분', '헴철'], label: '철분', best: ['아침'], why: '빈속(식전 30분)에 흡수가 가장 잘 돼요. 속이 쓰리면 식후로 바꿔도 돼요. 비타민C와 함께면 더 좋아요.' },
+  { key: 'probiotic', names: ['유산균', '프로바이오틱스', '락토', '낙산균'], label: '유산균', best: ['아침'], why: '위산이 적은 아침 빈속이나 식사 직후가 무난해요. 제품 설명이 있으면 그걸 따르세요.' },
+  { key: 'vitb', names: ['비타민b', '비타민 b', 'b군', '비컴플렉스', '활성비타민', '벤포', 'b12'], label: '비타민B군', best: ['아침', '점심'], why: '에너지를 만드는 데 쓰여서, 저녁에 먹으면 잠이 방해될 수 있어요.' },
+  { key: 'vitc', names: ['비타민c', '비타민 c', '비타민씨'], label: '비타민C', best: ['아침', '점심'], why: '물에 녹아 금방 빠져나가니 식후에 나눠 먹으면 좋아요. 철분 흡수도 도와요.' },
+  { key: 'ca', names: ['칼슘', '칼마디'], label: '칼슘', best: ['저녁'], why: '철분·아연과 흡수 경쟁을 해서 저녁에 따로 먹는 게 좋아요.' },
+  { key: 'zinc', names: ['아연'], label: '아연', best: ['점심', '저녁'], why: '빈속에 먹으면 속이 메스꺼울 수 있어 식후가 좋아요.' },
+  { key: 'lutein', names: ['루테인', '지아잔틴'], label: '루테인', best: ['아침', '점심'], why: '기름에 녹는 성분이라 식후에 먹어요.' },
+  { key: 'coq10', names: ['코큐텐', 'coq10', '코엔자임'], label: '코엔자임Q10', best: ['아침', '점심'], why: '식후에 흡수가 잘 되고, 저녁엔 잠이 덜 올 수 있어요.' },
+  { key: 'collagen', names: ['콜라겐'], label: '콜라겐', best: ['아침', '자기 전'], why: '시간보다 매일 꾸준히 먹는 게 더 중요해요.' },
+  { key: 'milk', names: ['밀크씨슬', '실리마린'], label: '밀크씨슬', best: ['점심', '저녁'], why: '식후에 먹으면 속이 편해요.' },
+  { key: 'folate', names: ['엽산'], label: '엽산', best: ['아침', '점심'], why: '언제 먹어도 되지만 매일 같은 때 먹는 게 좋아요.' },
+];
+const SUPP_BY_KEY = Object.fromEntries(SUPP_DB.map(x => [x.key, x]));
+function matchSupp(name) {
+  const n = String(name || '').toLowerCase().replace(/\s+/g, '');
+  return SUPP_DB.find(x => x.names.some(k => n.includes(k.replace(/\s+/g, '')))) || null;
+}
+const nowHM = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const toMin = hm => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
+const fromMin = m => { m = ((Math.round(m) % 1440) + 1440) % 1440; return `${pad(Math.floor(m / 60))}:${pad(m % 60)}`; };
+const slotOf = hm => { const h = Number(hm.split(':')[0]); return h >= 4 && h < 11 ? '아침' : h >= 11 && h < 15 ? '점심' : h >= 15 && h < 21 ? '저녁' : '자기 전'; };
 const won = n => `${Math.round(n || 0).toLocaleString('ko-KR')}원`;
 const monthDays = d => { const [y, m] = d.slice(0, 7).split('-').map(Number); const n = new Date(y, m, 0).getDate(); return Array.from({ length: n }, (_, i) => `${d.slice(0, 7)}-${pad(i + 1)}`); };
 
@@ -503,7 +840,7 @@ function newProfile(name) {
     id: newId(), name, birthYear: null, height: null, weight: null,
     waterGoal: 8, sleepGoal: 7, caffeineLimit: 400, alcoholWeekLimit: null,
     trackCycle: true, cycleLength: 28, periodLength: 5, supplements: [], periods: {},
-    monthBudget: null, habits: [],
+    monthBudget: null, habits: [], sex: '여', activity: '조금 움직여요',
   };
 }
 function normalize(m) {
@@ -630,6 +967,37 @@ function rings(items) {
   }).join('');
   return `<svg viewBox="0 0 ${size} ${size}" role="img" aria-label="물, 수면, 영양제 목표 달성률">${out}</svg>`;
 }
+function bottle(water, goal) {
+  const pct = Math.min(1, water / goal), full = water >= goal;
+  const top = 58, bot = 176, y = bot - pct * (bot - top);
+  const wave = (yy, cls, fill) => `<path class="wave ${cls}" fill="${fill}" d="M-60 ${yy} q15 -6 30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 t30 0 V200 H-60 Z"></path>`;
+  let eyes, mouth;
+  if (water === 0) { eyes = '<path d="M43 118 h8 M69 118 h8" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>'; mouth = '<path d="M55 131 q5 -4 10 0" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round"/>'; }
+  else if (full) { eyes = '<path d="M42 120 q5 -7 10 0 M68 120 q5 -7 10 0" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>'; mouth = '<path d="M52 128 q8 9 16 0 z" fill="var(--ink)"/>'; }
+  else if (pct < 0.5) { eyes = '<circle cx="47" cy="118" r="3.6" fill="var(--ink)"/><circle cx="73" cy="118" r="3.6" fill="var(--ink)"/>'; mouth = '<ellipse cx="60" cy="130" rx="3.2" ry="3.6" fill="var(--ink)"/>'; }
+  else { eyes = '<circle cx="47" cy="118" r="3.6" fill="var(--ink)"/><circle cx="73" cy="118" r="3.6" fill="var(--ink)"/>'; mouth = '<path d="M53 128 q7 7 14 0" fill="none" stroke="var(--ink)" stroke-width="2.6" stroke-linecap="round"/>'; }
+  const body = 'M40 34 h40 a5 5 0 0 1 5 5 v5 c10 6 15 14 15 26 v96 a16 16 0 0 1 -16 16 h-48 a16 16 0 0 1 -16 -16 v-96 c0 -12 5 -20 15 -26 v-5 a5 5 0 0 1 5 -5 z';
+  return `<svg viewBox="0 0 120 190" aria-hidden="true">
+    <defs><clipPath id="bclip"><path d="${body}"/></clipPath></defs>
+    <rect x="42" y="8" width="36" height="20" rx="6" fill="var(--ink)"/>
+    <rect x="46" y="27" width="28" height="8" rx="2" fill="var(--ink)" opacity=".55"/>
+    <path d="${body}" fill="var(--surface)"/>
+    <g clip-path="url(#bclip)">${pct > 0 ? wave(y + 3, 'b', 'var(--water2)') + wave(y, '', 'var(--water)') : ''}
+      <rect x="27" y="62" width="7" height="58" rx="3.5" fill="#FFFFFF" opacity=".55"/></g>
+    <path d="${body}" fill="none" stroke="var(--ink)" stroke-width="3"/>
+    <ellipse cx="39" cy="128" rx="6" ry="3.6" fill="var(--blush)" opacity="${water ? .9 : .4}"/><ellipse cx="81" cy="128" rx="6" ry="3.6" fill="var(--blush)" opacity="${water ? .9 : .4}"/>
+    ${eyes}${mouth}
+    ${full ? '<path class="sparkle" d="M104 30 l3 8 l8 3 l-8 3 l-3 8 l-3 -8 l-8 -3 l8 -3 z" fill="var(--ink)"/><path class="sparkle d2" d="M12 52 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="var(--ink)"/><path class="sparkle d3" d="M108 92 l2 5 l5 2 l-5 2 l-2 5 l-2 -5 l-5 -2 l5 -2 z" fill="var(--ink)"/>' : ''}
+  </svg>`;
+}
+function kcalBox(p, r) {
+  const dk = dayKcal(r), target = kcalTarget(p), pt = proteinTarget(p);
+  if (!dk) return `<p class="hint">음식 이름을 쉼표로 나눠 적으면 칼로리를 대략 계산해 드려요. 예: 현미밥, 된장찌개, 계란 2개. 하루 권장은 약 ${target.toLocaleString('ko-KR')}kcal예요.</p>`;
+  const pct = dk.kcal / target;
+  return `<div class="kcal-total"><b>${dk.kcal.toLocaleString('ko-KR')}<small>/ ${target.toLocaleString('ko-KR')}kcal</small></b><span class="hint">단백질 약 ${dk.protein}g / 권장 ${pt}g</span></div>
+    <div class="meter ${pct > 1.15 ? 'over' : ''}"><i style="width:${Math.min(100, pct * 100)}%"></i></div>
+    <p class="hint">${dk.ai ? 'AI가 계산한 값이 섞여 있어요. ' : ''}${dk.unknown.length ? `칼로리를 모르는 음식: ${dk.unknown.map(esc).join(', ')}. ` : ''}1인분 기준 대략적인 값이에요.${pct > 1.15 ? ' 오늘은 권장보다 많이 먹었어요. 내일 한 끼를 가볍게 하면 돼요.' : ''}</p>`;
+}
 function pill(label, value, state) { return `<div class="pill ${state || ''}"><small>${label}</small><b>${value}</b></div>`; }
 
 function viewToday() {
@@ -678,13 +1046,14 @@ function viewToday() {
   <div class="cards">
     <section class="card">
       <header><h2>작은 습관</h2><span class="meta">${habits.length ? `${habits.filter(h => r.habits && r.habits[h.id]).length}/${habits.length}` : ''}</span></header>
-      ${habits.length ? `<div class="supps">${habits.map(h => {
+      ${habits.length ? HABIT_SLOTS.map(sl => { const list = habits.filter(h => (HABIT_SLOTS.includes(h.slot) ? h.slot : '언제든') === sl); return list.length ? `<div class="habit-group"><p class="sub">${sl}</p><div class="supps">${list.map(h => {
         const on = !!(r.habits && r.habits[h.id]);
         const n = streak(x => !!(x.habits && x.habits[h.id]), d);
-        return `<button type="button" class="supp ${on ? 'on' : ''}" data-act="habit" data-id="${h.id}" aria-pressed="${on}">
+        return `<button type="button" class="supp ${on ? 'on' : ''} ${S.popId === h.id ? 'pop' : ''}" data-act="habit" data-id="${h.id}" aria-pressed="${on}">
           <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(h.name)}</span><span class="streak">${n ? `<b>${n}일</b> 연속` : ''}</span></button>`;
-      }).join('')}</div>` : `<p class="hint">자기관리는 크게 시작하면 오래 못 가요. 1~3개만, 5분 안에 끝나는 것부터 골라 보세요.</p>
-      <div class="chips">${HABIT_PRESETS.map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>`}
+      }).join('')}</div></div>` : ''; }).join('') + (habits.every(h => r.habits && r.habits[h.id]) ? '<div class="done-msg">오늘 습관을 모두 해냈어요. 정말 잘했어요!</div>' : '') + '<div class="row"><button class="btn small" data-tab="profile">습관 더 고르기</button></div>'
+      : `<p class="hint">5분 안에 끝나는 것부터 골라 보세요. 나 탭에서 30가지가 넘는 습관 중에 고르거나 직접 만들 수 있어요.</p>
+      <div class="chips">${['일어나자마자 물 한 잔', '10분 걷기', '아침 햇빛 10분', '채소 반찬 2번 먹기', '감사한 일 1개 적기', '자기 전 폰 내려놓기', '가계부 쓰기'].map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>`}
     </section>
 
     <section class="card" data-c="cond">
@@ -697,14 +1066,23 @@ function viewToday() {
     </section>
 
     <section class="card" data-c="water">
-      <header><h2>물</h2><span class="meta">1잔 = 250ml</span></header>
-      <div class="stepper">
-        <button class="iconbtn" data-act="water" data-v="-1" aria-label="한 잔 빼기">−</button>
-        <div class="big">${water}<small>/ ${goal}잔 · ${(water * 0.25).toFixed(2).replace(/0$/, '')}L</small></div>
-        <button class="iconbtn" data-act="water" data-v="1" aria-label="한 잔 더하기">+</button>
+      <header><h2>물</h2><span class="meta">1잔 = 250ml · ${(water * 0.25).toFixed(2).replace(/0$/, '')}L</span></header>
+      <div class="bottle-wrap">
+        <button type="button" class="bottle-btn" data-act="water" data-v="1" aria-label="물 한 잔 더하기">${bottle(water, goal)}</button>
+        <div class="water-side">
+          <div class="bubble">${water === 0 ? '목말라요… 물병을 톡 눌러 한 잔 채워 주세요' : water >= goal ? `오늘 목표 ${goal}잔 달성! 최고예요` : water / goal >= 0.5 ? `반 넘었어요! ${goal - water}잔만 더요` : `좋아요, ${goal - water}잔 남았어요`}</div>
+          <div class="stepper">
+            <button class="iconbtn" data-act="water" data-v="-1" aria-label="한 잔 빼기">−</button>
+            <div class="big" style="font-size:32px">${water}<small>/ ${goal}잔</small></div>
+            <button class="iconbtn" data-act="water" data-v="1" aria-label="한 잔 더하기">+</button>
+          </div>
+        </div>
       </div>
-      <div class="cups" aria-hidden="true">${cups.join('')}</div>
-      <p class="hint">커피·술은 물로 치지 않아요. 목표 잔 수는 사용자 탭에서 바꿀 수 있어요.</p>
+      ${d === t && water < goal ? (() => {
+        const wk = getPath(r, 'sleep.wake') ? toMin(r.sleep.wake) : 420, end = 22 * 60, nowM = toMin(nowHM());
+        const pace = Math.max(0, Math.min(goal, Math.round(goal * (nowM - wk) / (end - wk))));
+        return `<p class="hint">지금 시각엔 <b style="color:var(--ink)">${pace}잔</b>쯤이 이상적이에요. ${water >= pace ? '페이스 좋아요.' : `${pace - water}잔 따라잡아 볼까요?`} 한 번에 몰아 마시기보다 1~2시간마다 한 잔씩이 좋아요.</p>`;
+      })() : ''}
     </section>
 
     <section class="card" data-c="sleep">
@@ -721,17 +1099,19 @@ function viewToday() {
       ${supps.length ? byTime.map(g => `<p class="sub">${g.tm}</p><div class="supps">${g.list.map(s => {
         const on = !!(r.supps && r.supps[s.id]);
         return `<button type="button" class="supp ${on ? 'on' : ''}" data-act="supp" data-id="${s.id}" aria-pressed="${on}">
-          <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(s.name)}</span><span class="tm">${esc(s.dose || '')}</span></button>`;
+          <span class="box">${on ? '✓' : ''}</span><span class="nm">${esc(s.name)}${(() => { const info = matchSupp(s.name); return info && !info.best.includes(s.time) ? `<small>${info.best.join('·')}에 먹는 게 더 좋아요</small>` : ''; })()}${typeof (r.supps || {})[s.id] === 'string' ? `<small>${r.supps[s.id]}에 먹음</small>` : ''}</span><span class="tm">${esc(s.dose || '')}</span></button>`;
       }).join('')}</div>`).join('') + `<div class="row"><button class="btn small" data-act="suppall">전부 먹었어요</button></div>`
-      : `<p class="hint">아직 등록한 영양제가 없어요.</p><div class="row"><button class="btn small" data-tab="profile">사용자 탭에서 영양제 등록하기</button></div>`}
+      : `<p class="hint">아직 등록한 영양제가 없어요. 가이드 탭에서 나에게 맞는 영양제와 먹을 시간을 추천받을 수 있어요.</p><div class="row"><button class="btn small" data-tab="guide">추천 보기</button><button class="btn small" data-tab="profile">직접 등록하기</button></div>`}
     </section>
 
     <section class="card" data-c="food">
-      <header><h2>식단</h2></header>
+      <header><h2>식단</h2><span class="meta" id="kc-meta">${(() => { const dk = dayKcal(r); return dk ? `약 ${dk.kcal.toLocaleString('ko-KR')}kcal` : ''; })()}</span></header>
       <div class="meals">
-        ${[['breakfast', '아침'], ['lunch', '점심'], ['dinner', '저녁'], ['snack', '간식']].map(([k, l]) =>
-          `<label for="f-${k}">${l}</label><input id="f-${k}" data-field="meals.${k}" value="${esc(getPath(r, 'meals.' + k) || '')}" placeholder="${k === 'lunch' ? '예: 급식 (잡곡밥, 된장국, 불고기)' : ''}">`).join('')}
+        ${MEALS.map(([k, l]) => { const mk2 = mealKcal(r, k);
+          return `<label for="f-${k}">${l}</label><input id="f-${k}" data-field="meals.${k}" value="${esc(getPath(r, 'meals.' + k) || '')}" placeholder="${k === 'lunch' ? '예: 급식 (현미밥, 미역국, 제육)' : k === 'breakfast' ? '예: 그릭요거트, 바나나' : ''}"><span class="kc" id="kc-${k}">${mk2 ? `${mk2.kcal}kcal` : ''}</span>`; }).join('')}
       </div>
+      <div id="kc-box">${kcalBox(p, r)}</div>
+      ${window.claude && window.claude.use ? '<div class="row"><button class="btn small" data-act="aikcal">AI로 칼로리 더 정확히 계산</button></div>' : ''}
       <p class="sub">오늘 식사 특징</p>${chipsHtml('foodTags', r.foodTags, FOOD_TAGS)}
     </section>
 
@@ -767,6 +1147,7 @@ function viewToday() {
 
     ${p.trackCycle ? `<section class="card" data-c="cycle">
       <header><h2>생리</h2><span class="meta">${ci && ci.last ? `${ci.day}일째 · ${ci.phase}` : ''}</span></header>
+      <div class="row"><button class="btn small" data-act="gocycle">달력 보기</button></div>
       <p class="sub">이날 생리 양</p>
       <div class="scale" role="group">${FLOW.map((l, i) => {
         const on = ((p.periods || {})[d] || 0) === i;
@@ -853,6 +1234,155 @@ function viewHistory() {
     </section>
     <section class="card" data-c="cond"><header><h2>자주 나타난 몸 신호</h2></header>
       ${topSym.length ? `<ul class="list">${topSym.map(([s, n]) => `<li><span class="nm">${esc(s)}</span><small>${n}일</small></li>`).join('')}</ul><p class="hint">같은 신호가 반복되면 수면·카페인·생리 주기와 겹치는 날이 있는지 비교해 보세요.</p>` : '<p class="hint">2주 동안 기록된 몸 신호가 없어요.</p>'}
+    </section>
+  </div>`;
+}
+
+/* ---------- 화면: 가이드 ---------- */
+function suppReport(p, days) {
+  const recs = days.map(getDay), logged = recs.filter(hasAny);
+  return (p.supplements || []).map(s => {
+    const info = matchSupp(s.name);
+    const taken = logged.filter(r => r.supps && r.supps[s.id]);
+    const slots = {};
+    taken.forEach(r => { const v = r.supps[s.id]; if (typeof v === 'string') slots[slotOf(v)] = (slots[slotOf(v)] || 0) + 1; });
+    const main = Object.entries(slots).sort((a, b) => b[1] - a[1])[0];
+    const msgs = [];
+    let state = 'good', fix = null;
+    if (!info) msgs.push('어떤 영양제인지 몰라서 시간 추천은 못 해요. 보통은 식사 직후에 먹으면 무난해요.');
+    else if (!info.best.includes(s.time)) { state = 'near'; fix = info.best[0]; msgs.push(`지금은 '${s.time}'로 정해 두었는데 <b>${info.best.join('·')}</b>이 더 좋아요. ${info.why}`); }
+    else msgs.push(`'${s.time}'에 먹는 게 잘 맞아요. ${info.why}`);
+    if (main && info && !info.best.includes(main[0]) && main[0] !== s.time) { state = 'near'; msgs.push(`그런데 실제로는 주로 <b>${main[0]}</b>에 체크했어요.`); }
+    if (logged.length >= 3) {
+      const rate = taken.length / logged.length;
+      if (rate < 0.6) { state = 'poor'; msgs.push(`최근 기록한 ${logged.length}일 중 <b>${taken.length}일</b> 먹었어요. 양치 컵이나 식탁처럼 정해 둔 시간에 꼭 보는 곳에 두면 덜 잊어요.`); }
+      else msgs.push(`최근 기록한 ${logged.length}일 중 <b>${taken.length}일</b> 먹었어요. 꾸준해요.`);
+    }
+    return { s, info, state, msgs, fix };
+  });
+}
+function suppWarnings(p, cafDays) {
+  const list = (p.supplements || []).map(s => ({ s, info: matchSupp(s.name) })).filter(x => x.info);
+  const by = k => list.filter(x => x.info.key === k);
+  const out = [];
+  by('iron').forEach(fe => { if (by('ca').some(c => c.s.time === fe.s.time)) out.push('철분과 칼슘은 서로 흡수를 방해해요. 먹는 시간을 2시간 이상 띄우세요.'); });
+  if (by('iron').length && cafDays) out.push('철분을 먹고 1~2시간 안에는 커피·녹차를 피하세요. 철분 흡수가 확 줄어요.');
+  if (by('multi').length && list.some(x => ['vitb', 'vitc', 'vitd', 'zinc'].includes(x.info.key))) out.push('종합비타민에 이미 같은 성분이 들어 있을 수 있어요. 성분표에서 함량을 확인해 너무 많이 먹지 않게 해 주세요.');
+  return [...new Set(out)];
+}
+function suppRecommend(p, days) {
+  const recs = days.map(getDay), logged = recs.filter(hasAny);
+  const taking = key => (p.supplements || []).some(s => (matchSupp(s.name) || {}).key === key);
+  const sym = {};
+  recs.forEach(r => (r.symptoms || []).forEach(x => { sym[x] = (sym[x] || 0) + 1; }));
+  const energy = avg(recs.map(r => r.energy ?? null)), stress = avg(recs.map(r => r.stress ?? null)), sq = avg(recs.map(r => r.sleepQ ?? null));
+  const veg = logged.filter(r => (r.foodTags || []).includes('채소·과일')).length;
+  const out = [];
+  const add = (key, reason, fit) => { if (!out.find(x => x.key === key)) out.push({ key, reason, fit, taking: taking(key) }); };
+  if (p.sex !== '남' && p.trackCycle) add('iron', `생리로 매달 철분이 빠져나가요.${sym['피로'] ? ` 최근 2주 동안 피로를 ${sym['피로']}번 기록했어요.` : ''}`, true);
+  if ((sym['피로'] || 0) >= 2 || (energy != null && energy <= 2.5)) add('vitb', `최근 2주 동안 피로하거나 에너지가 낮은 날이 많았어요.`, true);
+  if ((stress != null && stress >= 3.2) || (sq != null && sq <= 2.5) || sym['생리통'] || sym['근육통']) add('mg', `${stress != null && stress >= 3.2 ? '스트레스가 높은 날이 많았어요. ' : ''}${sq != null && sq <= 2.5 ? '잠을 얕게 잔 날이 많았어요. ' : ''}${sym['생리통'] ? '생리통을 기록했어요. ' : ''}마그네슘은 근육과 신경을 진정시키는 데 도움을 줘요.`, true);
+  if (sym['변비'] || sym['소화불량']) add('probiotic', '변비나 소화불량을 기록한 날이 있었어요.', true);
+  if (logged.length >= 3 && veg < logged.length * 0.4) add('multi', `기록한 ${logged.length}일 중 채소·과일을 먹은 날이 ${veg}일이에요. 식사로 다 채우기 어려운 비타민·미네랄을 보충해요.`, true);
+  add('vitd', '실내에서 일하는 한국 성인 대부분이 비타민D가 부족해요. 뼈, 면역력, 기분에 관여해요.', false);
+  add('omega3', '등푸른생선을 일주일에 2번 이상 먹지 않는다면 도움이 돼요. 혈행과 눈 건강에 좋아요.', false);
+  return out;
+}
+function viewGuide() {
+  const p = P(), t = today();
+  const days = []; for (let i = 13; i >= 0; i--) days.push(addDays(t, -i));
+  const recs = days.map(getDay), logged = recs.filter(hasAny);
+  const last7 = recs.slice(-7);
+  const wakes = recs.map(r => getPath(r, 'sleep.wake')).filter(Boolean).map(toMin);
+  const wake = wakes.length ? Math.round(avg(wakes) / 5) * 5 : 420;
+  const bed = wake - p.sleepGoal * 60;
+  const sleepAvg = avg(recs.map(r => sleepMin(r.sleep))), waterAvg = avg(logged.map(r => r.water || 0));
+  const kcals = recs.map(dayKcal).filter(Boolean), kcalAvg = avg(kcals.map(k => k.kcal)), protAvg = avg(kcals.map(k => k.protein));
+  const target = kcalTarget(p), pt = proteinTarget(p);
+  const cafAvg = avg(logged.map(r => sum(r.caffeine, x => x.mg)));
+  const cafLate = logged.filter(r => (r.caffeine || []).some(x => x.t && toMin(x.t) >= 14 * 60)).length;
+  const ex7 = sum(last7, r => getPath(r, 'exercise.min') || 0);
+  const steps = avg(recs.map(r => getPath(r, 'exercise.steps') ?? null));
+  const drink7 = last7.filter(r => (r.alcohol || []).length).length;
+  const veg = logged.filter(r => (r.foodTags || []).includes('채소·과일')).length;
+  const monthItems = monthDays(t).filter(x => x <= t).map(getDay).flatMap(r => r.spend || []);
+  const spendTotal = sum(monthItems, x => x.amt), wantPct = spendTotal ? sum(monthItems.filter(x => x.want), x => x.amt) / spendTotal : null;
+  const habits = p.habits || [];
+  const habitRate = habits.length && logged.length ? avg(logged.map(r => habits.filter(h => r.habits && r.habits[h.id]).length / habits.length)) : null;
+
+  const st = (v, good, near) => v == null ? 'none' : good(v) ? 'good' : near(v) ? 'near' : 'poor';
+  const goals = [
+    { h: '수면', ideal: `하루 ${p.sleepGoal}시간 (성인 권장 7~9시간), 매일 비슷한 시각에 자고 일어나기`, mine: sleepAvg == null ? null : `평균 <b>${fmtMin(Math.round(sleepAvg))}</b>`, s: st(sleepAvg, v => v >= p.sleepGoal * 60 - 20, v => v >= p.sleepGoal * 60 - 70) },
+    { h: '물', ideal: `하루 ${p.waterGoal}잔 (${(p.waterGoal * 0.25).toFixed(1)}L), 1~2시간마다 한 잔`, mine: waterAvg == null ? null : `평균 <b>${round1(waterAvg)}잔</b>`, s: st(waterAvg, v => v >= p.waterGoal, v => v >= p.waterGoal * 0.7) },
+    { h: '칼로리', ideal: `하루 약 ${target.toLocaleString('ko-KR')}kcal (내 키·몸무게·나이·활동량 기준)`, mine: kcalAvg == null ? null : `식단을 적은 날 평균 <b>${Math.round(kcalAvg).toLocaleString('ko-KR')}kcal</b>`, s: st(kcalAvg, v => v >= target * 0.85 && v <= target * 1.1, v => v >= target * 0.7 && v <= target * 1.25) },
+    { h: '단백질', ideal: `하루 약 ${pt}g (몸무게 1kg당 1g). 매 끼니 손바닥 크기 고기·생선·달걀·두부`, mine: protAvg == null ? null : `평균 <b>${Math.round(protAvg)}g</b>`, s: st(protAvg, v => v >= pt * 0.9, v => v >= pt * 0.65) },
+    { h: '채소·과일', ideal: '매일, 끼니마다 채소 반찬 2가지 이상', mine: logged.length ? `기록한 ${logged.length}일 중 <b>${veg}일</b>` : null, s: logged.length ? st(veg / logged.length, v => v >= 0.7, v => v >= 0.4) : 'none' },
+    { h: '카페인', ideal: '하루 400mg 이하 (아메리카노 2~3잔), 오후 2시 이후엔 쉬기', mine: cafAvg == null ? null : `평균 <b>${Math.round(cafAvg)}mg</b>${cafLate ? ` · 오후 2시 이후 마신 날 ${cafLate}일` : ''}`, s: cafAvg == null ? 'none' : cafAvg > p.caffeineLimit ? 'poor' : cafLate >= 3 ? 'near' : 'good' },
+    { h: '운동', ideal: '일주일에 150분 이상 숨이 찰 정도로 + 근력 운동 2번 (세계보건기구)', mine: logged.length ? `최근 7일 <b>${ex7}분</b>` : null, s: logged.length ? st(ex7, v => v >= 150, v => v >= 75) : 'none' },
+    { h: '걸음 수', ideal: '하루 7,000보 이상', mine: steps == null ? null : `평균 <b>${Math.round(steps).toLocaleString('ko-KR')}보</b>`, s: st(steps, v => v >= 7000, v => v >= 4500) },
+    { h: '술', ideal: '적을수록 좋아요. 마신다면 일주일에 2일 이상은 쉬기', mine: logged.length ? `최근 7일 중 <b>${drink7}일</b> 마심` : null, s: logged.length ? st(drink7, v => v <= 1, v => v <= 3) : 'none' },
+    { h: '소비', ideal: "'사고 싶어서' 쓴 돈은 30% 이내 (50/30/20 법칙: 필요 50 · 원하는 것 30 · 저축 20)", mine: wantPct == null ? null : `이번 달 <b>${Math.round(wantPct * 100)}%</b>`, s: st(wantPct, v => v <= 0.3, v => v <= 0.4) },
+    { h: '작은 습관', ideal: '하루 80% 이상 체크하기. 안 되는 날이 많으면 습관을 더 쉽게 바꾸기', mine: habitRate == null ? null : `평균 <b>${Math.round(habitRate * 100)}%</b> 달성`, s: st(habitRate, v => v >= 0.8, v => v >= 0.5) },
+  ];
+  const scored = goals.filter(g => g.s !== 'none');
+  const score = scored.length ? Math.round(avg(scored.map(g => g.s === 'good' ? 100 : g.s === 'near' ? 65 : 30))) : null;
+  const best = scored.filter(g => g.s === 'good').map(g => g.h), worst = scored.filter(g => g.s === 'poor').map(g => g.h);
+  const ST = { good: '좋아요', near: '거의 다 왔어요', poor: '신경 써 주세요', none: '기록 없음' };
+
+  const supNames = slot => (p.supplements || []).filter(s => s.time === slot).map(s => esc(s.name)).join(', ');
+  const cafCut = Math.max(wake + 240, bed - 540);
+  const tl = [
+    [wake, '일어나서 물 한 잔', '자는 동안 빠진 수분을 채우고 몸을 깨워요'],
+    [wake + 30, '아침 식사' + (supNames('아침') ? ` · ${supNames('아침')}` : ''), '단백질(달걀·요거트·두부)을 꼭 넣어요'],
+    [wake + 60, '햇빛 10분 · 가볍게 걷기', '생체 시계가 맞춰져 밤에 잠이 잘 와요'],
+    [12 * 60, '점심' + (supNames('점심') ? ` · ${supNames('점심')}` : ''), '채소 반찬 2가지 이상, 천천히 20분'],
+    [cafCut, '카페인 마감', '잠들기 9시간 전부터는 커피·녹차를 쉬어요'],
+    [15 * 60 + 30, `물 ${Math.round(p.waterGoal * 0.6)}잔째 확인 · 스트레칭 5분`, '오후 피로가 몰려올 때 몸을 풀어요'],
+    [Math.min(19 * 60, bed - 240), '저녁 식사' + (supNames('저녁') ? ` · ${supNames('저녁')}` : ''), '잠들기 3시간 전까지 끝내기'],
+    [bed - 60, '화면 끄기' + (supNames('자기 전') ? ` · ${supNames('자기 전')}` : ''), '조명을 낮추고 폰은 멀리'],
+    [bed, '잠자리에 들기', `${p.sleepGoal}시간 자고 ${fromMin(wake)}에 일어나기`],
+  ].map(([m, a, b]) => [((m % 1440) + 1440) % 1440, a, b]).sort((x, y) => ((x[0] - wake + 1440) % 1440) - ((y[0] - wake + 1440) % 1440));
+
+  const sr = suppReport(p, days), warns = suppWarnings(p, logged.some(r => (r.caffeine || []).length)), recsSupp = suppRecommend(p, days);
+
+  return `
+  ${titlebar(`${esc(p.name)} · 최근 2주 기록 기준`, '가이드')}
+  <section class="card">
+    <div class="score">
+      ${rings([{ pct: (score || 0) / 100, op: 1 }]).replace('물, 수면, 영양제 목표 달성률', '생활 점수')}
+      <div><p class="eyebrow">이상적인 생활에 얼마나 가까운지</p><p class="num">${score == null ? '-' : score}<small>점</small></p>
+        <p class="hint">${score == null ? '며칠만 기록하면 점수가 나와요.' : `${best.length ? `잘하고 있는 것: ${best.join(', ')}. ` : ''}${worst.length ? `먼저 챙길 것: <b style="color:var(--ink)">${worst.slice(0, 2).join(', ')}</b>` : '크게 부족한 곳이 없어요.'}`}</p></div>
+    </div>
+  </section>
+  <div class="cards">
+    <section class="card">
+      <header><h2>이상적인 하루</h2><span class="meta">${fromMin(wake)} 기상 기준</span></header>
+      <ol class="timeline">${tl.map(([m, a, b]) => `<li><time>${fromMin(m)}</time><span class="dot"></span><div class="what"><b>${a}</b><span>${b}</span></div></li>`).join('')}</ol>
+      <p class="hint">기상 시각은 최근 기록의 평균이에요. 수면 목표는 나 탭에서 바꿀 수 있어요.</p>
+    </section>
+
+    <section class="card">
+      <header><h2>나에게 추천하는 영양제</h2></header>
+      ${recsSupp.map(x => { const info = SUPP_BY_KEY[x.key]; return `<div class="rec"><div class="top"><h3>${info.label}</h3>${x.taking ? '<span class="st good">먹는 중</span>' : x.fit ? '<span class="st near">내 기록 기반</span>' : '<span class="st none">기본 추천</span>'}</div>
+        <p>${x.reason}</p><span class="when">먹기 좋은 때: <b>${info.best.join(' 또는 ')}</b> · ${info.why}</span>
+        ${x.taking ? '' : `<div class="row"><button class="btn small" data-act="addrec" data-k="${x.key}">내 목록에 추가 (${info.best[0]})</button></div>`}</div>`; }).join('')}
+      <p class="disclaimer">영양제는 식사를 대신하지 않아요. 약을 먹고 있거나 임신 중이면 약사·의사와 먼저 상담하세요. 철분은 피검사로 부족한지 확인하고 먹는 게 가장 좋아요.</p>
+    </section>
+
+    <section class="card">
+      <header><h2>내 영양제, 잘 먹고 있나요?</h2></header>
+      ${sr.length ? sr.map(x => `<div class="rec"><div class="top"><h3>${esc(x.s.name)}</h3><span class="st ${x.state}">${x.state === 'good' ? '잘 맞아요' : x.state === 'near' ? '시간 조정 추천' : '자주 빠져요'}</span></div>
+        ${x.msgs.map(m => `<p>${m}</p>`).join('')}
+        ${x.fix ? `<div class="row"><button class="btn small" data-act="suppmove" data-id="${x.s.id}" data-v="${x.fix}">${x.fix}로 바꾸기</button></div>` : ''}</div>`).join('')
+        : '<p class="hint">등록한 영양제가 없어요. 위 추천에서 추가해 보세요.</p>'}
+      ${warns.length ? `<p class="sub">같이 먹을 때 주의</p><ul class="insights">${warns.map(w => `<li>${w}</li>`).join('')}</ul>` : ''}
+      <p class="hint">오늘 탭에서 체크하면 먹은 시각이 기록돼서, 실제로 권장 시간에 먹고 있는지 알려 드려요.</p>
+    </section>
+
+    <section class="card">
+      <header><h2>이상적인 기준과 나</h2></header>
+      <div class="goals">${goals.map(g => `<div class="goal-row"><h3>${g.h}</h3><span class="st ${g.s}">${ST[g.s]}</span><span class="ideal">${g.ideal}</span>${g.mine ? `<span class="mine">나: ${g.mine}</span>` : ''}</div>`).join('')}</div>
+      <p class="disclaimer">일반적인 건강 기준이에요. 질환이 있거나 몸 상태가 특별하면 의사와 상의해 목표를 정하세요.</p>
     </section>
   </div>`;
 }
@@ -1014,6 +1544,7 @@ function viewProfile() {
       <header><h2>${esc(p.name)}님의 정보와 목표</h2></header>
       <div class="formgrid">
         <label class="field"><span>이름 또는 별명</span><input id="pf-name" data-pf="name" maxlength="20" value="${esc(p.name)}"></label>
+        <label class="field"><span>성별</span><select id="pf-sex" data-pf="sex">${['여', '남'].map(x => `<option ${p.sex === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
         ${numField('birthYear', '출생연도', p.birthYear, 'min="1900" max="2100"')}
         ${numField('height', '키 (cm)', p.height)}
         ${numField('weight', '평소 체중 (kg)', p.weight)}
@@ -1022,8 +1553,9 @@ function viewProfile() {
         ${numField('caffeineLimit', '카페인 한도 (mg/일)', p.caffeineLimit, 'min="0" step="10"')}
         ${numField('alcoholWeekLimit', '술 목표 (g/주, 선택)', p.alcoholWeekLimit, 'min="0"')}
         ${numField('monthBudget', '한 달 생활비 예산 (원)', p.monthBudget, 'min="0" step="10000"')}
+        <label class="field"><span>평소 활동량</span><select id="pf-activity" data-pf="activity">${Object.keys(ACTIVITY).map(x => `<option ${p.activity === x ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
       </div>
-      <p class="hint">${suggest ? `몸무게 기준 하루 물 권장량은 약 ${suggest}잔(체중×30ml)이에요. ` : ''}성인 카페인은 하루 400mg 이하, 임신 중이면 300mg 이하가 식약처 권고예요. 소주 1잔은 알코올 약 6.5g이에요.</p>
+      <p class="hint">하루 권장 칼로리는 약 ${kcalTarget(p).toLocaleString('ko-KR')}kcal예요 (키·몸무게·나이·활동량 기준). ${suggest ? `몸무게 기준 하루 물 권장량은 약 ${suggest}잔(체중×30ml)이에요. ` : ''}성인 카페인은 하루 400mg 이하, 임신 중이면 300mg 이하가 식약처 권고예요. 소주 1잔은 알코올 약 6.5g이에요.</p>
       <label class="check"><input type="checkbox" id="pf-trackCycle" data-pf="trackCycle" ${p.trackCycle ? 'checked' : ''}> 생리 주기 기록하기</label>
       ${p.trackCycle ? `<div class="formgrid">${numField('cycleLength', '평소 주기 (일)', p.cycleLength, 'min="18" max="60"')}${numField('periodLength', '생리 기간 (일)', p.periodLength, 'min="1" max="10"')}</div>
       <p class="hint">기록이 2번 이상 쌓이면 실제 평균 주기로 자동 계산해요.</p>` : ''}
@@ -1032,7 +1564,7 @@ function viewProfile() {
     <section class="card" data-c="supp">
       <header><h2>영양제 목록</h2><span class="meta">${(p.supplements || []).length}개</span></header>
       ${(p.supplements || []).length ? `<ul class="list">${p.supplements.map(s => `<li><span class="nm">${esc(s.name)} ${s.dose ? `<small>${esc(s.dose)}</small>` : ''}</span><small>${esc(s.time)}</small>
-        <button class="btn small" data-act="delsupp" data-id="${s.id}" aria-label="${esc(s.name)} 지우기">삭제</button></li>`).join('')}</ul>` : '<p class="hint">먹고 있는 영양제·약을 등록하면 오늘 탭에 체크리스트가 생겨요.</p>'}
+        <button class="btn small" data-act="delsupp" data-id="${s.id}" aria-label="${esc(s.name)} 지우기">삭제</button></li>`).join('')}</ul>` : '<p class="hint">먹고 있는 영양제를 등록하면 오늘 탭에 체크리스트가 생겨요. 이름을 적으면 먹기 좋은 때를 자동으로 골라 드려요.</p>'}
       <div class="formgrid">
         <label class="field"><span>이름</span><input id="s-name" maxlength="30" placeholder="예: 비타민D"></label>
         <label class="field"><span>용량 (선택)</span><input id="s-dose" maxlength="20" placeholder="예: 1000IU, 1알"></label>
@@ -1043,11 +1575,13 @@ function viewProfile() {
 
     <section class="card">
       <header><h2>작은 습관 관리</h2><span class="meta">${(p.habits || []).length}개</span></header>
-      ${(p.habits || []).length ? `<ul class="list">${p.habits.map(h => `<li><span class="nm">${esc(h.name)}</span><button class="btn small" data-act="delhabit" data-id="${h.id}" aria-label="${esc(h.name)} 지우기">삭제</button></li>`).join('')}</ul>` : ''}
-      <div class="chips">${HABIT_PRESETS.filter(x => !(p.habits || []).some(h => h.name === x)).map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>
-      <div class="row"><label class="field"><span>직접 만들기</span><input id="h-name" maxlength="24" placeholder="예: 점심 먹고 계단 오르기"></label></div>
+      ${(p.habits || []).length ? `<ul class="list">${p.habits.map(h => `<li><span class="nm">${esc(h.name)} <small>· ${esc(h.slot || '언제든')}</small></span><button class="btn small" data-act="delhabit" data-id="${h.id}" aria-label="${esc(h.name)} 지우기">삭제</button></li>`).join('')}</ul>` : ''}
+      ${HABIT_GROUPS.map(g => { const left = g.items.filter(x => !(p.habits || []).some(h => h.name === x)); return left.length ? `<p class="sub">${g.g}</p><div class="chips">${left.map(x => `<button type="button" class="chip" data-act="habitpreset" data-v="${esc(x)}">+ ${esc(x)}</button>`).join('')}</div>` : ''; }).join('')}
+      <p class="sub">직접 만들기</p>
+      <div class="formgrid"><label class="field"><span>습관 이름</span><input id="h-name" maxlength="24" placeholder="예: 점심 먹고 계단 오르기"></label>
+        <label class="field"><span>언제</span><select id="h-slot">${HABIT_SLOTS.map(x => `<option>${x}</option>`).join('')}</select></label></div>
       <div class="row"><button class="btn primary" data-act="addhabit">습관 추가</button></div>
-      <p class="hint">3개가 넘으면 오히려 지치기 쉬워요. 2주 동안 잘 지켜지면 하나씩 늘려 보세요.</p>
+      <p class="hint">처음엔 쉬운 것 위주로 시작하고, 2주 동안 잘 지켜지면 하나씩 늘려 보세요.</p>
     </section>
 
     <section class="card" data-c="water">
@@ -1076,6 +1610,7 @@ const ICONS = {
   today: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M8.3 12.2l2.6 2.6 4.9-5.4"/></svg>',
   history: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 19.5V13M10 19.5V6.5M15 19.5V10M20 19.5V4.5"/></svg>',
   spend: '<svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="13" rx="3"/><path d="M3.5 10h17M15.5 14.5h2"/></svg>',
+  guide: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.2 17.5h5.6M10 20.5h4M12 3.5a6 6 0 0 0-3.6 10.8c.6.5.8 1.1.8 1.8v1.4h5.6v-1.4c0-.7.3-1.3.8-1.8A6 6 0 0 0 12 3.5z"/></svg>',
   cycle: '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3.5c3.3 4 5.6 7.2 5.6 10.1a5.6 5.6 0 0 1-11.2 0C6.4 10.7 8.7 7.5 12 3.5z"/></svg>',
   profile: '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8.3" r="3.8"/><path d="M4.8 20c.9-3.6 3.7-5.6 7.2-5.6s6.3 2 7.2 5.6"/></svg>',
 };
@@ -1084,7 +1619,7 @@ function titlebar(eyebrow, title, right = '') {
 }
 function renderHeader() {
   const has = S.meta && S.meta.profiles.length;
-  const tabs = [['today', '오늘'], ['history', '기록'], ['spend', '소비'], ...(has && P().trackCycle ? [['cycle', '주기']] : []), ['profile', '사용자']];
+  const tabs = [['today', '오늘'], ['history', '기록'], ['spend', '소비'], ['guide', '가이드'], ['profile', '나']];
   $('#tabs').hidden = !has;
   $('#tabs').innerHTML = has ? tabs.map(([k, l]) => `<button type="button" data-tab="${k}" ${S.tab === k ? 'aria-current="page"' : ''}>${ICONS[k]}<span>${l}</span></button>`).join('') : '';
   $('#whoWrap').hidden = !has;
@@ -1105,12 +1640,17 @@ async function render() {
   const seq = ++renderSeq;
   const root = $('#app');
   if (!S.meta || !S.meta.profiles.length) { root.innerHTML = viewWelcome(); renderHeader(); return; }
-  if (S.tab === 'cycle' && !P().trackCycle) S.tab = 'today';
+  if (S.tab === 'cycle') { S.tab = 'history'; S.histView = 'cycle'; }
+  if (S.histView === 'cycle' && !P().trackCycle) S.histView = 'trend';
   if (S.tab === 'today') await ensureRange(addDays(S.date, -62), S.date);
+  if (S.tab === 'guide') await ensureRange(addDays(today(), -34), today());
   if (S.tab === 'spend') await ensureRange(addDays(S.date.slice(0, 8) + '01', -7), S.date);
   if (S.tab === 'history') await ensureRange(addDays(today(), -34), today());
   if (seq !== renderSeq) return;
-  const html = S.tab === 'spend' ? viewSpend() : S.tab === 'history' ? viewHistory() : S.tab === 'cycle' ? viewCycle() : S.tab === 'profile' ? viewProfile() : viewToday();
+  const seg = P().trackCycle ? `<div class="scale" role="group" aria-label="기록 보기" style="margin-top:12px">
+    <button type="button" data-act="histview" data-v="trend" class="${S.histView !== 'cycle' ? 'on' : ''}" aria-pressed="${S.histView !== 'cycle'}">2주 흐름</button>
+    <button type="button" data-act="histview" data-v="cycle" class="${S.histView === 'cycle' ? 'on' : ''}" aria-pressed="${S.histView === 'cycle'}">생리 주기</button></div>` : '';
+  const html = S.tab === 'spend' ? viewSpend() : S.tab === 'guide' ? viewGuide() : S.tab === 'history' ? seg + (S.histView === 'cycle' ? viewCycle() : viewHistory()) : S.tab === 'profile' ? viewProfile() : viewToday();
   root.innerHTML = html;
   renderHeader();
 }
@@ -1130,16 +1670,16 @@ function makeDemo() {
   p.supplements = [
     { id: newId(), name: '종합비타민', dose: '1알', time: '아침' },
     { id: newId(), name: '유산균', dose: '1포', time: '아침' },
-    { id: newId(), name: '오메가3', dose: '1000mg', time: '점심' },
+    { id: newId(), name: '오메가3', dose: '1000mg', time: '아침' },
     { id: newId(), name: '마그네슘', dose: '1알', time: '자기 전' },
   ];
   const t = today();
   [-83, -55, -27].forEach((off, ci) => { for (let i = 0; i < 5; i++) p.periods[addDays(t, off + i)] = [2, 3, 2, 1, 1][i] - (ci === 1 && i === 1 ? 1 : 0); });
   p.monthBudget = 900000;
-  p.habits = [{ id: newId(), name: '아침에 물 한 잔' }, { id: newId(), name: '10분 걷기' }, { id: newId(), name: '자기 전 폰 내려놓기' }];
+  p.habits = [{ id: newId(), name: '일어나자마자 물 한 잔', slot: '아침' }, { id: newId(), name: '아침 햇빛 10분', slot: '아침' }, { id: newId(), name: '10분 걷기', slot: '낮' }, { id: newId(), name: '채소 반찬 2번 먹기', slot: '언제든' }, { id: newId(), name: '자기 전 폰 내려놓기', slot: '저녁' }];
   S.meta.profiles.push(p); S.meta.activeId = p.id;
   const shops = [['카페·간식', '아메리카노', 4500, false], ['식비', '편의점 점심', 7800, false], ['배달', '떡볶이', 21000, true], ['쇼핑', '올리브영', 32000, true], ['교통', '택시', 9800, false], ['생활용품', '다이소', 12000, false], ['카페·간식', '디저트', 6500, true], ['식비', '마트 장보기', 38000, false]];
-  const meals = { breakfast: ['요거트, 바나나', '토스트, 커피', '', '삶은 달걀 2개'], lunch: ['급식 (현미밥, 미역국, 제육)', '급식 (카레, 샐러드)', '급식 (비빔밥, 된장국)'], dinner: ['닭가슴살 샐러드', '김치찌개, 밥', '떡볶이 (배달)', '연어 포케', '라면'], snack: ['', '과자', '아이스크림', '견과류'] };
+  const meals = { breakfast: ['그릭요거트, 바나나', '토스트, 라떼', '', '삶은 계란 2개, 사과'], lunch: ['급식 (현미밥, 미역국, 제육볶음, 김치)', '급식 (카레라이스, 샐러드)', '급식 (비빔밥, 된장국)'], dinner: ['닭가슴살 샐러드, 고구마', '김치찌개, 밥, 계란말이', '떡볶이, 순대 (배달)', '연어 포케', '라면, 김치'], snack: ['', '과자', '아이스크림', '견과류'] };
   for (let i = 20; i >= 0; i--) {
     const d = addDays(t, -i);
     if (i > 0 && rnd() < 0.12) continue;
@@ -1152,16 +1692,16 @@ function makeDemo() {
       r.sleep = { bed: `${pad(Math.floor(bedM / 60) % 24)}:${pad(bedM % 60 - bedM % 5)}`, wake: `${pad(Math.floor(wakeM / 60))}:${pad(wakeM % 60 - wakeM % 5)}` };
       r.sleepQ = 2 + Math.floor(rnd() * 4);
       r.water = i === 0 ? 3 : 3 + Math.floor(rnd() * 6);
-      r.supps = {}; p.supplements.forEach(s => { if (rnd() < (i === 0 ? 0.5 : 0.75)) r.supps[s.id] = true; });
+      r.supps = {}; p.supplements.forEach(s => { if (rnd() < (i === 0 ? 0.5 : 0.75)) r.supps[s.id] = s.time === '자기 전' ? `22:${pad(Math.floor(rnd() * 50))}` : s.time === '점심' ? `12:${pad(Math.floor(rnd() * 50))}` : rnd() < 0.6 ? `08:${pad(Math.floor(rnd() * 50))}` : `20:${pad(Math.floor(rnd() * 50))}`; });
       r.meals = { breakfast: pick(meals.breakfast), lunch: pick(meals.lunch) };
       if (i > 0) { r.meals.dinner = pick(meals.dinner); r.meals.snack = pick(meals.snack); }
       r.foodTags = rnd() < 0.5 ? ['채소·과일'] : ['배달·외식'];
       r.caffeine = [{ k: 'americano', mg: 150 }]; if (rnd() < 0.4) r.caffeine.push({ k: pick(['latte', 'mix', 'tea']), mg: 50 + Math.floor(rnd() * 3) * 50 });
-      r.caffeine = r.caffeine.map(x => ({ k: x.k, mg: (CAFFEINE.find(c => c.k === x.k) || x).mg }));
+      r.caffeine = r.caffeine.map((x, ci) => ({ k: x.k, mg: (CAFFEINE.find(c => c.k === x.k) || x).mg, t: ci === 0 ? '08:20' : rnd() < 0.5 ? '15:40' : '13:10' }));
       if (rnd() < 0.18) r.alcohol = [{ k: 'beer', g: ALCOHOL[1].g }, { k: 'soju', g: ALCOHOL[0].g }];
       if (rnd() < 0.5) r.exercise = { type: pick(['걷기', '필라테스', '홈트']), min: 20 + Math.floor(rnd() * 5) * 10, steps: 4000 + Math.floor(rnd() * 7000) };
       if (i % 3 === 0) r.weight = round1(54 + (rnd() - 0.5) * 1.2);
-      r.habits = {}; p.habits.forEach((h, hi) => { if (rnd() < [0.85, 0.6, 0.4][hi]) r.habits[h.id] = true; });
+      r.habits = {}; p.habits.forEach((h, hi) => { if (rnd() < [0.85, 0.5, 0.6, 0.45, 0.4][hi]) r.habits[h.id] = true; });
       if (rnd() < 0.15) r.noSpend = true;
       else { r.spend = []; const k = 1 + Math.floor(rnd() * 3); for (let j = 0; j < k; j++) { const s = pick(shops); r.spend.push({ cat: s[0], memo: s[1], amt: s[2], want: s[3] }); } }
       if (i === 0) r.note = '예시 기록이에요. 지우려면 사용자 탭에서 예시 사용자를 삭제하세요.';
@@ -1182,10 +1722,38 @@ document.addEventListener('click', async e => {
     case 'gotoday': S.date = today(); break;
     case 'scale': editDay(d, r => { r[b.dataset.f] = r[b.dataset.f] === n ? undefined : n; }); break;
     case 'chip': editDay(d, r => { const arr = r[b.dataset.list] || []; const i = arr.indexOf(b.dataset.v); if (i >= 0) arr.splice(i, 1); else arr.push(b.dataset.v); r[b.dataset.list] = arr; }); break;
-    case 'water': editDay(d, r => { r.water = Math.max(0, (r.water || 0) + n); }); break;
-    case 'supp': editDay(d, r => { r.supps = r.supps || {}; if (r.supps[b.dataset.id]) delete r.supps[b.dataset.id]; else r.supps[b.dataset.id] = true; }); break;
-    case 'suppall': editDay(d, r => { r.supps = {}; p.supplements.forEach(s => { r.supps[s.id] = true; }); }); break;
-    case 'caf': { const c = CAFFEINE.find(x => x.k === b.dataset.k); editDay(d, r => { (r.caffeine = r.caffeine || []).push({ k: c.k, mg: c.mg }); }); break; }
+    case 'water': {
+      const before = getDay(d).water || 0;
+      editDay(d, r => { r.water = Math.max(0, (r.water || 0) + n); });
+      if (n > 0 && before + 1 === (p.waterGoal || 8)) toast('물 목표 달성! 물병이 아주 행복해해요');
+      break;
+    }
+    case 'supp': editDay(d, r => { r.supps = r.supps || {}; if (r.supps[b.dataset.id]) delete r.supps[b.dataset.id]; else r.supps[b.dataset.id] = d === today() ? nowHM() : true; }); break;
+    case 'suppall': editDay(d, r => { r.supps = r.supps || {}; p.supplements.forEach(s => { if (!r.supps[s.id]) r.supps[s.id] = d === today() ? nowHM() : true; }); }); break;
+    case 'caf': {
+      const c = CAFFEINE.find(x => x.k === b.dataset.k), isToday = d === today();
+      editDay(d, r => { const e = { k: c.k, mg: c.mg }; if (isToday) e.t = nowHM(); (r.caffeine = r.caffeine || []).push(e); });
+      if (isToday && new Date().getHours() >= 14 && c.mg >= 40) toast('오후 2시가 넘었어요. 오늘 밤 잠을 위해 다음 잔은 디카페인으로!');
+      break;
+    }
+    case 'suppmove': { const s = p.supplements.find(x => x.id === b.dataset.id); if (s) { s.time = b.dataset.v; saveMeta(); toast(`${s.name}을(를) ${b.dataset.v}로 옮겼어요.`); } break; }
+    case 'addrec': { const info = SUPP_BY_KEY[b.dataset.k]; p.supplements.push({ id: newId(), name: info.label, dose: '', time: info.best[0] }); saveMeta(); toast(`${info.label}을(를) ${info.best[0]}에 추가했어요.`); break; }
+    case 'histview': S.histView = b.dataset.v; break;
+    case 'gocycle': S.tab = 'history'; S.histView = 'cycle'; await render(); window.scrollTo(0, 0); return;
+    case 'aikcal': {
+      const r0 = getDay(d), meals = MEALS.filter(([k]) => (getPath(r0, 'meals.' + k) || '').trim());
+      if (!meals.length) { toast('먼저 먹은 음식을 적어 주세요.'); return; }
+      const sample = window.claude && window.claude.use ? await window.claude.use('sample') : null;
+      if (!sample) { toast('AI 계산은 Claude에서 열었을 때만 쓸 수 있어요.'); return; }
+      b.disabled = true; b.textContent = '계산 중…';
+      try {
+        const lines = meals.map(([k, l]) => `${k} (${l}): ${r0.meals[k]}`).join('\n');
+        const res = await sample.json(`다음은 한국인 한 사람이 하루 동안 먹은 음식 기록이에요. 끼니별로 칼로리(kcal)와 단백질(g)을 현실적으로 추정해 주세요. 양이 안 적혀 있으면 보통 1인분으로 보고, 급식은 학교 급식 1인분으로 봐요.\n\n${lines}\n\n아래 JSON 형식으로만 답하세요. 기록이 없는 끼니는 빼세요.\n{"breakfast":{"kcal":0,"protein":0},"lunch":{"kcal":0,"protein":0},"dinner":{"kcal":0,"protein":0},"snack":{"kcal":0,"protein":0}}`, { modelTier: 'quick' });
+        editDay(d, r => { r.kcalAI = r.kcalAI || {}; meals.forEach(([k]) => { const v = res && res[k]; if (v && Number.isFinite(Number(v.kcal))) r.kcalAI[k] = { t: r.meals[k], kcal: Math.round(Number(v.kcal)), protein: Math.round(Number(v.protein) || 0) }; }); });
+        toast('AI가 칼로리를 다시 계산했어요.');
+      } catch (err) { toast(err && err.code === 'not_granted' ? 'AI 사용을 허용하지 않아서 계산하지 못했어요.' : 'AI 계산에 실패했어요. 잠시 후 다시 눌러 주세요.'); }
+      break;
+    }
     case 'cafdel': editDay(d, r => { (r.caffeine || []).splice(Number(b.dataset.i), 1); }); break;
     case 'alc': { const c = ALCOHOL.find(x => x.k === b.dataset.k); editDay(d, r => { (r.alcohol = r.alcohol || []).push({ k: c.k, g: c.g }); }); break; }
     case 'alcdel': editDay(d, r => { (r.alcohol || []).splice(Number(b.dataset.i), 1); }); break;
@@ -1201,12 +1769,19 @@ document.addEventListener('click', async e => {
       p.supplements.push({ id: newId(), name, dose: $('#s-dose').value.trim(), time: $('#s-time').value });
       saveMeta(); toast(`${name}을(를) 추가했어요.`); break;
     }
-    case 'habit': editDay(d, r => { r.habits = r.habits || {}; if (r.habits[b.dataset.id]) delete r.habits[b.dataset.id]; else r.habits[b.dataset.id] = true; }); break;
-    case 'habitpreset': (p.habits = p.habits || []).push({ id: newId(), name: b.dataset.v }); saveMeta(); toast(`'${b.dataset.v}' 습관을 추가했어요.`); break;
+    case 'habit': {
+      let nowOn = false;
+      editDay(d, r => { r.habits = r.habits || {}; if (r.habits[b.dataset.id]) delete r.habits[b.dataset.id]; else { r.habits[b.dataset.id] = true; nowOn = true; } });
+      S.popId = nowOn ? b.dataset.id : null;
+      const rr = getDay(d);
+      if (nowOn && p.habits.every(h => rr.habits && rr.habits[h.id])) toast('오늘 습관 모두 완료! 내일도 만나요');
+      await render(); S.popId = null; return;
+    }
+    case 'habitpreset': (p.habits = p.habits || []).push({ id: newId(), name: b.dataset.v, slot: presetSlot(b.dataset.v) }); saveMeta(); toast(`'${b.dataset.v}' 습관을 추가했어요.`); break;
     case 'addhabit': {
       const name = $('#h-name').value.trim();
       if (!name) { toast('습관 이름을 적어 주세요.'); $('#h-name').focus(); return; }
-      (p.habits = p.habits || []).push({ id: newId(), name: name.slice(0, 24) }); saveMeta(); break;
+      (p.habits = p.habits || []).push({ id: newId(), name: name.slice(0, 24), slot: $('#h-slot').value }); saveMeta(); break;
     }
     case 'delhabit': p.habits = (p.habits || []).filter(h => h.id !== b.dataset.id); saveMeta(); break;
     case 'spendcat': S.spendCat = b.dataset.v; { const keep = [$('#sp-amt').value, $('#sp-memo').value]; await render(); $('#sp-amt').value = keep[0]; $('#sp-memo').value = keep[1]; } return;
@@ -1276,7 +1851,16 @@ document.addEventListener('click', async e => {
 document.addEventListener('input', e => {
   const el = e.target;
   if (el.id === 'sp-amt') { const n = el.value.replace(/[^0-9]/g, '').slice(0, 10); el.value = n ? Number(n).toLocaleString('ko-KR') : ''; return; }
-  if (el.dataset.field && el.type !== 'time' && el.type !== 'number') editDay(S.date, r => setPath(r, el.dataset.field, el.value));
+  if (el.dataset.field && el.type !== 'time' && el.type !== 'number') {
+    editDay(S.date, r => setPath(r, el.dataset.field, el.value));
+    if (el.dataset.field.startsWith('meals.')) {
+      const r = getDay(S.date), k = el.dataset.field.slice(6), mk2 = mealKcal(r, k), dk = dayKcal(r);
+      const kc = $('#kc-' + k); if (kc) kc.textContent = mk2 ? `${mk2.kcal}kcal` : '';
+      const box = $('#kc-box'); if (box) box.innerHTML = kcalBox(P(), r);
+      const meta = $('#kc-meta'); if (meta) meta.textContent = dk ? `약 ${dk.kcal.toLocaleString('ko-KR')}kcal` : '';
+    }
+  }
+  if (el.id === 's-name') { const info = matchSupp(el.value); if (info && $('#s-time')) $('#s-time').value = info.best[0]; }
 });
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && (e.target.id === 'sp-amt' || e.target.id === 'sp-memo')) { e.preventDefault(); $('[data-act=addspend]').click(); }
