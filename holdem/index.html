@@ -303,6 +303,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
 </head>
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
 <div class="wrap">
   <header>
@@ -1380,103 +1381,119 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     }).join('');
   }
 
-  /* ---------- 친구와 같이 (claude.ai 실시간 방) ----------
-     방장의 화면이 딜러 역할을 해요. 게임 상태는 방장이 presence로 알리고, 참가자는 자기 선택만 보내요.
-     각 참가자의 카드는 그 사람만 풀 수 있게 암호화해서 보내요. */
-  const ARTIFACT_URL = 'https://claude.ai/artifact/3ibn7d95RHKHdECEqmKU6g';
+  /* ---------- 친구와 같이 (로그인 없이, 브라우저끼리 직접 연결) ----------
+     방장의 화면이 딜러 역할을 해요. 친구 폰과 방장 폰이 PeerJS(무료 연결 중개)를 통해 직접 이어지고,
+     방장은 친구마다 "그 친구의 카드만" 따로 보내요. */
+  const PAGES_URL = 'https://sjjj0103-bit.github.io/test/holdem/';
+  const P2P_OK = /(^|\.)github\.io$|^localhost$|^127\.0\.0\.1$/.test(location.hostname);
+  const ICE = [
+    { urls: 'stun:stun.l.google.com:19302' },
+    { urls: 'stun:global.stun.twilio.com:3478' },
+    { urls: ['turn:openrelay.metered.ca:80', 'turn:openrelay.metered.ca:443', 'turns:openrelay.metered.ca:443?transport=tcp'], username: 'openrelayproject', credential: 'openrelayproject' }
+  ];
+  const peerOpts = () => Object.assign({ debug: 0, config: { iceServers: ICE } }, window.__peerOpts || {});
   const CODE_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
   const randCode = (n = 6) => Array.from({ length: n }, () => CODE_CHARS[(Math.random() * CODE_CHARS.length) | 0]).join('');
-  const Net = {
-    room: null, named: null, unsub: null, code: null, role: null, nick: pref('holdemNick', ''), sid: null, n: 0,
-    keys: null, guests: {}, lastN: {}, lastSent: '', lastApplied: '', hostPub: null, hostKey: null, holeCache: {}, encCache: {}, publishing: false, again: false
-  };
-  const inviteLink = () => `${ARTIFACT_URL}#hd-${Net.code}`;
+  const ss = { get: k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} } };
+  const Net = { peer: null, code: null, role: null, nick: pref('holdemNick', ''), sid: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '' };
+  const inviteLink = () => `${PAGES_URL}#hd-${Net.code}`;
   const setStatus = t => { $('pvpStatus').textContent = t; };
   const cleanName = s => String(s || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 8);
+  const send = (conn, msg) => { try { if (conn && conn.open) conn.send(msg); } catch (e) { /* 끊긴 연결 */ } };
 
-  const C = window.crypto && window.crypto.subtle;
-  const b64 = buf => btoa(String.fromCharCode(...new Uint8Array(buf)));
-  const unb64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
-  async function myKeys() {
-    if (!C) return null;
-    if (!Net.keys) {
-      const kp = await C.generateKey({ name: 'ECDH', namedCurve: 'P-256' }, false, ['deriveKey']);
-      Net.keys = { kp, pub: b64(await C.exportKey('raw', kp.publicKey)) };
-    }
-    return Net.keys;
-  }
-  async function sharedKey(otherPub) {
-    const k = await myKeys();
-    const pk = await C.importKey('raw', unb64(otherPub), { name: 'ECDH', namedCurve: 'P-256' }, false, []);
-    return C.deriveKey({ name: 'ECDH', public: pk }, k.kp.privateKey, { name: 'AES-GCM', length: 128 }, false, ['encrypt', 'decrypt']);
-  }
-  async function seal(key, obj) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ct = await C.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(JSON.stringify(obj)));
-    return { iv: b64(iv), ct: b64(ct) };
-  }
-  async function unseal(key, box) {
-    const pt = await C.decrypt({ name: 'AES-GCM', iv: unb64(box.iv) }, key, unb64(box.ct));
-    return JSON.parse(new TextDecoder().decode(pt));
-  }
-
-  async function initRoom() {
-    try { if (window.claude && window.claude.use) Net.room = await window.claude.use('room'); } catch (e) { Net.room = null; }
+  function initRoom() {
     paintSetup();
     tryHash();
   }
   function tryHash() {
     const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
-    if (m && Net.room && Net.code !== m[1]) joinRoom(m[1]);
+    if (m && P2P_OK && Net.code !== m[1]) joinRoom(m[1]);
   }
   window.addEventListener('hashchange', tryHash);
 
-  async function leaveRoom() {
-    if (Net.named) { try { if (Net.unsub) Net.unsub(); await Net.named.leave(); } catch (e) { /* 이미 나간 방 */ } }
-    Object.assign(Net, { named: null, unsub: null, code: null, role: null, n: 0, guests: {}, lastN: {}, lastSent: '', lastApplied: '', hostPub: null, hostKey: null, lastLobby: '' });
+  function leaveRoom() {
+    if (Net.peer) { try { Net.peer.destroy(); } catch (e) { /* 이미 닫힘 */ } }
+    Object.assign(Net, { peer: null, code: null, role: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '' });
   }
-  function roomFailed(e) {
+  function noPeerLib() {
+    if (window.Peer) return false;
     $('pvpPanel').hidden = false; $('qr').hidden = true;
-    setStatus(e && e.code === 'not_permitted' ? '이 화면에서는 친구 대전을 열 수 없어요. 아래 안내를 확인해 주세요.' : '방에 연결하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
+    setStatus('연결 도구를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');
+    return true;
   }
-  async function hostRoom() {
-    await leaveRoom();
+  function drawQR(text) {
+    const qr = $('qr');
+    qr.hidden = false; qr.innerHTML = '';
+    if (window.QRCode) new window.QRCode(qr, { text, width: 180, height: 180, correctLevel: window.QRCode.CorrectLevel.M });
+    else qr.textContent = 'QR을 불러오지 못했어요. 링크를 보내 주세요.';
+  }
+
+  // claude.ai 안에서는 외부 연결이 막혀 있어서, 친구와 치기는 공개 주소에서 열어야 해요.
+  function showMovePanel() {
+    $('pvpPanel').hidden = false;
+    $('pvpTitle').textContent = '친구와 치기는 이 주소에서 열어 주세요';
+    setStatus('여기(claude.ai 안)에서는 친구 연결이 막혀 있어요. 아래 주소는 로그인 없이 누구나 들어올 수 있어요.');
+    $('pvpHelp').innerHTML = `내 폰에서 아래 주소를 열고 "친구 초대 (QR)"을 다시 누르세요. 그러면 친구용 QR이 나와요.<br><a href="${PAGES_URL}" target="_blank" rel="noopener" style="color:var(--brass);font-weight:700">${PAGES_URL} 열기</a>`;
+    $('pvpCode').textContent = '–';
+    $('pvpLink').textContent = PAGES_URL;
+    drawQR(PAGES_URL);
+    $('startPvp').hidden = true; $('lobbyList').innerHTML = '';
+    $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function hostRoom(retry = 0) {
+    if (noPeerLib()) return;
+    leaveRoom();
     const code = randCode();
-    try { await myKeys(); Net.named = await Net.room.join('hd-' + code); } catch (e) { roomFailed(e); return; }
     Object.assign(Net, { code, role: 'host' });
-    hostPresence();
-    Net.unsub = Net.named.onPeers(onPeersHost, () => setStatus('연결이 끊겼어요. "친구 초대"를 다시 눌러 주세요.'));
+    const peer = new window.Peer('hdcoach-' + code, peerOpts());
+    Net.peer = peer;
+    setStatus('방을 만드는 중이에요…');
     showPanel();
-    setStatus('친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.');
+    peer.on('open', () => { if (Net.peer === peer) setStatus('친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.'); });
+    peer.on('connection', conn => setupGuestConn(conn));
+    peer.on('disconnected', () => { if (Net.peer === peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500); });
+    peer.on('error', e => {
+      if (Net.peer !== peer) return;
+      if (e.type === 'unavailable-id' && retry < 3) return hostRoom(retry + 1);
+      if (e.type === 'peer-unavailable') return;
+      setStatus('연결 서버에 접속하지 못했어요. 인터넷을 확인하고 "친구 초대"를 다시 눌러 주세요.');
+    });
   }
-  async function joinRoom(code) {
-    await leaveRoom();
-    // 자리 번호표는 탭마다 따로 (새로고침해도 같은 자리로 돌아와요)
-    const ss = { get: k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} } };
-    let sid = ss.get('hd-sid-' + code);
-    if (!/^s[a-z0-9]{6,12}$/.test(sid)) { sid = 's' + randCode(8); ss.set('hd-sid-' + code, sid); }
-    try { await myKeys(); Net.named = await Net.room.join('hd-' + code); } catch (e) { roomFailed(e); return; }
-    Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code)) || 0 });
-    Net.ss = ss;
-    guestPresence(null);
-    Net.unsub = Net.named.onPeers(onPeersGuest, () => setStatus('연결이 끊겼어요. 링크를 다시 열어 주세요.'));
-    showPanel();
-    setStatus('친구의 방을 찾는 중이에요…');
+  function setupGuestConn(conn) {
+    conn.on('data', msg => onGuestMsg(conn, msg));
+    const gone = () => {
+      const g = Net.guests[conn.sid];
+      if (g && g.conn === conn && !g.gone) { g.gone = true; g.goneSince = Date.now(); guestsChanged(); }
+    };
+    conn.on('close', gone); conn.on('error', gone);
   }
-  // 바뀐 게 있을 때만 보내요 (안 그러면 서로의 알림이 끝없이 오가요)
-  function hostPresence() {
-    if (!Net.named) return;
-    const patch = { role: 'host', hpub: Net.keys ? Net.keys.pub : null, nick: Net.nick || '방장', lobby: lobbyInfo() };
-    const json = JSON.stringify(patch);
-    if (json === Net.lastLobby) return;
-    Net.lastLobby = json;
-    Net.named.presence(patch).catch(() => {});
+  function onGuestMsg(conn, msg) {
+    if (!msg || typeof msg !== 'object') return;
+    if (msg.t === 'hello') {
+      const sid = typeof msg.sid === 'string' && /^s[a-z0-9]{6,12}$/.test(msg.sid) ? msg.sid : null;
+      if (!sid) return;
+      const g = Net.guests[sid] || (Net.guests[sid] = { lastN: 0 });
+      if (g.conn && g.conn !== conn) { try { g.conn.close(); } catch (e) {} }
+      conn.sid = sid;
+      Object.assign(g, { conn, name: cleanName(msg.nick) || '친구', gone: false, goneSince: 0, lastSent: '' });
+      if (typeof msg.n === 'number' && msg.n > g.lastN) g.lastN = msg.n;   // 새로고침 전에 처리한 선택은 다시 하지 않아요
+      guestsChanged();
+      return;
+    }
+    const g = Net.guests[conn.sid];
+    if (!g || g.conn !== conn) return;
+    if (msg.t === 'nick') { g.name = cleanName(msg.nick) || g.name; guestsChanged(); return; }
+    if (msg.t === 'act' && typeof msg.n === 'number' && msg.n > g.lastN) { g.lastN = msg.n; handleRemote(conn.sid, msg); }
   }
-  function guestPresence(act) {
-    if (!Net.named) return;
-    const patch = { role: 'guest', sid: Net.sid, pub: Net.keys ? Net.keys.pub : null, nick: Net.nick || '친구' };
-    if (act !== undefined) patch.act = act;
-    Net.named.presence(patch).catch(() => {});
+  function guestsChanged() {
+    const n = Object.values(Net.guests).filter(g => !g.gone).length;
+    if (G.mode !== 'host') setStatus(n ? `친구 ${n}명이 들어왔어요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.` : '친구가 들어오기를 기다리는 중이에요.');
+    else setStatus(`게임 중이에요 · 친구 ${n}명 접속 중`);
+    const sig = JSON.stringify(Object.entries(Net.guests).map(([k, g]) => [k, g.name, g.gone]));
+    if (sig !== Net.lastGuestSig) Net.lastGuestSig = sig;
+    renderLobby();
+    if (G.mode === 'host') render(); else publish();
   }
   function lobbyInfo() {
     const list = Object.entries(Net.guests).filter(([, g]) => !g.gone).map(([sid, g]) => ({ sid, name: g.name }));
@@ -1487,19 +1504,16 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     $('pvpCode').textContent = Net.code.toUpperCase();
     $('pvpLink').textContent = inviteLink();
     $('pvpTitle').textContent = Net.role === 'host' ? '친구 초대하기' : '친구 테이블에 참가했어요';
+    $('pvpHelp').textContent = Net.role === 'host'
+      ? '친구가 휴대폰 카메라로 QR을 찍거나 아래 링크를 열면 이 테이블에 앉아요. 로그인은 필요 없어요. 빈자리는 컴퓨터가 채워요.'
+      : '아래 "내 이름"을 정하면 테이블에 그 이름으로 표시돼요.';
     $('nick').value = Net.nick;
-    const qr = $('qr');
-    qr.hidden = Net.role !== 'host';
-    qr.innerHTML = '';
-    if (Net.role === 'host') {
-      if (window.QRCode) new window.QRCode(qr, { text: inviteLink(), width: 180, height: 180, correctLevel: window.QRCode.CorrectLevel.M });
-      else qr.textContent = 'QR을 불러오지 못했어요. 링크를 보내 주세요.';
-    }
+    if (Net.role === 'host') drawQR(inviteLink()); else { $('qr').hidden = true; $('qr').innerHTML = ''; }
     renderLobby(); paintSetup();
   }
   function renderLobby(hostLobby) {
     const box = $('lobbyList');
-    let rows = [];
+    const rows = [];
     if (Net.role === 'host') {
       rows.push(`<div class="lobby-row"><span class="dot"></span>${esc(Net.nick || '방장')} (나 · 방장)</div>`);
       const gs = Object.values(Net.guests);
@@ -1508,7 +1522,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       if (bots) rows.push(`<div class="lobby-row"><span class="dot bot"></span>빈자리 ${bots}개는 컴퓨터(${DIFF[settings.diff].label})가 앉아요</div>`);
       $('startPvp').hidden = false;
       $('startPvp').textContent = G.mode === 'host' && !ended() ? '지금 멤버로 새로 시작' : '이 멤버로 게임 시작';
-    } else {
+    } else if (Net.role === 'guest') {
       $('startPvp').hidden = true;
       if (hostLobby) {
         rows.push(`<div class="lobby-row"><span class="dot"></span>${esc(cleanName(hostLobby.host) || '방장')} (방장)</div>`);
@@ -1518,35 +1532,10 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     }
     box.innerHTML = rows.join('');
   }
-
-  function onPeersHost(ch) {
-    const now = Date.now();
-    const present = new Set();
-    for (const p of ch.peers) {
-      if (p.sameTab || !p.presence || p.presence.role !== 'guest') continue;
-      const pr = p.presence, sid = typeof pr.sid === 'string' && /^s[a-z0-9]{6,12}$/.test(pr.sid) ? pr.sid : null;
-      if (!sid) continue;
-      present.add(sid);
-      const g = Net.guests[sid] || (Net.guests[sid] = { name: '', pub: null, key: null });
-      g.name = cleanName(pr.nick) || '친구'; g.gone = false; g.goneSince = 0; g.peer = p.peer;
-      if (pr.pub && pr.pub !== g.pub && C) {
-        g.pub = pr.pub; g.key = null;
-        sharedKey(pr.pub).then(k => { if (g.pub === pr.pub) { g.key = k; Net.lastSent = ''; render(); } }).catch(() => {});
-      }
-      const act = pr.act;
-      if (act && act.sid === sid && act.n > (Net.lastN[sid] || 0)) { Net.lastN[sid] = act.n; handleRemote(sid, act); }
-    }
-    for (const [sid, g] of Object.entries(Net.guests)) if (!present.has(sid) && !g.gone) { g.gone = true; g.goneSince = now; }
-    const n = Object.values(Net.guests).filter(g => !g.gone).length;
-    if (G.mode !== 'host') setStatus(n ? `친구 ${n}명이 들어왔어요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.` : '친구가 들어오기를 기다리는 중이에요.');
-    else setStatus(`게임 중이에요 · 친구 ${n}명 접속 중`);
-    const sig = JSON.stringify(Object.entries(Net.guests).map(([k, g]) => [k, g.name, g.gone]));
-    if (sig !== Net.lastGuestSig) { Net.lastGuestSig = sig; renderLobby(); hostPresence(); if (G.mode === 'host') render(); }
-  }
   function startHostGame() {
     const guests = Object.entries(Net.guests).filter(([, g]) => !g.gone).map(([sid, g]) => ({ sid, name: g.name }));
     newHostGame(guests);
-    renderLobby(); hostPresence();
+    renderLobby();
   }
   // 연결이 끊긴 지 오래된 친구 자리는 다음 판부터 컴퓨터가 대신 쳐요
   function replaceGoneHumans() {
@@ -1584,91 +1573,108 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     if (g && g.gone && Date.now() - g.goneSince > 20000) act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0);
   }, 1000);
 
-  async function publish() {
-    if (!Net.named || Net.role !== 'host' || G.mode !== 'host') return;
-    if (Net.publishing) { Net.again = true; return; }
-    Net.publishing = true;
-    try {
+  // 방장 → 친구들: 게임 상태를 보내요. 카드는 친구마다 자기 것만 넣어요.
+  function publish() {
+    if (Net.role !== 'host' || !Net.peer) return;
+    let base = null;
+    if (G.mode === 'host') {
       const reveal = new Set(ended() ? G.revealed : []);
-      const holes = {};
-      for (const p of G.players) {
-        if (p.kind !== 'human' || !p.hole.length) continue;
-        const g = Net.guests[p.sid];
-        if (!g) continue;
-        if (!C || !g.key) continue;
-        const ck = `${p.sid}|${G.gid}|${G.handNo}|${g.pub}`;
-        if (!Net.encCache[ck]) Net.encCache[ck] = await seal(g.key, p.hole);
-        holes[p.sid] = Net.encCache[ck];
-      }
       const seats = {};
       G.players.forEach((p, s) => { if (p.kind === 'human') seats[p.sid] = s; });
       const r = G.result;
-      const st = {
-        v: 2, gid: G.gid, handNo: G.handNo, button: G.button, level: G.level, board: G.board, street: G.street,
+      base = {
+        v: 3, gid: G.gid, handNo: G.handNo, button: G.button, level: G.level, board: G.board, street: G.street,
         currentBet: G.currentBet, minRaise: G.minRaise, toAct: G.toAct, aggr: G.aggr, pos: G.pos, notice: G.notice,
-        endReason: G.endReason || null, revealed: [...reveal], seats, holes, diff: settings.diff,
+        endReason: G.endReason || null, revealed: [...reveal], seats, diff: settings.diff,
         result: r ? { how: r.how, winners: r.winners, gain: r.gain, hands: r.hands || null } : null,
-        log: G.log.slice(-5).map(l => l.slice(0, 40)),
+        log: G.log.slice(-6),
         players: G.players.map((p, s) => ({
-          name: p.name, kind: p.kind === 'human' ? 'human' : p.kind === 'me' ? 'host' : 'bot', stack: p.stack, bet: p.bet, total: p.total,
+          name: p.name, kind: p.kind === 'bot' ? 'bot' : 'human', stack: p.stack, bet: p.bet, total: p.total,
           folded: p.folded, allIn: p.allIn, acted: p.acted, last: p.last, out: p.out, place: p.place, inHand: p.inHand,
           shown: reveal.has(s) ? p.hole : null
         }))
       };
-      const json = JSON.stringify(st);
-      if (json !== Net.lastSent) {
-        Net.lastSent = json;
-        const patch = { role: 'host', hpub: Net.keys ? Net.keys.pub : null, nick: Net.nick || '방장', lobby: lobbyInfo() };
-        Net.lastLobby = JSON.stringify(patch);
-        await Net.named.presence({ ...patch, state: st }).catch(() => {});
+    }
+    const lobby = lobbyInfo();
+    for (const [sid, g] of Object.entries(Net.guests)) {
+      if (g.gone || !g.conn || !g.conn.open) continue;
+      let state = null;
+      if (base) {
+        const seat = base.seats[sid];
+        state = { ...base, mine: seat != null ? G.players[seat].hole : null };
       }
-    } finally {
-      Net.publishing = false;
-      if (Net.again) { Net.again = false; publish(); }
+      const msg = { t: 'sync', hostNick: Net.nick || '방장', lobby, state };
+      const json = JSON.stringify(msg);
+      if (json === g.lastSent) continue;
+      g.lastSent = json;
+      send(g.conn, msg);
     }
   }
-  Net.send = msg => {
-    if (!Net.named) return;
-    Net.n++; if (Net.ss) Net.ss.set('hd-n-' + Net.code, String(Net.n));
-    guestPresence({ ...msg, n: Net.n, sid: Net.sid });
-  };
 
-  function onPeersGuest(ch) {
-    const h = ch.peers.find(p => !p.sameTab && p.presence && p.presence.role === 'host');
-    if (!h) {
-      setStatus(G.mode === 'guest' ? '방장과 연결이 끊겼어요. 다시 들어오기를 기다려요.' : '방을 찾는 중이에요. 코드가 맞는지 확인해 주세요.');
-      if (G.mode === 'guest') { Net.hostGone = true; render(); }
-      return;
-    }
-    Net.hostGone = false;
-    const pr = h.presence;
-    renderLobby(pr.lobby ? { ...pr.lobby, host: pr.nick } : null);
-    if (pr.hpub && pr.hpub !== Net.hostPub && C) {
-      Net.hostPub = pr.hpub; Net.hostKey = null;
-      sharedKey(pr.hpub).then(k => { if (Net.hostPub === pr.hpub) { Net.hostKey = k; Net.lastApplied = ''; onPeersGuest({ peers: Net.named.peers() }); } }).catch(() => {});
-    }
-    const st = pr.state;
-    if (st && st.gid && (pr.lobby && pr.lobby.started || st.street === 'over')) {
+  // 친구 쪽
+  function joinRoom(code) {
+    if (noPeerLib()) return;
+    leaveRoom();
+    let sid = ss.get('hd-sid-' + code);
+    if (!/^s[a-z0-9]{6,12}$/.test(sid)) { sid = 's' + randCode(8); ss.set('hd-sid-' + code, sid); }
+    Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code)) || 0 });
+    const peer = new window.Peer(undefined, peerOpts());
+    Net.peer = peer;
+    showPanel();
+    setStatus('친구의 방에 연결하는 중이에요…');
+    peer.on('open', () => connectHost(peer));
+    peer.on('disconnected', () => { if (Net.peer === peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500); });
+    peer.on('error', e => {
+      if (Net.peer !== peer) return;
+      if (e.type === 'peer-unavailable') { setStatus('방을 찾을 수 없어요. 코드가 맞는지, 방장 화면이 켜져 있는지 확인해 주세요. 잠시 뒤 다시 시도해요.'); setTimeout(() => connectHost(peer), 4000); }
+      else setStatus('연결하지 못했어요. 인터넷을 확인하고 링크를 다시 열어 주세요.');
+    });
+  }
+  function connectHost(peer) {
+    if (Net.peer !== peer || peer.destroyed || (Net.hostConn && Net.hostConn.open)) return;
+    const conn = peer.connect('hdcoach-' + Net.code, { reliable: true });
+    conn.on('open', () => {
+      Net.hostConn = conn; Net.hostGone = false;
+      send(conn, { t: 'hello', sid: Net.sid, nick: Net.nick || '친구', n: Net.n });
+      setStatus('방에 들어왔어요. 방장이 시작하기를 기다리는 중이에요.');
+      if (G.mode === 'guest') render();
+    });
+    conn.on('data', onHostMsg);
+    const lost = () => {
+      if (Net.hostConn !== conn) return;
+      Net.hostConn = null; Net.hostGone = true;
+      setStatus('방장과 연결이 끊겼어요. 다시 연결하는 중이에요…');
+      if (G.mode === 'guest') render();
+      setTimeout(() => connectHost(peer), 3000);
+    };
+    conn.on('close', lost); conn.on('error', lost);
+  }
+  function onHostMsg(msg) {
+    if (!msg || msg.t !== 'sync') return;
+    const lobby = msg.lobby || {};
+    renderLobby({ ...lobby, host: msg.hostNick });
+    const st = msg.state;
+    if (st && st.gid && (lobby.started || st.street === 'over')) {
       const seated = st.seats && st.seats[Net.sid] != null;
       setStatus(seated ? '게임 중이에요.' : '이미 시작한 게임이에요. 지금은 구경만 하고, 방장이 새 게임을 시작하면 자리에 앉아요.');
       applyState(st);
     } else setStatus('방에 들어왔어요. 방장이 시작하기를 기다리는 중이에요.');
   }
-
-  async function myHoleFrom(st) {
-    const box = st.holes && st.holes[Net.sid];
-    if (!box || !Net.hostKey) return null;
-    const ck = box.ct;
-    if (!Net.holeCache[ck]) { try { Net.holeCache[ck] = await unseal(Net.hostKey, box); } catch (e) { return null; } }
-    return Net.holeCache[ck];
+  Net.send = msg => {
+    if (!Net.hostConn) return;
+    Net.n++; ss.set('hd-n-' + Net.code, String(Net.n));
+    send(Net.hostConn, { t: 'act', ...msg, n: Net.n });
+  };
+  function sendNick() {
+    if (Net.role === 'guest') send(Net.hostConn, { t: 'nick', nick: Net.nick || '친구' });
   }
-  async function applyState(s) {
+
+  function applyState(s) {
     const json = JSON.stringify(s);
     if (json === Net.lastApplied) return;
     Net.lastApplied = json;
     if (!s || !Array.isArray(s.players) || s.players.length < 2 || s.players.length > 8) return;
-    const myHole = await myHoleFrom(s);
-    if (json !== Net.lastApplied) return;   // 기다리는 사이 더 새 상태가 왔어요
+    const myHole = Array.isArray(s.mine) && s.mine.length === 2 ? s.mine : null;
     if (G.mode !== 'guest' || G.gid !== s.gid) {
       G = baseState('guest'); G.gid = s.gid;
       $('sessionEnd').hidden = true;
@@ -1714,7 +1720,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   }
 
   function paintSetup() {
-    const inRoom = !!Net.named;
+    const inRoom = !!Net.peer;
     document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.diff === settings.diff)));
     document.querySelectorAll('[data-seats]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.seats) === settings.seats)));
     $('pubMode').checked = settings.pub;
@@ -1956,16 +1962,13 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   }));
   document.querySelectorAll('[data-seats]').forEach(btn => btn.addEventListener('click', () => {
     settings.seats = Number(btn.dataset.seats); setPref('holdemSeats', settings.seats);
-    paintSetup(); renderLobby(); if (Net.role === 'host') hostPresence();
+    paintSetup(); renderLobby(); publish();
   }));
   $('pubMode').addEventListener('change', () => { settings.pub = $('pubMode').checked; setPref('holdemPub', settings.pub ? '1' : '0'); render(); });
   $('newGameBtn').addEventListener('click', () => { if (G.mode === 'host') startHostGame(); else newSoloGame(); });
   $('pvpBtn').addEventListener('click', () => {
-    if (!Net.room) {
-      $('setupNote').textContent = '친구 초대는 claude.ai 링크로 열었을 때만 쓸 수 있어요. 친구도 claude.ai에 로그인하고, 이 페이지를 공유받아야 해요.';
-      return;
-    }
-    if (Net.named) { $('pvpPanel').hidden = false; $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (!P2P_OK) { showMovePanel(); return; }
+    if (Net.peer) { $('pvpPanel').hidden = false; $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
     hostRoom();
   });
   $('startPvp').addEventListener('click', () => { if (Net.role === 'host') startHostGame(); });
@@ -1977,15 +1980,15 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   });
   $('nickSave').addEventListener('click', () => {
     Net.nick = cleanName($('nick').value); setPref('holdemNick', Net.nick);
-    if (Net.role === 'host') { hostPresence(); if (G.mode === 'host') { G.players[0].name = Net.nick || '방장'; render(); } }
-    else if (Net.role === 'guest') guestPresence();
+    if (Net.role === 'host') { if (G.mode === 'host') { G.players[0].name = Net.nick || '방장'; render(); } else publish(); }
+    else if (Net.role === 'guest') sendNick();
     renderLobby();
     $('nickSave').textContent = '저장했어요';
   });
   $('joinBtn').addEventListener('click', () => {
     const code = $('joinCode').value.toLowerCase().replace(/[^a-z0-9]/g, '');
     if (code.length < 4) { setStatus('방 코드 6자리를 입력해 주세요.'); return; }
-    if (!Net.room) { $('pvpPanel').hidden = false; setStatus('친구 대전은 claude.ai 링크로 열었을 때만 쓸 수 있어요.'); return; }
+    if (!P2P_OK) { showMovePanel(); return; }
     joinRoom(code);
   });
   $('copyLink').addEventListener('click', () => {
