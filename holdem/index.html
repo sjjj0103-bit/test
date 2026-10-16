@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-16b">
+<meta name="holdem-build" content="2026-10-16c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -1595,6 +1595,14 @@ body.locked { overflow: hidden; }
   const CODE_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
   const randCode = (n = 6) => Array.from({ length: n }, () => CODE_CHARS[(Math.random() * CODE_CHARS.length) | 0]).join('');
   const ss = { get: k => { try { return sessionStorage.getItem(k) || ''; } catch (e) { return ''; } }, set: (k, v) => { try { sessionStorage.setItem(k, v); } catch (e) {} } };
+  // 탭을 닫았다 다시 열어도 남는 저장소 (방 정보, 내 자리 번호표, 진행 중인 게임)
+  const ls = {
+    get: k => { try { return localStorage.getItem(k) || ''; } catch (e) { return ''; } },
+    set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} },
+    del: k => { try { localStorage.removeItem(k); } catch (e) {} },
+    json: k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
+  };
+  const RESUME_MS = 3 * 60 * 60 * 1000;   // 3시간 안에 돌아오면 이어서 해요
   const Net = { peer: null, code: null, role: null, nick: pref('holdemNick', ''), sid: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '' };
   const inviteLink = () => `${PAGES_URL}#hd-${Net.code}`;
   const setStatus = t => { $('pvpStatus').textContent = t; };
@@ -1603,12 +1611,62 @@ body.locked { overflow: hidden; }
 
   function initRoom() {
     paintSetup();
-    tryHash();
+    if (!P2P_OK) return;
+    const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
+    const host = ls.json('hd-host');
+    if (host && Date.now() - host.at < RESUME_MS && (!m || m[1] === host.code)) return resumeHost(host);
+    if (m) return joinRoom(m[1]);
+    const guest = ls.json('hd-guest');
+    if (guest && Date.now() - guest.at < RESUME_MS) joinRoom(guest.code, true);
   }
   function tryHash() {
     const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
     if (m && P2P_OK && Net.code !== m[1]) joinRoom(m[1]);
   }
+
+  // 방장: 진행 중인 게임을 계속 저장해 둬요. 실수로 나가도 다시 열면 그대로 이어져요.
+  let saveTimer = null;
+  function saveHostSession() {
+    if (Net.role !== 'host' || !Net.code) return;
+    clearTimeout(saveTimer);
+    saveTimer = setTimeout(saveHostNow, 300);
+  }
+  function saveHostNow() {
+    if (Net.role !== 'host' || !Net.code) return;
+    const guests = {};
+    Object.entries(Net.guests).forEach(([sid, g]) => { guests[sid] = { name: g.name, lastN: g.lastN || 0 }; });
+    const g = G.mode === 'host' ? { ...G, pending: null } : null;
+    ls.set('hd-host', JSON.stringify({ code: Net.code, at: Date.now(), nick: Net.nick, guests, G: g, seats: settings.seats, diff: settings.diff }));
+  }
+  window.addEventListener('pagehide', () => { if (Net.role === 'host') saveHostNow(); });
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && Net.role === 'host') saveHostNow(); });
+  function resumeHost(saved) {
+    if (noPeerLib()) return;
+    Net.nick = saved.nick || Net.nick;
+    if (saved.seats) settings.seats = saved.seats;
+    if (saved.diff && DIFF[saved.diff]) settings.diff = saved.diff;
+    hostRoom(0, saved.code);
+    const now = Date.now();
+    Object.entries(saved.guests || {}).forEach(([sid, g]) => { Net.guests[sid] = { name: g.name, lastN: g.lastN || 0, gone: true, goneSince: now, lastSent: '' }; });
+    if (saved.G && saved.G.players) {
+      G = saved.G;
+      G.busy = false; G.pending = null;
+      $('sessionEnd').hidden = true;
+      setStatus('진행 중이던 게임을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.');
+      if (!ended()) step(); else render();
+    }
+    renderLobby(); paintSetup();
+  }
+  // 친구 게임 중에 실수로 페이지를 닫으려 하면 한 번 물어봐요
+  window.addEventListener('beforeunload', e => {
+    if (Net.role && G && G.mode !== 'solo' && G.street !== 'over') { saveHostNow(); e.preventDefault(); e.returnValue = ''; }
+  });
+  // 방장 화면이 꺼지면 연결이 끊기기 쉬워서, 친구 게임 중에는 화면이 꺼지지 않게 해요
+  let wakeLock = null;
+  async function keepAwake() {
+    try { if (Net.role && navigator.wakeLock && document.visibilityState === 'visible' && !wakeLock) { wakeLock = await navigator.wakeLock.request('screen'); wakeLock.addEventListener('release', () => { wakeLock = null; }); } } catch (e) { wakeLock = null; }
+  }
+  document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
   window.addEventListener('hashchange', tryHash);
 
   function leaveRoom() {
@@ -1641,20 +1699,32 @@ body.locked { overflow: hidden; }
     $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
-  function hostRoom(retry = 0) {
+  function hostRoom(retry = 0, resumeCode = null) {
     if (noPeerLib()) return;
+    const keepGuests = resumeCode && Net.code === resumeCode ? Net.guests : null;
     leaveRoom();
-    const code = randCode();
+    if (keepGuests) Net.guests = keepGuests;
+    const code = resumeCode || randCode();
     Object.assign(Net, { code, role: 'host' });
+    ls.del('hd-guest');
     const peer = new window.Peer('hdcoach-' + code, peerOpts());
     Net.peer = peer;
     setStatus('방을 만드는 중이에요…');
     showPanel();
-    peer.on('open', () => { if (Net.peer === peer) setStatus('친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.'); });
+    peer.on('open', () => {
+      if (Net.peer !== peer) return;
+      keepAwake(); saveHostNow();
+      setStatus(resumeCode ? '방을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.' : '친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.');
+    });
     peer.on('connection', conn => setupGuestConn(conn));
     peer.on('disconnected', () => { if (Net.peer === peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500); });
     peer.on('error', e => {
       if (Net.peer !== peer) return;
+      // 방금 나갔다 들어오면 연결 서버가 예전 방 번호를 잠깐 붙잡고 있어요. 풀릴 때까지 다시 시도해요.
+      if (e.type === 'unavailable-id' && resumeCode && retry < 30) {
+        setStatus('방을 다시 여는 중이에요… 잠시만 기다려 주세요.');
+        return setTimeout(() => { if (Net.code === resumeCode) hostRoom(retry + 1, resumeCode); }, 3000);
+      }
       if (e.type === 'unavailable-id' && retry < 3) return hostRoom(retry + 1);
       if (e.type === 'peer-unavailable') return;
       setStatus('연결 서버에 접속하지 못했어요. 인터넷을 확인하고 "친구 초대"를 다시 눌러 주세요.');
@@ -1743,7 +1813,7 @@ body.locked { overflow: hidden; }
     G.players.forEach(p => {
       if (p.kind !== 'human') return;
       const g = Net.guests[p.sid];
-      if (!g || (g.gone && now - g.goneSince > 15000)) { p.kind = 'bot'; p.name = p.name + '(AI)'; }
+      if (!g || (g.gone && now - g.goneSince > 90000)) { p.kind = 'bot'; p.name = p.name + '(AI)'; }
     });
   }
   function handleRemote(sid, msg) {
@@ -1770,7 +1840,7 @@ body.locked { overflow: hidden; }
     const p = G.players[G.toAct];
     if (!p || p.kind !== 'human') return;
     const g = Net.guests[p.sid];
-    if (g && g.gone && Date.now() - g.goneSince > 20000) act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0);
+    if (g && g.gone && Date.now() - g.goneSince > 45000) act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0);
   }, 1000);
 
   // 방장 → 친구들: 게임 상태를 보내요. 카드는 친구마다 자기 것만 넣어요.
@@ -1812,12 +1882,17 @@ body.locked { overflow: hidden; }
   }
 
   // 친구 쪽
-  function joinRoom(code) {
+  function joinRoom(code, resuming = false) {
     if (noPeerLib()) return;
     leaveRoom();
-    let sid = ss.get('hd-sid-' + code);
-    if (!/^s[a-z0-9]{6,12}$/.test(sid)) { sid = 's' + randCode(8); ss.set('hd-sid-' + code, sid); }
-    Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code)) || 0 });
+    // 자리 번호표: 탭을 닫았다 다시 들어와도 같은 자리에 앉게 기기에 남겨요
+    let sid = ss.get('hd-sid-' + code) || ls.get('hd-sid-' + code);
+    if (!/^s[a-z0-9]{6,12}$/.test(sid)) sid = 's' + randCode(8);
+    ss.set('hd-sid-' + code, sid); ls.set('hd-sid-' + code, sid);
+    ls.set('hd-guest', JSON.stringify({ code, at: Date.now() }));
+    ls.del('hd-host');
+    if (!location.hash) { try { history.replaceState(null, '', location.pathname + location.search + '#hd-' + code); } catch (e) {} }
+    Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code) || ls.get('hd-n-' + code)) || 0 });
     const peer = new window.Peer(undefined, peerOpts());
     Net.peer = peer;
     showPanel();
@@ -1836,6 +1911,8 @@ body.locked { overflow: hidden; }
     conn.on('open', () => {
       Net.hostConn = conn; Net.hostGone = false;
       send(conn, { t: 'hello', sid: Net.sid, nick: Net.nick || '친구', n: Net.n });
+      ls.set('hd-guest', JSON.stringify({ code: Net.code, at: Date.now() }));
+      keepAwake();
       setStatus('방에 들어왔어요. 방장이 시작하기를 기다리는 중이에요.');
       if (G.mode === 'guest') render();
     });
@@ -1862,7 +1939,7 @@ body.locked { overflow: hidden; }
   }
   Net.send = msg => {
     if (!Net.hostConn) return;
-    Net.n++; ss.set('hd-n-' + Net.code, String(Net.n));
+    Net.n++; ss.set('hd-n-' + Net.code, String(Net.n)); ls.set('hd-n-' + Net.code, String(Net.n));
     send(Net.hostConn, { t: 'act', ...msg, n: Net.n });
   };
   function sendNick() {
@@ -2125,6 +2202,25 @@ body.locked { overflow: hidden; }
     $('log').innerHTML = G.log.slice(-14).map(l => `<div>${esc(l)}</div>`).join('');
     $('log').scrollTop = $('log').scrollHeight;
     if (G.mode === 'host') publish();
+    if (Net.role === 'host') saveHostSession();
+    else if (G.mode === 'solo') saveSoloSession();
+  }
+  // 혼자 연습도 실수로 나갔다 들어오면 이어서 해요
+  let soloTimer = null;
+  function saveSoloSession() {
+    clearTimeout(soloTimer);
+    soloTimer = setTimeout(() => {
+      if (G.mode !== 'solo') return;
+      if (G.street === 'over') { ls.del('hd-solo'); return; }
+      ls.set('hd-solo', JSON.stringify({ at: Date.now(), G: { ...G, pending: null }, seats: settings.seats }));
+    }, 400);
+  }
+  function resumeSolo() {
+    const saved = ls.json('hd-solo');
+    if (!saved || !saved.G || Date.now() - saved.at > RESUME_MS || saved.G.street === 'over' || !saved.G.handNo) return false;
+    G = saved.G; G.busy = false; G.pending = null;
+    if (!ended()) step(); else render();
+    return true;
   }
 
   function updateRaiseLabel(canRaise) {
@@ -2570,6 +2666,7 @@ body.locked { overflow: hidden; }
   });
   $('startPvp').addEventListener('click', () => { if (Net.role === 'host') startHostGame(); });
   $('leavePvp').addEventListener('click', async () => {
+    ls.del('hd-host'); ls.del('hd-guest');
     await leaveRoom();
     $('pvpPanel').hidden = true;
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
@@ -2622,7 +2719,7 @@ body.locked { overflow: hidden; }
 
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-16b';
+  const BUILD = '2026-10-16c';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
@@ -2633,7 +2730,8 @@ body.locked { overflow: hidden; }
     }).catch(() => {});
   }
 
-  newSoloGame();
+  if (!(P2P_OK && (location.hash || ls.get('hd-host') || ls.get('hd-guest'))) && resumeSolo()) { /* 이어서 해요 */ }
+  else newSoloGame();
   paintSetup();
   initStore();
   initRoom();
