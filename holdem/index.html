@@ -7,64 +7,72 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Gowun+Dodum&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 /* Layout: 카드룸 한 장면 — 왼쪽은 초록 펠트 테이블, 오른쪽은 코치 노트. 폰에서는 테이블 위, 코치 아래. */
 :root {
   --bg: #0c1613;
-  --panel: #13221e;
-  --panel-2: #1a2d28;
-  --line: #2a403a;
+  --panel: #14241f;
+  --panel-2: #1b302a;
+  --line: #2f4840;
   --felt: #12493d;
   --felt-hi: #1b6352;
   --rail: #3a2617;
-  --ink: #efe8d8;
-  --muted: #a3b4ad;
-  --brass: #d9a441;
+  --ink: #f3eee2;
+  --muted: #c1cfc8;
+  --faint: #8fa39a;
+  --brass: #e2ad4a;
   --brass-ink: #1d1406;
   --paper: #fbf7ee;
   --card-red: #c3312c;
   --card-black: #1c1d22;
-  --good: #52c48d;
-  --okay: #e2b443;
-  --bad: #ef6d5c;
+  --good: #5bd197;
+  --okay: #edbf4c;
+  --bad: #f2786a;
   --font-display: "Do Hyeon", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
-  --font-body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
   --font-num: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
   color-scheme: dark;
 }
 html, body { background: var(--bg); color: var(--ink); }
 body {
   font-family: var(--font-body);
-  font-size: 15px;
-  line-height: 1.55;
+  font-size: 16px;
+  line-height: 1.65;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 16px 40px;
+  padding-block: 16px 48px;
+  word-break: keep-all;
+  overflow-wrap: anywhere;
 }
 * { box-sizing: border-box; }
 [hidden] { display: none !important; }
 button { font: inherit; color: inherit; }
-button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+button:focus-visible, input:focus-visible, summary:focus-visible { outline: 3px solid var(--brass); outline-offset: 2px; }
 .num { font-family: var(--font-num); font-variant-numeric: tabular-nums; }
 
-.wrap { max-width: 1180px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+.wrap { max-width: 1220px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 
 /* Header */
-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
-.brand h1 { font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 1; margin: 0; letter-spacing: 0.5px; }
+header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.brand h1 { font-family: var(--font-display); font-weight: 400; font-size: 38px; line-height: 1; margin: 0; letter-spacing: 0.5px; }
 .brand h1 span { color: var(--brass); }
-.brand p { margin: 6px 0 0; color: var(--muted); font-size: 14px; }
+.brand p { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+.head-right { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+@media (max-width: 640px) { .head-right { align-items: stretch; width: 100%; } }
 .stats { display: flex; flex-wrap: wrap; gap: 8px; }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 12px; display: flex; flex-direction: column; min-width: 84px; }
-.stat b { font-family: var(--font-num); font-weight: 600; font-size: 17px; }
-.stat small { color: var(--muted); font-size: 12px; letter-spacing: 0.3px; }
+.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 6px 14px; display: flex; flex-direction: column; min-width: 86px; flex: 1 1 auto; }
+.stat b { font-family: var(--font-num); font-weight: 600; font-size: 19px; line-height: 1.3; }
+.stat small { color: var(--muted); font-size: 13px; }
+.sound { display: flex; gap: 8px; flex-wrap: wrap; }
+.toggle { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 6px 14px; font-size: 14px; cursor: pointer; display: inline-flex; gap: 6px; align-items: center; }
+.toggle[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); font-weight: 700; }
 
-.main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 16px; }
-@media (min-width: 980px) { .main { grid-template-columns: minmax(0, 1fr) 380px; align-items: start; } }
+.main { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px; }
+@media (min-width: 1000px) { .main { grid-template-columns: minmax(0, 1fr) 420px; align-items: start; } }
 
 /* Table */
-.table-zone { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.table-zone { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .table {
   position: relative;
   background: radial-gradient(ellipse at 50% 45%, var(--felt-hi), var(--felt) 70%);
@@ -72,110 +80,147 @@ header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content:
   border-radius: 120px;
   box-shadow: inset 0 0 40px rgba(0,0,0,.45), 0 10px 30px rgba(0,0,0,.35);
   padding: 22px 18px;
-  display: flex; flex-direction: column; align-items: center; gap: 14px;
-  min-height: 430px;
+  display: flex; flex-direction: column; align-items: center; gap: 12px;
 }
-@media (max-width: 560px) { .table { border-radius: 36px; border-width: 7px; padding: 16px 10px; min-height: 0; } }
+@media (max-width: 560px) { .table { border-radius: 36px; border-width: 7px; padding: 16px 10px; } }
 .seat { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .seat-info { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: center; }
-.nameplate { background: rgba(0,0,0,.35); border-radius: 999px; padding: 3px 12px; font-size: 14px; display: flex; gap: 8px; align-items: center; }
-.nameplate .num { color: var(--brass); }
-.dealer { width: 22px; height: 22px; border-radius: 50%; background: var(--paper); color: var(--card-black); font: 600 12px/22px var(--font-num); text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.5); }
-.actbubble { font-size: 13px; background: var(--paper); color: var(--card-black); border-radius: 8px; padding: 2px 8px; min-height: 1.6em; }
+.nameplate { background: rgba(0,0,0,.4); border-radius: 999px; padding: 4px 14px; font-size: 15px; display: flex; gap: 8px; align-items: center; }
+.nameplate .num { color: var(--brass); font-size: 16px; }
+.dealer { width: 24px; height: 24px; border-radius: 50%; background: var(--paper); color: var(--card-black); font: 600 13px/24px var(--font-num); text-align: center; box-shadow: 0 1px 2px rgba(0,0,0,.5); }
+.actbubble { font-size: 14px; font-weight: 500; background: var(--paper); color: var(--card-black); border-radius: 8px; padding: 2px 10px; min-height: 1.6em; }
 .actbubble:empty { visibility: hidden; }
-.betchip { font: 600 13px var(--font-num); color: var(--brass-ink); background: var(--brass); border-radius: 999px; padding: 1px 10px; min-height: 1.5em; }
+.betchip { font: 600 14px var(--font-num); color: var(--brass-ink); background: var(--brass); border-radius: 999px; padding: 1px 12px; min-height: 1.5em; }
 .betchip:empty { visibility: hidden; }
-.handlabel { font-size: 13px; color: var(--ink); opacity: .9; min-height: 1.4em; text-align: center; }
+.handlabel { font-size: 15px; font-weight: 500; color: var(--ink); min-height: 1.5em; text-align: center; background: rgba(0,0,0,.25); border-radius: 8px; padding: 0 10px; }
+.handlabel:empty { background: none; }
 
 .cards { display: flex; gap: 6px; }
 .card {
-  width: 52px; height: 74px; border-radius: 7px; background: var(--paper);
+  width: 54px; height: 76px; border-radius: 7px; background: var(--paper);
   display: flex; flex-direction: column; align-items: center; justify-content: center;
   box-shadow: 0 2px 4px rgba(0,0,0,.4); line-height: 1; user-select: none;
   animation: deal .25s ease-out;
 }
-.card .r { font: 600 22px var(--font-num); }
-.card .s { font-size: 22px; margin-top: 2px; }
+.card .r { font: 600 23px var(--font-num); }
+.card .s { font-size: 23px; margin-top: 2px; }
 .card.red { color: var(--card-red); }
 .card.black { color: var(--card-black); }
 .card.back { background: repeating-linear-gradient(45deg, #7b2a22 0 6px, #8e352b 6px 12px); border: 3px solid var(--paper); }
-.card.slot { background: rgba(0,0,0,.18); box-shadow: none; border: 1.5px dashed rgba(255,255,255,.18); animation: none; }
-.card.big { width: 60px; height: 86px; }
-.card.big .r, .card.big .s { font-size: 26px; }
+.card.slot { background: rgba(0,0,0,.18); box-shadow: none; border: 1.5px dashed rgba(255,255,255,.2); animation: none; }
+.card.big { width: 62px; height: 88px; }
+.card.big .r, .card.big .s { font-size: 27px; }
 .card.dim { opacity: .45; }
 @media (max-width: 420px) {
-  .card { width: 44px; height: 64px; } .card .r, .card .s { font-size: 19px; }
-  .card.big { width: 50px; height: 72px; } .card.big .r, .card.big .s { font-size: 22px; }
+  .card { width: 46px; height: 66px; } .card .r, .card .s { font-size: 20px; }
+  .card.big { width: 52px; height: 74px; } .card.big .r, .card.big .s { font-size: 23px; }
   .cards { gap: 4px; }
 }
 @keyframes deal { from { transform: translateY(-6px); opacity: 0; } to { transform: none; opacity: 1; } }
 @media (prefers-reduced-motion: reduce) { .card { animation: none; } }
 
 .center { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-.street { font-family: var(--font-display); font-size: 16px; color: var(--brass); letter-spacing: 1px; }
-.pot { font-size: 14px; background: rgba(0,0,0,.3); border-radius: 999px; padding: 3px 14px; }
-.pot b { font-family: var(--font-num); color: var(--brass); }
-.result { font-family: var(--font-display); font-size: 20px; text-align: center; background: rgba(0,0,0,.4); border-radius: 12px; padding: 6px 16px; }
+.street { font-family: var(--font-display); font-size: 18px; color: var(--brass); letter-spacing: 1px; }
+.pot { font-size: 15px; background: rgba(0,0,0,.35); border-radius: 999px; padding: 3px 16px; }
+.pot b { font-family: var(--font-num); color: var(--brass); font-size: 16px; }
+.result { font-family: var(--font-display); font-size: 22px; text-align: center; background: rgba(0,0,0,.45); border-radius: 12px; padding: 6px 18px; }
 .result:empty { display: none; }
 
 /* Action bar */
-.controls { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px; display: flex; flex-direction: column; gap: 10px; }
-.turnline { font-size: 14px; color: var(--muted); }
-.turnline b { color: var(--ink); }
+.controls { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.turnline { font-size: 16px; color: var(--muted); }
+.turnline b { color: var(--brass); }
 .btnrow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.btn { border: 0; border-radius: 10px; padding: 12px 8px; cursor: pointer; font-size: 16px; line-height: 1.2; display: flex; flex-direction: column; align-items: center; gap: 2px; }
-.btn small { font-size: 12px; opacity: .8; }
+.btn { border: 0; border-radius: 10px; padding: 12px 8px; cursor: pointer; font-size: 18px; font-weight: 700; line-height: 1.25; display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.btn small { font-size: 13px; font-weight: 400; opacity: .9; }
 .btn:disabled { opacity: .35; cursor: not-allowed; }
-.btn-fold { background: #3a2a29; }
-.btn-call { background: #24453b; }
+.btn-fold { background: #4a302d; }
+.btn-call { background: #2a5246; }
 .btn-raise { background: var(--brass); color: var(--brass-ink); }
-.btn-next { background: var(--brass); color: var(--brass-ink); border: 0; border-radius: 10px; padding: 12px; font-size: 16px; cursor: pointer; width: 100%; }
+.endrow { display: grid; grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); gap: 8px; }
+.btn-next { background: var(--brass); color: var(--brass-ink); border: 0; border-radius: 10px; padding: 13px; font-size: 17px; font-weight: 700; cursor: pointer; }
+.btn-end { background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 13px; font-size: 15px; cursor: pointer; }
 .sizer { display: flex; flex-direction: column; gap: 8px; }
 .presets { display: flex; flex-wrap: wrap; gap: 6px; }
-.chip { border: 1px solid var(--line); background: var(--panel-2); border-radius: 999px; padding: 4px 12px; font-size: 13px; cursor: pointer; }
+.chip { border: 1px solid var(--line); background: var(--panel-2); border-radius: 999px; padding: 5px 14px; font-size: 14px; cursor: pointer; }
 .chip:hover { border-color: var(--brass); }
 .sizer input[type=range] { width: 100%; accent-color: var(--brass); }
-.coach-toggle { display: flex; align-items: center; gap: 8px; font-size: 14px; color: var(--muted); cursor: pointer; }
-.coach-toggle input { accent-color: var(--brass); width: 18px; height: 18px; }
+.coach-toggle { display: flex; align-items: center; gap: 10px; font-size: 15px; color: var(--muted); cursor: pointer; }
+.coach-toggle input { accent-color: var(--brass); width: 20px; height: 20px; }
 
 /* Coach column */
-.coach { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 14px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
-.panel h2 { font-family: var(--font-display); font-weight: 400; font-size: 20px; margin: 0; }
-.panel .sub { color: var(--muted); font-size: 13px; margin: -6px 0 0; }
-.fb { border-left: 4px solid var(--line); background: var(--panel-2); border-radius: 0 10px 10px 0; padding: 10px 12px; display: flex; flex-direction: column; gap: 6px; }
-.fb.good { border-left-color: var(--good); }
-.fb.ok { border-left-color: var(--okay); }
-.fb.bad { border-left-color: var(--bad); }
-.fb.hint { border-left-color: var(--brass); }
-.fb-head { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: space-between; }
-.fb-title { font-weight: 700; font-size: 14px; }
-.grade { font-size: 12px; font-weight: 700; border-radius: 999px; padding: 1px 10px; color: #0c1613; }
-.grade.good { background: var(--good); } .grade.ok { background: var(--okay); } .grade.bad { background: var(--bad); } .grade.hint { background: var(--brass); }
-.facts { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 2px 10px; font-size: 13px; }
-.facts dt { color: var(--muted); }
-.facts dd { margin: 0; }
-.meter { height: 8px; background: rgba(255,255,255,.08); border-radius: 999px; position: relative; overflow: hidden; margin-top: 2px; }
-.meter i { position: absolute; inset: 0 auto 0 0; background: var(--good); border-radius: 999px; }
-.meter u { position: absolute; top: -2px; bottom: -2px; width: 2px; background: var(--paper); }
-.fb p { margin: 0; font-size: 14px; }
-.fb .tip { color: var(--muted); font-size: 13px; }
-.empty { color: var(--muted); font-size: 14px; margin: 0; }
-.review { display: flex; flex-direction: column; gap: 8px; }
-.review-row { display: flex; gap: 8px; align-items: baseline; font-size: 14px; }
-.review-row .grade { flex: none; }
-.lesson { background: rgba(217,164,65,.1); border: 1px solid rgba(217,164,65,.35); border-radius: 10px; padding: 10px 12px; font-size: 14px; }
-.log { max-height: 160px; overflow-y: auto; font-size: 13px; color: var(--muted); display: flex; flex-direction: column; gap: 2px; }
+.coach { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.panel h2 { font-family: var(--font-display); font-weight: 400; font-size: 23px; margin: 0; line-height: 1.2; }
+.panel .sub { color: var(--muted); font-size: 14px; margin: -6px 0 0; }
 
-details { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 14px; }
-summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
-.rank-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 6px; font-size: 14px; }
+.fb { background: var(--panel-2); border-radius: 12px; border-top: 5px solid var(--line); padding: 14px; display: flex; flex-direction: column; gap: 12px; }
+.fb.good { border-top-color: var(--good); }
+.fb.ok { border-top-color: var(--okay); }
+.fb.bad { border-top-color: var(--bad); }
+.fb.hint { border-top-color: var(--brass); }
+.fb-top { display: flex; gap: 14px; align-items: center; }
+.score { flex: none; width: 74px; height: 74px; border-radius: 50%; display: flex; flex-direction: column; align-items: center; justify-content: center; border: 4px solid var(--line); line-height: 1; }
+.score b { font: 600 26px var(--font-num); }
+.score small { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.good .score { border-color: var(--good); } .ok .score { border-color: var(--okay); } .bad .score { border-color: var(--bad); }
+.fb-title { font-size: 17px; font-weight: 700; line-height: 1.4; }
+.fb-meta { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 4px; font-size: 14px; color: var(--muted); }
+.grade { font-size: 13px; font-weight: 700; border-radius: 999px; padding: 1px 10px; color: #0c1613; white-space: nowrap; }
+.grade.good { background: var(--good); } .grade.ok { background: var(--okay); } .grade.bad { background: var(--bad); } .grade.hint { background: var(--brass); }
+.fb-sec { display: flex; flex-direction: column; gap: 4px; }
+.fb-sec h3 { margin: 0; font-size: 14px; font-weight: 700; color: var(--brass); letter-spacing: .2px; }
+.fb-sec p { margin: 0; font-size: 16px; line-height: 1.7; }
+.fb-sec.better p { background: rgba(226,173,74,.1); border-radius: 8px; padding: 8px 10px; }
+.facts { display: grid; grid-template-columns: auto minmax(0,1fr); gap: 6px 12px; font-size: 15px; margin: 0; }
+.facts dt { color: var(--muted); white-space: nowrap; }
+.facts dd { margin: 0; }
+.meter { height: 10px; background: rgba(255,255,255,.1); border-radius: 999px; position: relative; overflow: hidden; margin-top: 4px; }
+.meter i { position: absolute; inset: 0 auto 0 0; background: var(--good); border-radius: 999px; }
+.meter u { position: absolute; top: 0; bottom: 0; width: 3px; background: var(--paper); }
+.meter-legend { font-size: 13px; color: var(--faint); }
+.tip { font-size: 15px; color: var(--muted); border-left: 3px solid var(--line); padding-left: 10px; margin: 0; }
+.empty { color: var(--muted); font-size: 15px; margin: 0; }
+.review { display: flex; flex-direction: column; gap: 8px; }
+.review-row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; align-items: baseline; font-size: 15px; }
+.review-row .pts { font: 600 16px var(--font-num); text-align: right; }
+.review-row .pts.good { color: var(--good); } .review-row .pts.ok { color: var(--okay); } .review-row .pts.bad { color: var(--bad); }
+.review-row .rec { color: var(--muted); font-size: 14px; }
+.lesson { background: rgba(226,173,74,.1); border: 1px solid rgba(226,173,74,.35); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+.log { max-height: 150px; overflow-y: auto; font-size: 13px; color: var(--faint); display: flex; flex-direction: column; gap: 2px; }
+
+details.box { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; }
+details.box > summary { cursor: pointer; font-family: var(--font-display); font-size: 20px; }
+.rank-list { list-style: none; margin: 10px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
 .rank-list li { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 8px; align-items: baseline; }
 .rank-list .n { font-family: var(--font-num); color: var(--brass); }
-.rank-list em { font-style: normal; color: var(--muted); font-size: 13px; }
-.terms { margin: 10px 0 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; font-size: 14px; }
-.terms dt { font-weight: 700; color: var(--brass); }
-.terms dd { margin: 0 0 4px; }
+.rank-list em { font-style: normal; color: var(--muted); font-size: 14px; display: block; }
+.terms { margin: 10px 0 0; display: flex; flex-direction: column; gap: 4px; font-size: 15px; }
+.terms dt { font-weight: 700; color: var(--brass); margin-top: 6px; }
+.terms dd { margin: 0; }
+
+/* 게임 결과 */
+.session { background: var(--panel); border: 2px solid var(--brass); border-radius: 16px; padding: 20px; display: flex; flex-direction: column; gap: 16px; }
+.session-top { display: flex; flex-wrap: wrap; gap: 20px; align-items: center; }
+.big-grade { width: 104px; height: 104px; border-radius: 20px; background: var(--brass); color: var(--brass-ink); display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; flex: none; }
+.big-grade b { font-family: var(--font-display); font-size: 56px; font-weight: 400; }
+.big-grade small { font-size: 13px; font-weight: 700; margin-top: 2px; }
+.session h2 { font-family: var(--font-display); font-weight: 400; font-size: 28px; margin: 0; }
+.session-lede { font-size: 17px; margin: 4px 0 0; }
+.session-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 8px; }
+.session-cols { display: grid; grid-template-columns: minmax(0, 1fr); gap: 14px; }
+@media (min-width: 760px) { .session-cols { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } }
+.session-cols h3 { margin: 0 0 6px; font-size: 16px; color: var(--brass); }
+.session-cols ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 16px; }
+.session-cols li span { display: block; color: var(--muted); font-size: 15px; }
+.goal { background: rgba(226,173,74,.12); border-radius: 10px; padding: 12px 14px; font-size: 16px; }
+.save-note { font-size: 14px; color: var(--muted); }
+.history { display: flex; flex-direction: column; gap: 8px; }
+.history details { background: var(--panel-2); border-radius: 10px; padding: 8px 12px; }
+.history summary { cursor: pointer; font-size: 15px; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: baseline; }
+.history summary b { font-family: var(--font-display); font-weight: 400; font-size: 20px; color: var(--brass); }
+.history .h-body { font-size: 15px; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.history .h-body p { margin: 0; }
 </style>
 </head>
 <body>
@@ -184,10 +229,18 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
   <header>
     <div class="brand">
       <h1>홀덤 <span>코치</span></h1>
-      <p>컴퓨터와 1:1 텍사스 홀덤. 내가 고를 때마다 더 좋았을 선택을 알려 줘요.</p>
+      <p>컴퓨터와 1:1 텍사스 홀덤. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요.</p>
     </div>
-    <div class="stats" id="stats"></div>
+    <div class="head-right">
+      <div class="stats" id="stats"></div>
+      <div class="sound">
+        <button class="toggle" id="musicBtn" type="button" aria-pressed="false">♪ 배경음악 꺼짐</button>
+        <button class="toggle" id="sfxBtn" type="button" aria-pressed="true">효과음 켜짐</button>
+      </div>
+    </div>
   </header>
+
+  <section class="session" id="sessionEnd" hidden aria-live="polite"></section>
 
   <div class="main">
     <section class="table-zone" aria-label="게임 테이블">
@@ -207,7 +260,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
         <div class="btnrow" id="btnrow">
           <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
           <button class="btn btn-call" id="bCall" type="button">체크<small>넘기기</small></button>
-          <button class="btn btn-raise" id="bRaise" type="button">벳<small>40</small></button>
+          <button class="btn btn-raise" id="bRaise" type="button">벳<small>걸기</small></button>
         </div>
         <div class="sizer" id="sizer">
           <div class="presets">
@@ -218,7 +271,10 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
           </div>
           <input type="range" id="raiseAmt" min="0" max="100" step="10" value="0" aria-label="베팅 금액">
         </div>
-        <button class="btn-next" id="bNext" type="button" hidden>다음 판 시작</button>
+        <div class="endrow" id="endrow" hidden>
+          <button class="btn-next" id="bNext" type="button">다음 판 시작</button>
+          <button class="btn-end" id="bEnd" type="button">게임 끝내고 결과 저장</button>
+        </div>
         <label class="coach-toggle"><input type="checkbox" id="coachHint"> 내 차례에 코치 힌트 미리 보기</label>
       </div>
     </section>
@@ -226,39 +282,45 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     <aside class="coach">
       <div class="panel">
         <h2>코치 피드백</h2>
-        <p class="sub">선택할 때마다 바로 평가해요. 승률은 컴퓨터가 수천 판을 미리 돌려 본 추정치예요.</p>
+        <p class="sub">선택할 때마다 100점 만점으로 채점해요. 승률은 컴퓨터가 남은 카드를 수천 번 뽑아 본 추정치예요.</p>
         <div id="hint"></div>
-        <div id="feedback"><p class="empty">첫 선택을 하면 여기에 피드백이 나와요.</p></div>
+        <div id="feedback"><p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p></div>
       </div>
       <div class="panel">
         <h2>이번 판 돌아보기</h2>
-        <div id="review"><p class="empty">판이 끝나면 내 선택을 한눈에 정리해 줘요.</p></div>
+        <div id="review"><p class="empty">판이 끝나면 이번 판 선택들을 점수와 함께 정리해 줘요.</p></div>
         <div class="log num" id="log"></div>
       </div>
-      <details>
+      <div class="panel">
+        <h2>지난 기록</h2>
+        <p class="sub" id="historyNote">게임을 끝내면 점수와 전체 피드백이 여기에 저장돼요.</p>
+        <div class="history" id="history"><p class="empty">기록을 불러오는 중이에요.</p></div>
+      </div>
+      <details class="box">
         <summary>족보 (패의 순위)</summary>
         <ol class="rank-list">
-          <li><span class="n">1</span><span><b>스트레이트 플러시</b> <em>같은 무늬로 연속된 숫자 5장 · 예: 5♥6♥7♥8♥9♥</em></span></li>
-          <li><span class="n">2</span><span><b>포카드</b> <em>같은 숫자 4장 · 예: K K K K</em></span></li>
-          <li><span class="n">3</span><span><b>풀하우스</b> <em>트리플 + 원페어 · 예: 7 7 7 + Q Q</em></span></li>
-          <li><span class="n">4</span><span><b>플러시</b> <em>같은 무늬 5장 (숫자 상관없음)</em></span></li>
-          <li><span class="n">5</span><span><b>스트레이트</b> <em>무늬 상관없이 연속된 숫자 5장 · 예: 4 5 6 7 8</em></span></li>
-          <li><span class="n">6</span><span><b>트리플</b> <em>같은 숫자 3장</em></span></li>
-          <li><span class="n">7</span><span><b>투페어</b> <em>페어 두 쌍</em></span></li>
-          <li><span class="n">8</span><span><b>원페어</b> <em>같은 숫자 2장</em></span></li>
-          <li><span class="n">9</span><span><b>하이카드</b> <em>아무것도 없을 때, 가장 높은 카드로 비교</em></span></li>
+          <li><span class="n">1</span><span><b>스트레이트 플러시</b><em>같은 무늬로 연속된 숫자 5장 · 예: 5♥6♥7♥8♥9♥</em></span></li>
+          <li><span class="n">2</span><span><b>포카드</b><em>같은 숫자 4장 · 예: K K K K</em></span></li>
+          <li><span class="n">3</span><span><b>풀하우스</b><em>트리플 + 원페어 · 예: 7 7 7 + Q Q</em></span></li>
+          <li><span class="n">4</span><span><b>플러시</b><em>같은 무늬 5장 (숫자 상관없음)</em></span></li>
+          <li><span class="n">5</span><span><b>스트레이트</b><em>무늬 상관없이 연속된 숫자 5장 · 예: 4 5 6 7 8</em></span></li>
+          <li><span class="n">6</span><span><b>트리플</b><em>같은 숫자 3장</em></span></li>
+          <li><span class="n">7</span><span><b>투페어</b><em>페어 두 쌍</em></span></li>
+          <li><span class="n">8</span><span><b>원페어</b><em>같은 숫자 2장</em></span></li>
+          <li><span class="n">9</span><span><b>하이카드</b><em>아무것도 없을 때, 가장 높은 카드로 비교</em></span></li>
         </ol>
       </details>
-      <details>
+      <details class="box">
         <summary>꼭 알아야 할 용어</summary>
         <dl class="terms">
-          <dt>진행 순서</dt><dd>내 카드 2장을 받고(프리플랍) → 바닥에 3장(플랍) → 1장(턴) → 1장(리버). 내 카드 2장 + 바닥 5장 중 가장 좋은 5장으로 겨뤄요.</dd>
-          <dt>블라인드</dt><dd>판을 시작할 때 억지로 내는 참가비. 작은 쪽 10, 큰 쪽 20. D(딜러) 표시가 있는 쪽이 작은 블라인드예요.</dd>
+          <dt>진행 순서</dt><dd>내 카드 2장을 받고(프리플랍) → 바닥에 3장(플랍) → 1장(턴) → 1장(리버). 내 카드 2장과 바닥 5장 중 가장 좋은 5장으로 겨뤄요.</dd>
+          <dt>블라인드</dt><dd>판을 시작할 때 억지로 내는 참가비예요. 작은 쪽 10, 큰 쪽 20. D(딜러) 표시가 있는 쪽이 작은 블라인드예요.</dd>
           <dt>체크 / 벳</dt><dd>아무도 돈을 안 걸었을 때: 체크는 "그냥 넘길게", 벳은 "내가 먼저 걸게".</dd>
           <dt>콜 / 레이즈 / 폴드</dt><dd>상대가 걸었을 때: 콜은 같은 금액으로 따라가기, 레이즈는 더 올리기, 폴드는 포기하고 패 버리기.</dd>
-          <dt>승률 (에퀴티)</dt><dd>지금 이대로 끝까지 갔을 때 내가 이길 확률. 날씨 예보의 "비 올 확률"처럼 생각하면 돼요.</dd>
-          <dt>필요한 승률 (팟 오즈)</dt><dd>콜하는 돈 ÷ (콜한 뒤 전체 판돈). 1,000원 내고 4,000원짜리 판을 노린다면 4번 중 1번(25%)만 이겨도 본전이에요. 내 승률이 이보다 높으면 콜이 이득이에요.</dd>
-          <dt>아웃츠</dt><dd>내 패를 완성시켜 줄 남은 카드 수. 플랍에서는 아웃츠×4, 턴에서는 아웃츠×2 하면 대략적인 완성 확률(%)이 나와요.</dd>
+          <dt>승률 (에퀴티)</dt><dd>지금 이대로 끝까지 갔을 때 내가 이길 확률이에요. 날씨 예보의 "비 올 확률"처럼 생각하면 돼요.</dd>
+          <dt>필요한 승률 (팟 오즈)</dt><dd>콜하는 돈 ÷ 콜한 뒤 전체 판돈. 1,000원 내고 4,000원짜리 판을 노린다면 4번 중 1번(25%)만 이겨도 본전이에요. 내 승률이 이보다 높으면 콜이 이득이에요.</dd>
+          <dt>기대값</dt><dd>같은 상황을 100번 반복했을 때 한 번에 평균적으로 얻거나 잃는 칩이에요. 이번 판 결과가 아니라 "장기적인 손익"이에요.</dd>
+          <dt>아웃츠</dt><dd>내 패를 완성시켜 줄 남은 카드 수예요. 플랍에서는 아웃츠×4, 턴에서는 아웃츠×2 하면 대략적인 완성 확률(%)이 나와요.</dd>
           <dt>포지션</dt><dd>나중에 행동하는 쪽이 유리해요. 상대가 뭘 하는지 보고 정할 수 있으니까요.</dd>
         </dl>
       </details>
@@ -277,7 +339,102 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
   const $ = id => document.getElementById(id);
   const R = r => (r === 8 ? '10' : RANKS[r]);
   const pct = x => Math.round(x * 100) + '%';
-  const won = n => n.toLocaleString('ko-KR');
+  const won = n => Math.round(n).toLocaleString('ko-KR');
+  const signed = n => (n > 0 ? '+' : n < 0 ? '−' : '') + won(Math.abs(n));
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+
+  /* ---------- 소리 (배경음악 + 효과음, 브라우저에서 직접 합성) ---------- */
+  const Sound = (() => {
+    let ctx = null, master, musicBus, sfxBus, noise, timer = null, step = 0, nextT = 0, intensity = 0;
+    const st = { music: false, sfx: true };
+    const SIXTEENTH = 60 / 116 / 4;
+    const BASS = [45, 41, 38, 40];                       // A, F, D, E
+    const CHORD = [[69, 72, 76], [65, 69, 72], [62, 65, 69], [64, 68, 71]];
+    const hz = m => 440 * Math.pow(2, (m - 69) / 12);
+    function ensure() {
+      if (!ctx) {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        if (!AC) return false;
+        ctx = new AC();
+        master = ctx.createGain(); master.gain.value = 0.9; master.connect(ctx.destination);
+        musicBus = ctx.createGain(); musicBus.gain.value = 0; musicBus.connect(master);
+        sfxBus = ctx.createGain(); sfxBus.gain.value = 0.4; sfxBus.connect(master);
+        noise = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate);
+        const d = noise.getChannelData(0);
+        for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+      }
+      if (ctx.state === 'suspended') ctx.resume();
+      return true;
+    }
+    function env(g, t, peak, dur) {
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(peak, t + 0.005);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    }
+    function tone(t, f, dur, type, vol, dest, cutoff) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.type = type; o.frequency.setValueAtTime(f, t);
+      let node = o;
+      if (cutoff) { const fl = ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = cutoff; o.connect(fl); node = fl; }
+      node.connect(g); g.connect(dest); env(g, t, vol, dur);
+      o.start(t); o.stop(t + dur + 0.02);
+    }
+    function hit(t, ftype, freq, dur, vol, dest) {
+      const s = ctx.createBufferSource(), fl = ctx.createBiquadFilter(), g = ctx.createGain();
+      s.buffer = noise; fl.type = ftype; fl.frequency.value = freq;
+      s.connect(fl); fl.connect(g); g.connect(dest); env(g, t, vol, dur);
+      s.start(t, Math.random() * 0.5); s.stop(t + dur + 0.02);
+    }
+    function kick(t) {
+      const o = ctx.createOscillator(), g = ctx.createGain();
+      o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.12);
+      o.connect(g); g.connect(musicBus); env(g, t, 0.9, 0.2);
+      o.start(t); o.stop(t + 0.22);
+    }
+    function schedule(n, t) {
+      const bar = Math.floor(n / 16) % 4, s = n % 16;
+      if (s === 0 || s === 8 || (intensity && (s === 10 || s === 14))) kick(t);
+      if (s === 4 || s === 12) hit(t, 'bandpass', 1800, 0.14, 0.45, musicBus);
+      if (intensity ? true : s % 2 === 0) hit(t, 'highpass', 7500, s % 4 === 2 ? 0.05 : 0.03, s % 4 === 2 ? 0.28 : 0.14, musicBus);
+      if ([0, 3, 6, 8, 11, 14].includes(s)) tone(t, hz(BASS[bar] + (s === 14 ? 12 : 0)), 0.2, 'sawtooth', 0.32, musicBus, 700);
+      if ([2, 5, 7, 10, 13, 15].includes(s)) {
+        const c = CHORD[bar][(s * 7 + bar) % 3];
+        tone(t, hz(c + (intensity && s > 8 ? 12 : 0)), 0.16, 'triangle', 0.14, musicBus);
+      }
+    }
+    function pump() {
+      while (nextT < ctx.currentTime + 0.12) { schedule(step, nextT); nextT += SIXTEENTH; step++; }
+    }
+    function startMusic() {
+      if (!ensure() || timer) return;
+      step = 0; nextT = ctx.currentTime + 0.06;
+      musicBus.gain.cancelScheduledValues(ctx.currentTime);
+      musicBus.gain.setTargetAtTime(0.17, ctx.currentTime, 0.3);
+      timer = setInterval(pump, 25);
+    }
+    function stopMusic() {
+      if (!ctx || !timer) return;
+      clearInterval(timer); timer = null;
+      musicBus.gain.setTargetAtTime(0, ctx.currentTime, 0.1);
+    }
+    function sfx(kind) {
+      if (!st.sfx || !ensure()) return;
+      const t = ctx.currentTime + 0.01;
+      if (kind === 'card') hit(t, 'highpass', 3200, 0.07, 0.5, sfxBus);
+      else if (kind === 'chips') { tone(t, 2100, 0.06, 'sine', 0.25, sfxBus); tone(t + 0.05, 2700, 0.06, 'sine', 0.2, sfxBus); tone(t + 0.1, 2400, 0.05, 'sine', 0.15, sfxBus); }
+      else if (kind === 'fold') hit(t, 'lowpass', 900, 0.18, 0.35, sfxBus);
+      else if (kind === 'win') [72, 76, 79, 84].forEach((m, i) => tone(t + i * 0.09, hz(m), 0.22, 'triangle', 0.35, sfxBus));
+      else if (kind === 'lose') [67, 63].forEach((m, i) => tone(t + i * 0.18, hz(m), 0.3, 'triangle', 0.3, sfxBus));
+      else if (kind === 'good') [79, 84].forEach((m, i) => tone(t + i * 0.07, hz(m), 0.12, 'sine', 0.18, sfxBus));
+      else if (kind === 'bad') tone(t, hz(52), 0.2, 'square', 0.08, sfxBus, 900);
+    }
+    return {
+      st, sfx,
+      setMusic(on) { st.music = on; on ? startMusic() : stopMusic(); },
+      setSfx(on) { st.sfx = on; },
+      setIntensity(v) { intensity = v ? 1 : 0; }
+    };
+  })();
 
   /* ---------- 패 계산 ---------- */
   function topRanks(mask, n) {
@@ -351,7 +508,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     const known = new Set([...hole, ...board]);
     const rem = [];
     for (let c = 0; c < 52; c++) if (!known.has(c)) rem.push(c);
-    const L = rem.length, need = 5 - board.length;
+    const L = rem.length;
     let w = 0;
     for (let s = 0; s < n; s++) {
       let o1, o2, tries = 0;
@@ -390,13 +547,15 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
       players: [mkP('나', START), mkP('컴퓨터', START)],
       button: 1, handNo: 0, board: [], pot: 0, street: 'preflop', currentBet: 0, minRaise: BB, toAct: 0,
       aggr: [0, 0], decisions: [], log: [], result: null, pending: null, lastFb: null, busy: false,
-      stats: { dec: 0, good: 0, ok: 0, bad: 0, won: 0, hands: 0 }
+      stats: { dec: 0, good: 0, ok: 0, bad: 0, won: 0, hands: 0 }, allDecs: [], ended: null
     };
     if (data && Array.isArray(data.stacks) && data.stacks.every(s => s > 0)) {
       G.players[0].stack = data.stacks[0]; G.players[1].stack = data.stacks[1];
       if (data.stats) Object.assign(G.stats, data.stats);
+      if (Array.isArray(data.allDecs)) G.allDecs = data.allDecs;
       G.handNo = data.handNo || 0; G.button = data.button ?? 1;
     }
+    $('sessionEnd').hidden = true;
     startHand();
   }
 
@@ -413,7 +572,6 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
 
   function startHand() {
     const [me, bot] = G.players;
-    if (me.stack <= 0 || bot.stack <= 0) { G.street = 'over'; render(); return; }
     G.handNo++; G.button = 1 - G.button;
     G.deck = shuffle([...Array(52).keys()]);
     for (const p of G.players) Object.assign(p, { hole: [G.deck.pop(), G.deck.pop()], bet: 0, folded: false, allIn: false, acted: false, last: '' });
@@ -425,6 +583,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     G.currentBet = Math.max(me.bet, bot.bet); G.minRaise = BB;
     G.log.push(`— ${G.handNo}번째 판 —`);
     G.toAct = sb;
+    Sound.sfx('card');
     step();
   }
 
@@ -442,7 +601,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     if (G.players[i].allIn || G.players[i].folded) { i = G.toAct = 1 - i; }
     if (i === 1) {
       G.busy = true; G.pending = null; render();
-      setTimeout(botAct, 800);
+      setTimeout(botAct, 850);
     } else {
       G.busy = false; G.sliderSet = false; G.pending = analyze(0); render();
     }
@@ -463,17 +622,18 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     else if (G.street === 'flop') { G.board.push(G.deck.pop()); G.street = 'turn'; }
     else { G.board.push(G.deck.pop()); G.street = 'river'; }
     G.log.push(`${STREET_KO[G.street]}: ${G.board.map(cardText).join(' ')}`);
+    Sound.sfx('card');
     G.toAct = 1 - G.button;
     const canAct = G.players.filter(p => !p.folded && !p.allIn).length;
-    if (canAct < 2) { G.busy = true; G.pending = null; render(); setTimeout(step, 1000); }
+    if (canAct < 2) { G.busy = true; G.pending = null; render(); setTimeout(step, 1100); }
     else step();
   }
 
   function act(i, type, to) {
     const p = G.players[i], o = G.players[1 - i], toCall = G.currentBet - p.bet;
-    if (type === 'fold') { p.folded = true; p.last = '폴드'; }
+    if (type === 'fold') { p.folded = true; p.last = '폴드'; Sound.sfx('fold'); }
     else if (type === 'check') { p.last = '체크'; }
-    else if (type === 'call') { const amt = post(i, toCall); p.last = p.allIn ? `올인 콜 ${amt}` : `콜 ${amt}`; }
+    else if (type === 'call') { const amt = post(i, toCall); p.last = p.allIn ? `올인 콜 ${amt}` : `콜 ${amt}`; Sound.sfx('chips'); }
     else {
       const was = G.currentBet;
       post(i, Math.max(0, to - p.bet));
@@ -484,6 +644,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
       }
       G.aggr[i]++;
       p.last = `${p.allIn ? '올인' : was > 0 ? '레이즈' : '벳'} ${p.bet}`;
+      Sound.sfx('chips');
     }
     p.acted = true;
     G.log.push(`${p.name}: ${p.last}`);
@@ -522,6 +683,8 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     if (G.result.winner === 0) G.stats.won++;
     const r = G.result;
     G.log.push(r.winner === -1 ? `무승부, 판돈 ${r.amount} 나눔` : `${G.players[r.winner].name} 승리 +${r.amount}`);
+    Sound.sfx(r.winner === 0 ? 'win' : r.winner === 1 ? 'lose' : 'card');
+    if (G.players.some(p => p.stack <= 0)) { G.street = 'over'; endSession('bust'); }
     render();
   }
 
@@ -543,7 +706,7 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
   }
 
   function analyze(i) {
-    const p = G.players[i];
+    const p = G.players[i], o = G.players[1 - i];
     const toCall = Math.max(0, G.currentBet - p.bet);
     const potTotal = G.pot + G.players[0].bet + G.players[1].bet;
     const need = toCall > 0 ? toCall / (potTotal + toCall) : 0;
@@ -551,92 +714,185 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     const minChen = oppAggr >= 2 ? 7 : oppAggr === 1 ? 4 : -99;
     const E = equity(p.hole, G.board, minChen, i === 0 ? 2000 : 600);
     const b = raiseBounds(i);
+    const pf = G.street === 'preflop';
     const a = {
       E, need, toCall, potTotal, street: G.street, canRaise: b.can && p.stack > toCall,
-      oppAggr, currentBet: G.currentBet,
+      oppAggr, currentBet: G.currentBet, myBet: p.bet, oppBet: o.bet,
       hand: G.board.length ? describe(eval7(p.hole.concat(G.board))) : preflopName(p.hole),
-      outs: i === 0 ? countOuts(p.hole, G.board) : 0
+      outs: i === 0 ? countOuts(p.hole, G.board) : 0,
+      suggestTo: b.can ? (pf ? Math.max(b.minTo, Math.min(b.maxTo, G.currentBet * 3)) : sizeTo(i, 0.66)) : 0
     };
     if (i === 0) a.rec = recommend(a);
     return a;
   }
 
+  // 상황 분류 → 추천 행동
   function recommend(a) {
     const { E, need, toCall, street, canRaise } = a;
     const pf = street === 'preflop';
-    let best, ok = [], why;
+    let sit, best, ok = [];
     if (toCall > 0) {
-      if (E < need - 0.03) {
-        best = 'fold';
-        why = `이길 확률(${pct(E)})이 콜에 필요한 승률(${pct(need)})보다 낮아요. 이런 콜을 반복하면 장기적으로 칩이 줄어요.`;
-      } else if (pf && E < 0.42) {
-        best = 'fold'; ok = ['call'];
-        why = '약한 시작 패예요. 프리플랍에서 약한 패를 미련 없이 버리는 습관이 초보 탈출의 첫걸음이에요.';
-      } else if (E >= 0.68 && canRaise) {
-        best = 'raise'; ok = ['call'];
-        why = `승률 ${pct(E)}로 꽤 유리해요. 레이즈로 판돈을 키우면 이길 때 더 많이 받아올 수 있어요.`;
-      } else if (E < need + 0.05) {
-        best = 'call'; ok = ['fold'];
-        why = `필요한 승률 ${pct(need)}과 내 승률 ${pct(E)}이 거의 같아요. 콜도 폴드도 큰 차이 없는 애매한 자리예요.`;
-      } else {
-        best = 'call';
-        if (E >= 0.55 && canRaise) ok = ['raise'];
-        why = `내 승률 ${pct(E)}이 필요한 승률 ${pct(need)}보다 높아요. 따라가는 쪽이 이득이에요.`;
-      }
+      if (E < need - 0.03) { sit = 'loseCall'; best = 'fold'; }
+      else if (pf && E < 0.42) { sit = 'weakPre'; best = 'fold'; ok = ['call']; }
+      else if (E >= 0.68 && canRaise) { sit = 'strongFacing'; best = 'raise'; ok = ['call']; }
+      else if (E < need + 0.05) { sit = 'marginal'; best = 'call'; ok = ['fold']; }
+      else { sit = 'goodCall'; best = 'call'; if (E >= 0.55 && canRaise) ok = ['raise']; }
     } else {
-      if (E >= 0.6 && canRaise) {
-        best = 'raise'; ok = ['check'];
-        why = `승률 ${pct(E)}의 좋은 패예요. 먼저 베팅해서 상대에게 칩을 받아내세요. 이걸 "가치 베팅"이라고 해요.`;
-      } else if (E >= 0.45) {
-        best = 'check';
-        if (canRaise) ok = ['raise'];
-        why = `중간 정도 패(승률 ${pct(E)})예요. 체크로 공짜 카드를 보는 게 무난하고, 작은 베팅도 괜찮아요.`;
-      } else {
-        best = 'check';
-        if (E >= 0.35 && canRaise) ok = ['raise'];
-        why = `승률 ${pct(E)}로 약한 편이에요. 칩을 더 넣지 말고 체크로 공짜 카드를 보세요.`;
-      }
+      if (E >= 0.6 && canRaise) { sit = 'valueBet'; best = 'raise'; ok = ['check']; }
+      else if (E >= 0.45) { sit = 'medium'; best = 'check'; if (canRaise) ok = ['raise']; }
+      else { sit = 'weak'; best = 'check'; if (E >= 0.35 && canRaise) ok = ['raise']; }
     }
-    return { best, ok, why };
+    return { sit, best, ok, rule: RULE[sit] };
   }
 
-  const actName = (type, toCall) =>
-    ({ fold: '폴드', check: '체크', call: '콜', raise: toCall > 0 ? '레이즈' : '벳' })[type];
+  const RULE = {
+    loseCall: '내 승률이 필요한 승률보다 낮으면 폴드.',
+    weakPre: '약한 시작 패는 프리플랍에서 버리기.',
+    strongFacing: '강한 패는 레이즈로 판돈 키우기.',
+    marginal: '본전 근처면 콜로 판돈을 작게 유지하기.',
+    goodCall: '내 승률이 필요한 승률보다 높으면 콜.',
+    valueBet: '좋은 패는 먼저 베팅해서 칩 받아내기.',
+    medium: '돈이 안 들 땐 체크로 공짜 카드 보기.',
+    weak: '약한 패는 돈 넣지 말고 체크.'
+  };
 
-  function grade(a, type, to) {
+  const freeFold = () => '아무도 돈을 걸지 않아서, 체크하면 공짜로 다음 카드를 볼 수 있었어요. 돈이 안 드는 상황에서 포기할 이유는 없어요.';
+  const WHY = {
+    loseCall: {
+      fold: a => `필요한 승률은 ${pct(a.need)}인데 내 승률은 ${pct(a.E)}였어요. 이길 확률이 모자랄 때 포기하는 건 칩을 지키는 좋은 판단이에요. 포기도 실력이에요.`,
+      call: a => `콜 ${won(a.toCall)}칩으로 판돈 ${won(a.potTotal + a.toCall)}칩을 노리려면 최소 ${pct(a.need)}는 이겨야 하는데, 내 승률은 ${pct(a.E)}였어요. 같은 상황을 100번 반복하면 평균적으로 손해 보는 콜이에요.`,
+      raise: a => `상대가 먼저 걸었다는 건 좋은 패일 수 있다는 뜻이에요. 승률 ${pct(a.E)}로 더 올리는 건 블러핑(약한 패로 강한 척하기)인데, 상대가 따라오면 크게 잃어요.`
+    },
+    weakPre: {
+      fold: a => `${a.hand}는 약한 시작 패예요. 시작이 약하면 바닥 카드가 맞아도 상대보다 약한 경우가 많아서, 처음부터 버리는 게 칩을 아끼는 길이에요.`,
+      call: a => `싸게 따라간 건 큰 실수는 아니에요. 다만 ${a.hand} 같은 패는 맞아도 애매한 경우가 많아서, 뒤에서 칩을 더 잃기 쉬워요.`,
+      raise: () => '약한 시작 패로 올리면 상대가 따라올 때 불리한 싸움을 하게 돼요. 프리플랍 레이즈는 좋은 시작 패로 하는 게 기본이에요.'
+    },
+    strongFacing: {
+      raise: a => `승률 ${pct(a.E)}로 상대보다 유리할 가능성이 커요. 강한 패일 때 판돈을 키우는 게 칩을 버는 핵심이에요.`,
+      call: a => `따라간 것도 나쁘지 않아요. 하지만 승률 ${pct(a.E)}의 강한 패라면 더 올려서 상대가 칩을 더 넣게 만드는 쪽이 이득이 커요.`,
+      fold: a => `승률 ${pct(a.E)}의 강한 패를 버렸어요. 이길 확률이 높은 패를 포기하는 건 손해가 가장 큰 실수예요.`
+    },
+    marginal: {
+      call: a => `필요한 승률 ${pct(a.need)}과 내 승률 ${pct(a.E)}이 거의 같은 본전 근처 상황이에요. 따라간 건 무난한 선택이에요.`,
+      fold: a => `필요한 승률 ${pct(a.need)}과 내 승률 ${pct(a.E)}이 비슷한 애매한 상황이라 포기도 괜찮아요. 다만 이럴 때마다 포기하면 상대가 블러핑으로 칩을 쉽게 가져가요.`,
+      raise: a => `애매한 패(승률 ${pct(a.E)})로 올리면, 상대가 강한 패일 때 큰 판돈을 잃게 돼요. 애매할 땐 판돈을 작게 유지하는 게 좋아요.`
+    },
+    goodCall: {
+      call: a => `내 승률 ${pct(a.E)}이 필요한 승률 ${pct(a.need)}보다 높아요. 이렇게 "받을 돈에 비해 이길 확률이 충분할 때" 따라가면 장기적으로 이득이에요.`,
+      raise: a => a.E >= 0.55
+        ? `승률 ${pct(a.E)}로 올리는 것도 가능한 선택이에요. 다만 상대가 더 강한 패로 다시 올리면 곤란해질 수 있어서, 콜이 조금 더 안전해요.`
+        : `승률 ${pct(a.E)}는 따라가기엔 충분하지만 올리기엔 부족해요. 올리면 상대의 더 강한 패에만 붙잡히기 쉬워요.`,
+      fold: a => `내 승률 ${pct(a.E)}이 필요한 승률 ${pct(a.need)}보다 높았는데 포기했어요. 필요한 승률보다 높으면 따라가는 게 이득이에요.`
+    },
+    valueBet: {
+      raise: a => `승률 ${pct(a.E)}의 좋은 패로 먼저 걸었어요. 이걸 "가치 베팅"이라고 해요. 상대가 더 약한 패로 따라와 주면 그만큼 칩을 벌어요.`,
+      check: () => '체크로 일부러 약한 척하는 방법도 있어요. 하지만 상대도 체크하면 받을 수 있던 칩을 놓쳐요. 초보 단계에서는 좋은 패면 직접 거는 게 더 많이 벌어요.',
+      fold: freeFold
+    },
+    medium: {
+      check: a => `중간 정도 패(승률 ${pct(a.E)})에서 돈을 넣지 않고 다음 카드를 공짜로 본 무난한 선택이에요.`,
+      raise: () => '중간 정도 패로 작게 걸어 보는 것도 괜찮아요. 다만 상대가 다시 올리면 포기해야 할 수도 있어요.',
+      fold: freeFold
+    },
+    weak: {
+      check: a => `승률 ${pct(a.E)}로 약한 편이라, 돈을 넣지 않고 공짜로 다음 카드를 본 좋은 선택이에요.`,
+      raise: a => `승률 ${pct(a.E)}의 약한 패로 건 건 블러핑이에요. 상대가 따라오면 지는 경우가 많아요. 블러핑은 기본기가 쌓인 뒤에 가끔만 쓰는 게 좋아요.`,
+      fold: freeFold
+    }
+  };
+
+  const MISTAKES = {
+    looseCall: { label: '승률이 모자란데 따라가기', advice: '콜하기 전에 "콜 금액 ÷ 콜한 뒤 전체 판돈"으로 필요한 승률을 보고, 내 승률이 더 높을 때만 따라가세요.' },
+    tightFold: { label: '이길 만한데 포기하기', advice: '공짜로 볼 수 있으면 체크, 내 승률이 필요한 승률보다 높으면 콜. 겁먹고 버리지 마세요.' },
+    bluff: { label: '약한 패로 걸기 (블러핑)', advice: '초보 단계에선 블러핑을 줄이고, 좋은 패일 때 거는 데 집중하세요.' },
+    passive: { label: '강한 패로 소극적으로 치기', advice: '승률 60%가 넘는 좋은 패면 먼저 베팅하거나 레이즈해서 칩을 받아내세요.' },
+    overplay: { label: '애매한 패로 판 키우기', advice: '승률이 애매하면 콜로 판돈을 작게 유지하세요.' },
+    bigBet: { label: '너무 큰 베팅', advice: '베팅은 보통 판돈의 ½~¾이면 충분해요. 올인은 정말 강할 때만 하세요.' }
+  };
+  const STRENGTHS = {
+    fold: '질 것 같은 패를 미련 없이 포기했어요.',
+    call: '필요한 승률을 따져서 따라갈 때를 잘 골랐어요.',
+    raise: '좋은 패일 때 적극적으로 베팅해서 칩을 받아냈어요.',
+    check: '약하거나 애매한 패로 무리하지 않았어요.'
+  };
+
+  // 대략적인 기대값 (이번 베팅 라운드만 본 단순 모델)
+  function evOf(a, type, to) {
+    if (type === 'fold') return 0;
+    if (type === 'check') return a.E * a.potTotal;
+    if (type === 'call') return a.E * (a.potTotal + a.toCall) - a.toCall;
+    const myAdd = to - a.myBet, oppAdd = Math.max(0, to - a.oppBet);
+    const ratio = (to - a.currentBet) / (a.potTotal + a.toCall);
+    const fe = Math.max(0.1, Math.min(0.5, 0.1 + 0.3 * ratio));
+    const E2 = Math.max(0, a.E - 0.06 - 0.04 * ratio);
+    return fe * a.potTotal + (1 - fe) * (E2 * (a.potTotal + myAdd + oppAdd) - myAdd);
+  }
+
+  function streetTip(a) {
+    if (a.street === 'preflop') return '좋은 시작 패: 같은 숫자 두 장(페어), A·K·Q 같은 높은 카드 두 장, 같은 무늬로 이어진 카드.';
+    if (a.street === 'flop') return a.outs ? `아웃츠 ${a.outs}장 × 4 ≈ ${a.outs * 4}%. 리버까지 두 장을 더 볼 때 패가 완성될 대략적인 확률이에요.` : '플랍에서 패가 거의 결정돼요. 바닥 카드와 내 카드가 어떻게 맞는지 먼저 보세요.';
+    if (a.street === 'turn') return a.outs ? `아웃츠 ${a.outs}장 × 2 ≈ ${a.outs * 2}%. 마지막 한 장으로 패가 완성될 대략적인 확률이에요.` : '턴부터는 판돈이 커져요. 애매한 패로 큰돈을 넣지 않도록 조심하세요.';
+    return '리버엔 더 나올 카드가 없어요. 지금 패가 최종 패예요. 상대가 크게 걸면 정말 강한 경우가 많아요.';
+  }
+
+  const actName = (type, toCall) => ({ fold: '폴드', check: '체크', call: '콜', raise: toCall > 0 ? '레이즈' : '벳' })[type];
+  const recLabel = a => actName(a.rec.best, a.toCall) + (a.rec.best === 'raise' ? ` (약 ${won(a.suggestTo)}까지)` : '');
+
+  function judge(a, type, to) {
     const { rec, toCall, E, potTotal } = a;
     let level = type === rec.best ? 'good' : rec.ok.includes(type) ? 'ok' : 'bad';
-    const msgs = [];
-    if (level === 'good') msgs.push('좋은 선택이에요. ' + rec.why);
-    else if (type === 'fold' && toCall === 0) msgs.push('돈을 안 내고 체크할 수 있었어요. 공짜로 다음 카드를 볼 기회를 버린 셈이에요.');
-    else if (type === 'fold') msgs.push(`너무 일찍 포기했어요. ${rec.why}`);
-    else if (type === 'call' && rec.best === 'fold') msgs.push(`칩이 새는 콜이에요. ${rec.why}`);
-    else if (type === 'raise' && (rec.best === 'fold' || rec.best === 'check')) {
-      msgs.push(`약한 패로 ${toCall > 0 ? '레이즈' : '베팅'}하면 블러핑(약한 패로 강한 척하기)이 돼요. 상대가 따라오면 지는 경우가 많아서, 처음엔 줄이는 게 좋아요. ${level === 'ok' ? '다만 이 정도 패면 가끔은 괜찮아요.' : ''}`);
-    } else if ((type === 'check' || type === 'call') && rec.best === 'raise') {
-      msgs.push(`나쁘진 않지만 더 받아낼 수 있었어요. ${rec.why}`);
-    } else msgs.push(rec.why);
-
+    const why = (WHY[rec.sit][type] || (() => ''))(a);
+    let mistake = null;
+    if (level !== 'good') {
+      if (type === 'fold') mistake = 'tightFold';
+      else if (type === 'call' && rec.best === 'fold') mistake = 'looseCall';
+      else if (type === 'raise' && (rec.best === 'fold' || rec.best === 'check')) mistake = 'bluff';
+      else if ((type === 'check' || type === 'call') && rec.best === 'raise') mistake = 'passive';
+      else if (type === 'raise') mistake = 'overplay';
+    }
+    let sizeNote = '';
     if (type === 'raise') {
-      const added = to - a.currentBet;
-      const ratio = added / (potTotal + toCall);
+      const ratio = (to - a.currentBet) / (potTotal + toCall);
       if (ratio > 1.5 && E < 0.75) {
-        msgs.push('베팅 크기가 판돈에 비해 너무 커요. 보통은 판돈의 ½~¾ 정도가 적당해요.');
-        if (level === 'good') level = 'ok';
+        sizeNote = ` 베팅 금액도 판돈에 비해 너무 컸어요. 판돈의 ½~¾ 정도(지금이라면 약 ${won(a.suggestTo)}까지)면 충분해요.`;
+        if (!mistake) mistake = 'bigBet';
       }
     }
-    return { level, msgs };
+    // 점수: 등급 + 대략적인 기대값 차이
+    const evMine = evOf(a, type, to), evBest = evOf(a, rec.best, a.suggestTo);
+    const regret = Math.min(1, Math.max(0, evBest - evMine) / Math.max(potTotal, BB * 2));
+    let score = level === 'good' ? 100 - Math.round(regret * 10)
+      : level === 'ok' ? 80 - Math.round(regret * 25)
+      : 45 - Math.round(regret * 35);
+    if (sizeNote) score -= 12;
+    score = Math.max(5, Math.min(100, score));
+
+    let better;
+    if (level === 'good') {
+      better = `같은 상황이 오면 또 ${actName(type, toCall)}하세요.` +
+        (type === 'raise' && !sizeNote ? ` 금액은 판돈의 ½~¾(지금이라면 약 ${won(a.suggestTo)}까지)가 무난해요.` : '') + sizeNote;
+    } else {
+      better = `${level === 'ok' ? '이것도 괜찮지만, ' : ''}${recLabel(a)}${level === 'ok' ? '가 조금 더 좋았어요.' : '가 더 좋았어요.'} 기억할 공식: ${rec.rule}${sizeNote}`;
+    }
+    const evLine = evBest > evMine + 1
+      ? `내 선택 약 ${signed(evMine)}칩 · 추천 행동 약 ${signed(evBest)}칩`
+      : `내 선택 약 ${signed(evMine)}칩`;
+    return { level, score, why, better, mistake, evLine };
   }
 
   function userAct(type) {
     if (G.busy || G.toAct !== 0 || !G.pending) return;
     const a = G.pending;
     const to = type === 'raise' ? Number($('raiseAmt').value) : 0;
-    const g = grade(a, type, to);
-    const d = { street: G.street, action: actName(type, a.toCall) + (type === 'raise' ? ` ${to}` : type === 'call' ? ` ${Math.min(a.toCall, G.players[0].stack)}` : ''), a, ...g };
+    const j = judge(a, type, to);
+    const action = actName(type, a.toCall) + (type === 'raise' ? ` ${won(to)}까지` : type === 'call' ? ` ${won(Math.min(a.toCall, G.players[0].stack))}` : '');
+    const d = { street: G.street, type, action, a, ...j };
     G.decisions.push(d);
+    G.allDecs.push({ score: j.score, level: j.level, mistake: j.mistake, type, street: G.street });
     G.lastFb = d;
-    G.stats.dec++; G.stats[g.level]++;
+    G.stats.dec++; G.stats[j.level]++;
+    Sound.sfx(j.level === 'bad' ? 'bad' : j.level === 'good' ? 'good' : null);
     act(0, type, to);
   }
 
@@ -666,6 +922,138 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
     act(1, move, to);
   }
 
+  /* ---------- 전체 게임 결과 · 저장 ---------- */
+  function gradeOf(avg) { return avg >= 90 ? 'S' : avg >= 80 ? 'A' : avg >= 70 ? 'B' : avg >= 55 ? 'C' : 'D'; }
+  const GRADE_TEXT = {
+    S: '거의 교과서처럼 쳤어요! 이제 상대의 베팅 습관을 읽는 연습을 해 볼 차례예요.',
+    A: '기본기가 탄탄해요. 몇 가지 실수만 줄이면 상급자 수준이에요.',
+    B: '기본은 잡혔어요. 아래 실수 유형 하나만 집중해서 고쳐 보세요.',
+    C: '아직 감으로 치는 순간이 많아요. 코치 힌트를 켜고 "필요한 승률"을 먼저 보는 연습을 해 보세요.',
+    D: '처음엔 다 그래요! 코치 힌트를 켜고 추천대로 몇 판 쳐 보면서 이유를 읽어 보세요.'
+  };
+
+  function summarize(reason) {
+    const ds = G.allDecs;
+    const n = ds.length;
+    const avg = n ? Math.round(ds.reduce((s, d) => s + d.score, 0) / n) : 0;
+    const grade = gradeOf(avg);
+    const count = k => ds.filter(d => d.level === k).length;
+    const goodBy = {};
+    ds.filter(d => d.level === 'good').forEach(d => { goodBy[d.type] = (goodBy[d.type] || 0) + 1; });
+    const strengths = Object.entries(goodBy).sort((x, y) => y[1] - x[1]).slice(0, 2)
+      .map(([t, c]) => ({ text: STRENGTHS[t], count: c }));
+    const mis = {};
+    ds.forEach(d => { if (d.mistake) mis[d.mistake] = (mis[d.mistake] || 0) + 1; });
+    const mistakes = Object.entries(mis).sort((x, y) => y[1] - x[1]).slice(0, 3)
+      .map(([k, c]) => ({ key: k, label: MISTAKES[k].label, advice: MISTAKES[k].advice, count: c }));
+    const chips = G.players[0].stack;
+    const goal = mistakes.length
+      ? `다음 목표: "${mistakes[0].label}" 줄이기. ${mistakes[0].advice}`
+      : '다음 목표: 판단 점수 평균 90점 이상을 유지하면서, 더 많은 판을 쳐 보세요.';
+    return {
+      id: 'g' + Date.now().toString(36),
+      endedAt: new Date().toISOString(),
+      reason, hands: G.stats.hands, won: G.stats.won, chips, chipDelta: chips - START,
+      decisions: n, avgScore: avg, grade, good: count('good'), ok: count('ok'), bad: count('bad'),
+      summary: n ? GRADE_TEXT[grade] : '선택한 기록이 없어서 점수를 매기지 못했어요.',
+      strengths, mistakes, goal
+    };
+  }
+
+  // 저장소: claude.ai 계정 저장소(db)가 있으면 거기에, 없으면 이 브라우저(localStorage)에.
+  const Store = { kind: 'local', coll: null, ready: false, list: [] };
+  const LOCAL_KEY = 'holdemCoachHistory';
+  function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); } catch (e) { return []; } }
+  function writeLocal(list) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(list.slice(0, 50))); return true; } catch (e) { return false; } }
+  async function initStore() {
+    try {
+      if (window.claude && window.claude.use) {
+        const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
+        const uid = user ? await user.id() : null;
+        if (db && uid) { Store.coll = db.collection('data/users/' + uid); Store.kind = 'db'; }
+      }
+    } catch (e) { Store.kind = 'local'; }
+    await loadHistory();
+  }
+  async function loadHistory() {
+    let list = [];
+    if (Store.kind === 'db') {
+      try {
+        const snap = await Store.coll.orderBy('endedAt', 'desc').limit(30).get();
+        list = snap.docs.map(d => d.data()).filter(Boolean);
+      } catch (e) { Store.kind = 'local'; list = readLocal(); }
+    } else list = readLocal();
+    Store.list = list; Store.ready = true;
+    renderHistory();
+  }
+  async function saveRecord(rec) {
+    if (Store.kind === 'db') {
+      try { await Store.coll.doc(rec.id).set(rec); return '내 claude.ai 계정에 저장했어요. 다른 기기에서 열어도 볼 수 있어요.'; }
+      catch (e) { /* 아래 브라우저 저장으로 */ }
+    }
+    const list = readLocal(); list.unshift(rec);
+    return writeLocal(list) ? '이 브라우저에 저장했어요. 인터넷 기록을 지우면 사라질 수 있어요.' : '저장하지 못했어요. 브라우저가 저장을 막고 있어요.';
+  }
+
+  async function endSession(reason) {
+    if (G.ended) return;
+    const rec = summarize(reason);
+    G.ended = rec;
+    renderSession(rec, '저장하는 중이에요…');
+    if (!rec.decisions) { renderSession(rec, '선택 기록이 없어서 저장하지 않았어요.'); return; }
+    const note = await saveRecord(rec);
+    renderSession(rec, note);
+    Store.list = [rec, ...Store.list.filter(r => r.id !== rec.id)];
+    renderHistory();
+  }
+
+  function renderSession(rec, note) {
+    const el = $('sessionEnd');
+    const lead = rec.reason === 'bust'
+      ? (G.players[0].stack > 0 ? '컴퓨터의 칩을 모두 땄어요!' : '칩을 모두 잃었어요. 그래도 점수는 실력의 기록이에요.')
+      : '게임을 마쳤어요.';
+    const stat = (v, k) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`;
+    el.innerHTML = `
+      <div class="session-top">
+        <div class="big-grade"><b>${rec.decisions ? rec.grade : '–'}</b><small>등급</small></div>
+        <div style="min-width:0;flex:1 1 260px">
+          <h2>${lead} 평균 <span class="num">${rec.avgScore}</span>점</h2>
+          <p class="session-lede">${esc(rec.summary)}</p>
+        </div>
+      </div>
+      <div class="session-stats">
+        ${stat(rec.hands, '친 판 수')}${stat(rec.won, '이긴 판')}${stat(signed(rec.chipDelta), '칩 변화')}
+        ${stat(rec.decisions, '내 선택 수')}${stat(`${rec.good}/${rec.ok}/${rec.bad}`, '최선/괜찮음/아쉬움')}
+      </div>
+      <div class="session-cols">
+        <div><h3>잘한 점</h3>${rec.strengths.length ? `<ul>${rec.strengths.map(s => `<li>${esc(s.text)}<span>최선의 선택 ${s.count}번</span></li>`).join('')}</ul>` : '<p class="empty">다음 게임에서 "최선" 판정을 모아 보세요.</p>'}</div>
+        <div><h3>고칠 점</h3>${rec.mistakes.length ? `<ul>${rec.mistakes.map(m => `<li>${esc(m.label)} (${m.count}번)<span>${esc(m.advice)}</span></li>`).join('')}</ul>` : '<p class="empty">눈에 띄는 실수 패턴이 없었어요.</p>'}</div>
+      </div>
+      <div class="goal">${esc(rec.goal)}</div>
+      <div class="save-note">${esc(note)}</div>
+      <button class="btn-next" id="bNewGame" type="button">새 게임 시작 (칩 2,000씩)</button>`;
+    el.hidden = false;
+    $('bNewGame').addEventListener('click', () => { newGame({}); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  function renderHistory() {
+    const box = $('history');
+    if (!Store.ready) return;
+    $('historyNote').textContent = Store.kind === 'db'
+      ? '내 claude.ai 계정에 저장돼요. 나만 볼 수 있어요.'
+      : '이 브라우저에 저장돼요.';
+    if (!Store.list.length) { box.innerHTML = '<p class="empty">아직 저장된 기록이 없어요. 몇 판 친 뒤 "게임 끝내고 결과 저장"을 누르면 점수와 전체 피드백이 여기에 쌓여요.</p>'; return; }
+    box.innerHTML = Store.list.map(r => {
+      const d = new Date(r.endedAt);
+      const date = isNaN(d) ? '' : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
+      return `<details><summary><b>${esc(r.grade)}</b><span>평균 ${r.avgScore}점 · ${r.hands}판 · 칩 ${signed(r.chipDelta)}</span><span style="color:var(--faint)">${date}</span></summary>
+        <div class="h-body"><p>${esc(r.summary)}</p>
+        ${(r.mistakes || []).map(m => `<p>· 고칠 점: ${esc(m.label)} (${m.count}번)</p>`).join('')}
+        <p style="color:var(--muted)">${esc(r.goal || '')}</p></div></details>`;
+    }).join('');
+  }
+
   /* ---------- 화면 ---------- */
   function cardText(c) { return R(c >> 2) + SUITS[c & 3]; }
   function cardHTML(c, opts = {}) {
@@ -676,11 +1064,11 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
   }
 
   function seatHTML(i) {
-    const p = G.players[i], ended = G.street === 'done';
-    const showBot = i === 0 || ended;
-    const cards = p.hole.map(c => cardHTML(c, { hidden: !showBot, big: i === 0, dim: p.folded })).join('');
+    const p = G.players[i], ended = G.street === 'done' || G.street === 'over';
+    const show = i === 0 || ended;
+    const cards = p.hole.map(c => cardHTML(c, { hidden: !show, big: i === 0, dim: p.folded })).join('');
     let label = '';
-    if (i === 0 || ended) label = G.board.length ? describe(eval7(p.hole.concat(G.board))) : preflopName(p.hole);
+    if (show) label = G.board.length ? describe(eval7(p.hole.concat(G.board))) : preflopName(p.hole);
     if (i === 1 && ended) label = '공개: ' + label;
     const info = `<div class="seat-info">
         ${G.button === i ? '<span class="dealer" title="딜러 (작은 블라인드)">D</span>' : ''}
@@ -693,12 +1081,13 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
                    : bet + `<div class="cards">${cards}</div>` + lab + info;
   }
 
-  function factsHTML(a) {
+  function factsHTML(a, evLine) {
     const rows = [`<dt>내 패</dt><dd>${a.hand}</dd>`,
-      `<dt>예상 승률</dt><dd><span class="num">${pct(a.E)}</span>${meter(a.E, a.toCall > 0 ? a.need : null)}</dd>`];
-    if (a.toCall > 0) rows.push(`<dt>필요 승률</dt><dd><span class="num">${pct(a.need)}</span> · 콜 ${won(a.toCall)}으로 판돈 ${won(a.potTotal + a.toCall)} 노림</dd>`);
-    if (a.outs) rows.push(`<dt>아웃츠</dt><dd><span class="num">${a.outs}</span>장 → 다음 카드로 완성될 확률 약 ${pct(a.outs / (52 - 2 - G.board.length))}</dd>`);
-    if (a.oppAggr) rows.push(`<dt>상대 성향</dt><dd>이번 판에 ${a.oppAggr}번 올렸어요. 강한 패일 가능성을 반영했어요.</dd>`);
+      `<dt>내 승률</dt><dd><span class="num">${pct(a.E)}</span>${meter(a.E, a.toCall > 0 ? a.need : null)}${a.toCall > 0 ? '<span class="meter-legend">초록 막대가 흰 선을 넘으면 콜이 이득</span>' : ''}</dd>`];
+    if (a.toCall > 0) rows.push(`<dt>필요 승률</dt><dd><span class="num">${pct(a.need)}</span> · 콜 ${won(a.toCall)}칩으로 판돈 ${won(a.potTotal + a.toCall)}칩을 노림</dd>`);
+    if (evLine) rows.push(`<dt>기대값</dt><dd>${evLine} <span class="meter-legend">(100번 반복할 때 한 번 평균, 대략)</span></dd>`);
+    if (a.outs) rows.push(`<dt>아웃츠</dt><dd><span class="num">${a.outs}</span>장 · 다음 한 장으로 완성될 확률 약 ${pct(a.outs / (52 - 2 - G.board.length))}</dd>`);
+    if (a.oppAggr) rows.push(`<dt>상대</dt><dd>이번 판에 ${a.oppAggr}번 올렸어요. 강한 패일 가능성을 반영했어요.</dd>`);
     return `<dl class="facts">${rows.join('')}</dl>`;
   }
   function meter(E, need) {
@@ -706,74 +1095,83 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
   }
 
   function fbHTML(d) {
-    const recName = actName(d.a.rec.best, d.a.toCall);
+    const whyTitle = d.level === 'good' ? '왜 좋은 선택일까?' : d.level === 'ok' ? '나쁘지 않은 이유' : '왜 아쉬울까?';
     return `<div class="fb ${d.level}">
-      <div class="fb-head"><span class="fb-title">${STREET_KO[d.street]} · 내 선택: ${d.action}</span><span class="grade ${d.level}">${GRADE_KO[d.level]}</span></div>
-      ${d.level !== 'good' ? `<p><b>추천: ${recName}</b>${d.a.rec.ok.length ? ` (또는 ${d.a.rec.ok.map(t => actName(t, d.a.toCall)).join(', ')})` : ''}</p>` : ''}
-      ${d.msgs.map(m => `<p>${m}</p>`).join('')}
-      ${factsHTML(d.a)}
+      <div class="fb-top">
+        <div class="score"><b>${d.score}</b><small>점</small></div>
+        <div><div class="fb-title">${STREET_KO[d.street]} · 내 선택: ${d.action}</div>
+          <div class="fb-meta"><span class="grade ${d.level}">${GRADE_KO[d.level]}</span>${d.level !== 'good' ? `<span>추천: ${recLabel(d.a)}</span>` : ''}</div></div>
+      </div>
+      <div class="fb-sec"><h3>${whyTitle}</h3><p>${d.why}</p></div>
+      <div class="fb-sec better"><h3>${d.level === 'good' ? '다음에도 이렇게' : '이렇게 했으면 더 좋아요'}</h3><p>${d.better}</p></div>
+      <div class="fb-sec"><h3>숫자로 보면</h3>${factsHTML(d.a, d.evLine)}</div>
+      <p class="tip">초보 팁 · ${streetTip(d.a)}</p>
+    </div>`;
+  }
+
+  function hintHTML(a) {
+    const extra = a.rec.ok.length ? ` (${a.rec.ok.map(t => actName(t, a.toCall)).join(', ')}도 괜찮아요)` : '';
+    const why = WHY[a.rec.sit][a.rec.best](a);
+    return `<div class="fb hint">
+      <div class="fb-top"><div><div class="fb-title">코치라면: ${recLabel(a)}${extra}</div>
+        <div class="fb-meta"><span class="grade hint">미리 보기</span><span>공식: ${a.rec.rule}</span></div></div></div>
+      <div class="fb-sec"><h3>이유</h3><p>${why}</p></div>
+      <div class="fb-sec"><h3>숫자로 보면</h3>${factsHTML(a)}</div>
     </div>`;
   }
 
   function lessonFor(ds) {
     if (!ds.length) return '이번 판은 내가 선택할 일이 없었어요.';
-    const bad = ds.filter(d => d.level === 'bad');
-    if (!bad.length) return '이번 판은 아쉬운 선택이 없었어요. 결과와 상관없이 좋은 판단이었어요. 포커는 운이 섞여 있어서, 좋은 선택을 해도 질 수 있어요.';
-    const callLoose = bad.filter(d => d.action.startsWith('콜')).length;
-    const foldTight = bad.filter(d => d.action.startsWith('폴드')).length;
-    const bluff = bad.filter(d => /^(벳|레이즈)/.test(d.action)).length;
-    if (callLoose >= foldTight && callLoose >= bluff) return '오늘의 교훈: 콜하기 전에 "내 승률이 필요한 승률보다 높은가?"를 먼저 따져 보세요.';
-    if (foldTight >= bluff) return '오늘의 교훈: 공짜로 볼 수 있거나 싸게 따라갈 수 있을 땐 쉽게 포기하지 마세요.';
-    return '오늘의 교훈: 약한 패로 크게 거는 블러핑은 줄이고, 강한 패일 때 베팅하는 데 집중하세요.';
+    const avg = Math.round(ds.reduce((s, d) => s + d.score, 0) / ds.length);
+    const head = `이번 판 평균 ${avg}점. `;
+    const bad = ds.filter(d => d.mistake);
+    if (!bad.length) return head + '아쉬운 선택이 없었어요. 포커는 운이 섞여 있어서 좋은 선택을 해도 질 수 있어요. 결과보다 판단을 보세요.';
+    return head + '기억할 것: ' + MISTAKES[bad[0].mistake].advice;
   }
 
   function render() {
     const [me, bot] = G.players;
     const s = G.stats;
-    const rate = s.dec ? Math.round(((s.good + s.ok * 0.5) / s.dec) * 100) + '점' : '–';
-    $('stats').innerHTML = [
-      ['내 칩', won(me.stack)], ['판 수', s.hands], ['이긴 판', s.won], ['판단 점수', rate]
-    ].map(([k, v]) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`).join('');
+    const scores = G.allDecs.map(d => d.score);
+    const avg = scores.length ? Math.round(scores.reduce((x, y) => x + y, 0) / scores.length) + '점' : '–';
+    $('stats').innerHTML = [['내 칩', won(me.stack)], ['판 수', s.hands], ['이긴 판', s.won], ['평균 점수', avg]]
+      .map(([k, v]) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`).join('');
 
     $('botSeat').innerHTML = seatHTML(1);
     $('mySeat').innerHTML = seatHTML(0);
     $('street').textContent = STREET_KO[G.street] || '';
-    const board = [0, 1, 2, 3, 4].map(k => cardHTML(G.board[k] ?? null)).join('');
-    $('board').innerHTML = board;
+    $('board').innerHTML = [0, 1, 2, 3, 4].map(k => cardHTML(G.board[k] ?? null)).join('');
     const potNow = G.pot + me.bet + bot.bet;
     $('pot').innerHTML = `판돈 <b>${won(potNow)}</b>`;
-    $('pot').hidden = G.street === 'done' || G.street === 'over';
+    const ended = G.street === 'done' || G.street === 'over';
+    $('pot').hidden = ended;
+    Sound.setIntensity(!ended && (potNow >= 500 || me.allIn || bot.allIn));
 
     const r = G.result;
     let res = '';
-    if (G.street === 'over') res = me.stack > 0 ? '컴퓨터 칩을 모두 땄어요!' : '칩을 모두 잃었어요. 다시 도전해요!';
-    else if (r) {
+    if (r) {
       if (r.winner === -1) res = `무승부 · 판돈 ${won(r.amount)}을 나눠 가져요`;
       else if (r.winner === 0) res = `내가 이겼어요 · +${won(r.amount)}${r.how === 'fold' ? ' (상대 포기)' : ''}`;
       else res = `컴퓨터 승리 · ${won(r.amount)}${r.how === 'fold' ? ' (내가 포기)' : ''}`;
     }
     $('result').textContent = res;
 
-    // 버튼
-    const myTurn = !G.busy && G.toAct === 0 && G.pending && G.street !== 'done' && G.street !== 'over';
-    const ended = G.street === 'done' || G.street === 'over';
+    const myTurn = !G.busy && G.toAct === 0 && G.pending && !ended;
     $('btnrow').hidden = ended; $('sizer').hidden = ended;
-    $('bNext').hidden = !ended;
-    $('bNext').textContent = G.street === 'over' ? '새 게임 시작 (칩 2,000씩)' : '다음 판 시작';
-    let turn = '';
-    if (ended) turn = '오른쪽(아래)에서 이번 판을 돌아보고 다음 판을 시작하세요.';
-    else if (myTurn) turn = G.pending.toCall > 0 ? `<b>내 차례</b> · 상대가 걸었어요. 따라가려면 ${won(G.pending.toCall)}이 필요해요.` : '<b>내 차례</b> · 아무도 안 걸었어요. 체크하거나 먼저 걸 수 있어요.';
-    else turn = '컴퓨터가 생각 중…';
+    $('endrow').hidden = !ended || G.street === 'over' || !!G.ended;
+    let turn;
+    if (G.street === 'over') turn = '게임이 끝났어요. 위에서 전체 결과를 확인하세요.';
+    else if (ended) turn = '이번 판을 돌아본 뒤, 다음 판을 시작하거나 게임을 끝내고 결과를 저장하세요.';
+    else if (myTurn) turn = G.pending.toCall > 0 ? `<b>내 차례</b> · 상대가 걸었어요. 따라가려면 ${won(G.pending.toCall)}칩이 필요해요.` : '<b>내 차례</b> · 아무도 안 걸었어요. 체크하거나 먼저 걸 수 있어요.';
+    else turn = '컴퓨터가 생각 중이에요…';
     $('turnline').innerHTML = turn;
 
     if (!ended) {
       const a = G.pending;
-      const toCall = a ? a.toCall : 0;
+      const toCall = a ? a.toCall : Math.max(0, G.currentBet - me.bet);
       $('bFold').disabled = !myTurn;
       $('bCall').disabled = !myTurn;
-      $('bCall').innerHTML = toCall > 0
-        ? `콜<small>${won(Math.min(toCall, me.stack))} 따라가기</small>`
-        : '체크<small>넘기기</small>';
+      $('bCall').innerHTML = toCall > 0 ? `콜<small>${won(Math.min(toCall, me.stack))}칩 따라가기</small>` : '체크<small>넘기기</small>';
       const b = raiseBounds(0);
       const canRaise = myTurn && a && a.canRaise;
       $('bRaise').disabled = !canRaise;
@@ -781,62 +1179,77 @@ summary { cursor: pointer; font-family: var(--font-display); font-size: 18px; }
       const slider = $('raiseAmt');
       if (canRaise) {
         slider.min = b.minTo; slider.max = b.maxTo;
-        if (!G.sliderSet || +slider.value < b.minTo || +slider.value > b.maxTo) slider.value = sizeTo(0, 0.66);
+        if (!G.sliderSet) slider.value = a.suggestTo || b.minTo;
         G.sliderSet = true;
         slider.disabled = b.minTo === b.maxTo;
       }
-      updateRaiseLabel();
+      updateRaiseLabel(canRaise);
     }
 
-    // 코치 힌트
-    const hint = $('hint');
-    if (myTurn && $('coachHint').checked) {
-      const a = G.pending;
-      const extra = a.rec.ok.length ? ` (또는 ${a.rec.ok.map(t => actName(t, a.toCall)).join(', ')})` : '';
-      hint.innerHTML = `<div class="fb hint"><div class="fb-head"><span class="fb-title">지금 코치라면: ${actName(a.rec.best, a.toCall)}${extra}</span><span class="grade hint">힌트</span></div><p>${a.rec.why}</p>${factsHTML(a)}</div>`;
-    } else hint.innerHTML = '';
+    $('hint').innerHTML = myTurn && $('coachHint').checked ? hintHTML(G.pending) : '';
+    $('feedback').innerHTML = G.lastFb ? fbHTML(G.lastFb) : '<p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p>';
 
-    $('feedback').innerHTML = G.lastFb ? fbHTML(G.lastFb) : '<p class="empty">첫 선택을 하면 여기에 피드백이 나와요.</p>';
-
-    if (ended && G.street === 'done') {
-      const rows = G.decisions.map(d => `<div class="review-row"><span class="grade ${d.level}">${GRADE_KO[d.level]}</span><span>${STREET_KO[d.street]} · ${d.action}${d.level !== 'good' ? ` → 추천 ${actName(d.a.rec.best, d.a.toCall)}` : ''} <span class="num" style="color:var(--muted)">(승률 ${pct(d.a.E)})</span></span></div>`).join('');
+    if (ended) {
+      const rows = G.decisions.map(d => `<div class="review-row"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${d.action}${d.level !== 'good' ? `<span class="rec"> → 추천 ${recLabel(d.a)}</span>` : ''}</span></div>`).join('');
       $('review').innerHTML = `<div class="review">${rows}<div class="lesson">${lessonFor(G.decisions)}</div></div>`;
     } else if (!G.decisions.length) {
-      $('review').innerHTML = '<p class="empty">판이 끝나면 내 선택을 한눈에 정리해 줘요.</p>';
+      $('review').innerHTML = '<p class="empty">판이 끝나면 이번 판 선택들을 점수와 함께 정리해 줘요.</p>';
     }
     $('log').innerHTML = G.log.slice(-14).map(l => `<div>${l}</div>`).join('');
     $('log').scrollTop = $('log').scrollHeight;
   }
 
-  function updateRaiseLabel() {
+  function updateRaiseLabel(canRaise) {
     const a = G.pending;
+    const name = a && a.toCall > 0 ? '레이즈' : (G.currentBet - G.players[0].bet > 0 ? '레이즈' : '벳');
+    if (!canRaise) { $('bRaise').innerHTML = `${name}<small>${name === '벳' ? '먼저 걸기' : '더 올리기'}</small>`; return; }
     const v = +$('raiseAmt').value;
     const allIn = v >= G.players[0].bet + G.players[0].stack;
-    const name = a && a.toCall > 0 ? '레이즈' : '벳';
-    $('bRaise').innerHTML = `${allIn ? '올인' : name}<small>${won(v)}까지</small>`;
+    $('bRaise').innerHTML = `${allIn ? '올인' : name}<small>${won(v)}칩까지</small>`;
   }
 
   $('bFold').addEventListener('click', () => userAct('fold'));
   $('bCall').addEventListener('click', () => userAct(G.pending && G.pending.toCall > 0 ? 'call' : 'check'));
   $('bRaise').addEventListener('click', () => userAct('raise'));
-  $('raiseAmt').addEventListener('input', updateRaiseLabel);
+  $('raiseAmt').addEventListener('input', () => updateRaiseLabel(true));
   document.querySelectorAll('.presets .chip').forEach(btn => btn.addEventListener('click', () => {
     if (!G.pending) return;
     const f = btn.dataset.f === 'all' ? 'all' : Number(btn.dataset.f);
     $('raiseAmt').value = sizeTo(0, f);
-    updateRaiseLabel();
+    updateRaiseLabel(true);
   }));
-  $('bNext').addEventListener('click', () => {
-    G.sliderSet = false;
-    if (G.street === 'over') newGame({}); else startHand();
-  });
-  $('coachHint').addEventListener('change', () => { try { localStorage.setItem('holdemHint', $('coachHint').checked ? '1' : '0'); } catch (e) {} render(); });
-  try { $('coachHint').checked = localStorage.getItem('holdemHint') === '1'; } catch (e) {}
+  $('bNext').addEventListener('click', () => startHand());
+  $('bEnd').addEventListener('click', () => { G.street = 'over'; endSession('quit'); render(); });
+
+  const pref = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : v === '1'; } catch (e) { return def; } };
+  const setPref = (k, v) => { try { localStorage.setItem(k, v ? '1' : '0'); } catch (e) {} };
+  $('coachHint').checked = pref('holdemHint', false);
+  $('coachHint').addEventListener('change', () => { setPref('holdemHint', $('coachHint').checked); render(); });
+
+  function paintSound() {
+    $('musicBtn').setAttribute('aria-pressed', String(Sound.st.music));
+    $('musicBtn').textContent = Sound.st.music ? '♪ 배경음악 켜짐' : '♪ 배경음악 꺼짐';
+    $('sfxBtn').setAttribute('aria-pressed', String(Sound.st.sfx));
+    $('sfxBtn').textContent = Sound.st.sfx ? '효과음 켜짐' : '효과음 꺼짐';
+  }
+  $('musicBtn').addEventListener('click', () => { Sound.setMusic(!Sound.st.music); setPref('holdemMusic', Sound.st.music); paintSound(); });
+  $('sfxBtn').addEventListener('click', () => { Sound.setSfx(!Sound.st.sfx); setPref('holdemSfx', Sound.st.sfx); paintSound(); });
+  Sound.setSfx(pref('holdemSfx', true));
+  // 브라우저는 클릭 전에는 소리를 못 내게 해서, 음악을 켜 뒀다면 첫 클릭 때 시작해요.
+  if (pref('holdemMusic', false)) {
+    Sound.st.music = true;
+    document.addEventListener('pointerdown', function once(e) {
+      document.removeEventListener('pointerdown', once);
+      if (e.target.closest('#musicBtn')) return;
+      if (Sound.st.music) Sound.setMusic(true);
+    });
+  }
+  paintSound();
 
   try {
-    window.claude?.hot?.snapshot?.(() => ({ stacks: G.players.map(p => p.stack), stats: G.stats, handNo: G.handNo, button: G.button }));
+    window.claude?.hot?.snapshot?.(() => ({ stacks: G.players.map(p => p.stack), stats: G.stats, allDecs: G.allDecs, handNo: G.handNo, button: G.button }));
   } catch (e) {}
-  const boot = d => newGame(d || {});
+  const boot = d => { newGame(d || {}); initStore(); };
   if (window.claude?.hot?.ready) window.claude.hot.ready(boot); else boot(window.claude?.hot?.data ?? {});
 })();
 </script>
