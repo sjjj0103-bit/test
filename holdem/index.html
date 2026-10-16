@@ -373,6 +373,24 @@ body.locked { overflow: hidden; }
 .answer { background: rgba(0,0,0,.2); border-radius: 8px; padding: 6px 10px; font-size: 14px; }
 .answer summary { cursor: pointer; color: var(--brass); }
 .answer p { margin: 6px 0 0; }
+
+/* 7~9명 테이블: 자리를 조금 작게 */
+.table.many { height: 560px; }
+.table.many .pseat { width: 82px; gap: 2px; }
+.table.many .pname { font-size: 12px; }
+.table.many .pstack { font-size: 12px; }
+.table.many .pact { font-size: 11px; }
+.table.many .pcards { min-height: 32px; }
+.table.many .mc { width: 23px; height: 32px; }
+.table.many .mc .r, .table.many .mc .s { font-size: 11px; }
+.table.many .center { width: min(280px, 50%); }
+@media (max-width: 560px) {
+  .table.many { height: 640px; }
+  .table.many .pseat { width: 72px; }
+  .table.many .posb { font-size: 9px; padding: 0 3px; margin-right: 2px; }
+  .table.many .center .card { width: 30px; height: 43px; }
+  .table.many .center .card .r, .table.many .center .card .s { font-size: 13px; }
+}
 </style>
 </head>
 <body>
@@ -383,7 +401,7 @@ body.locked { overflow: hidden; }
   <header>
     <div class="brand">
       <h1>홀덤 <span>코치</span></h1>
-      <p>홀덤펍처럼 여러 명이 앉는 테이블. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요.</p>
+      <p>홀덤펍처럼 최대 9명이 앉는 테이블. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요.</p>
     </div>
     <div class="head-right">
       <div class="stats" id="stats"></div>
@@ -404,6 +422,9 @@ body.locked { overflow: hidden; }
         <button class="toggle" type="button" data-seats="4" aria-pressed="false">4명</button>
         <button class="toggle" type="button" data-seats="5" aria-pressed="false">5명</button>
         <button class="toggle" type="button" data-seats="6" aria-pressed="true">6명</button>
+        <button class="toggle" type="button" data-seats="7" aria-pressed="false">7명</button>
+        <button class="toggle" type="button" data-seats="8" aria-pressed="false">8명</button>
+        <button class="toggle" type="button" data-seats="9" aria-pressed="false">9명</button>
       </div>
     </div>
     <div class="setup-row">
@@ -540,7 +561,7 @@ body.locked { overflow: hidden; }
         <summary>꼭 알아야 할 용어</summary>
         <dl class="terms">
           <dt>진행 순서</dt><dd>내 카드 2장을 받고(프리플랍) → 바닥에 3장(플랍) → 1장(턴) → 1장(리버). 내 카드 2장과 바닥 5장 중 가장 좋은 5장으로 겨뤄요.</dd>
-          <dt>자리 이름</dt><dd><b>BTN</b>(버튼·딜러): 가장 늦게 행동해서 제일 유리 · <b>SB/BB</b>(스몰·빅 블라인드): 판마다 참가비를 먼저 내는 두 자리 · <b>UTG</b>: 프리플랍에서 가장 먼저 행동해서 제일 불리 · <b>HJ</b>(하이잭), <b>CO</b>(컷오프): 버튼 앞쪽, 늦을수록 유리.</dd>
+          <dt>자리 이름</dt><dd><b>BTN</b>(버튼·딜러): 가장 늦게 행동해서 제일 유리 · <b>SB/BB</b>(스몰·빅 블라인드): 판마다 참가비를 먼저 내는 두 자리 · <b>UTG</b>, <b>UTG+1</b>: 프리플랍에서 가장 먼저 행동해서 제일 불리 · <b>MP</b>(미들), <b>LJ</b>(로우잭): 중간 자리 · <b>HJ</b>(하이잭), <b>CO</b>(컷오프): 버튼 앞쪽, 늦을수록 유리. 9명 테이블은 홀덤펍에서 가장 흔한 인원이에요.</dd>
           <dt>블라인드</dt><dd>판을 시작할 때 억지로 내는 참가비예요. 버튼 다음 두 사람이 내고, 판마다 한 칸씩 돌아가요.</dd>
           <dt>체크 / 벳</dt><dd>아무도 돈을 안 걸었을 때: 체크는 "그냥 넘길게", 벳은 "내가 먼저 걸게".</dd>
           <dt>콜 / 레이즈 / 폴드</dt><dd>누가 걸었을 때: 콜은 같은 금액으로 따라가기, 레이즈는 더 올리기, 폴드는 포기하고 패 버리기.</dd>
@@ -585,8 +606,8 @@ body.locked { overflow: hidden; }
   const START = 2000;
   const LEVELS = [[10, 20], [15, 30], [25, 50], [50, 100], [75, 150], [100, 200], [150, 300], [200, 400], [300, 600], [500, 1000]];
   const HANDS_PER_LEVEL = 6;
-  const BOT_NAMES = ['민준', '서연', '지호', '하은', '도윤', '유나', '시우'];
-  const MAX_SEATS = 6;
+  const BOT_NAMES = ['민준', '서연', '지호', '하은', '도윤', '유나', '시우', '준서', '소윤'];
+  const MAX_SEATS = 9;
   const STREET_KO = { idle: '', preflop: '프리플랍', flop: '플랍', turn: '턴', river: '리버', done: '판 종료', over: '게임 종료' };
   const CAT_KO = ['하이카드', '원페어', '투페어', '트리플', '스트레이트', '플러시', '풀하우스', '포카드', '스트레이트 플러시'];
   const GRADE_KO = { good: '최선', ok: '괜찮음', bad: '아쉬움', hint: '힌트' };
@@ -595,7 +616,10 @@ body.locked { overflow: hidden; }
     SB: '스몰 블라인드 · 플랍부터는 가장 먼저 행동해서 불리한 자리',
     BB: '빅 블라인드 · 이미 참가비를 냈으니 싸게 볼 수 있으면 넓게 따라가도 되는 자리',
     UTG: 'UTG · 프리플랍에 가장 먼저 행동해서 제일 불리한 자리',
-    HJ: '하이잭 · 중간 자리',
+    'UTG+1': 'UTG+1 · 앞쪽 자리라 아직 불리해요. 좋은 패 위주로',
+    MP: '미들 포지션 · 중간 자리, 무난한 패부터 참여',
+    LJ: '로우잭 · 중간보다 조금 뒤, 참여 범위를 조금 넓혀도 되는 자리',
+    HJ: '하이잭 · 뒤쪽에 가까운 자리',
     CO: '컷오프 · 버튼 바로 앞, 유리한 자리'
   };
   const $ = id => document.getElementById(id);
@@ -936,7 +960,10 @@ body.locked { overflow: hidden; }
     const order = [];
     let s = G.button;
     do { if (G.players[s].inHand) order.push(s); s = (s + 1) % G.players.length; } while (s !== G.button);
-    const names = { 2: ['BTN', 'BB'], 3: ['BTN', 'SB', 'BB'], 4: ['BTN', 'SB', 'BB', 'UTG'], 5: ['BTN', 'SB', 'BB', 'UTG', 'CO'], 6: ['BTN', 'SB', 'BB', 'UTG', 'HJ', 'CO'] }[order.length] || [];
+    const names = {
+      2: ['BTN', 'BB'], 3: ['BTN', 'SB', 'BB'], 4: ['BTN', 'SB', 'BB', 'UTG'], 5: ['BTN', 'SB', 'BB', 'UTG', 'CO'], 6: ['BTN', 'SB', 'BB', 'UTG', 'HJ', 'CO'],
+      7: ['BTN', 'SB', 'BB', 'UTG', 'MP', 'HJ', 'CO'], 8: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'HJ', 'CO'], 9: ['BTN', 'SB', 'BB', 'UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO']
+    }[order.length] || [];
     const pos = G.players.map(() => '');
     order.forEach((seat, k) => { pos[seat] = names[k] || ''; });
     return pos;
@@ -1248,7 +1275,7 @@ body.locked { overflow: hidden; }
 
   function streetTip(a) {
     if (a.street === 'preflop') {
-      if (a.pos === 'UTG') return 'UTG는 뒤에 행동할 사람이 많아서 불리해요. 높은 페어, A-K, A-Q 같은 좋은 패만 치세요.';
+      if (a.pos === 'UTG' || a.pos === 'UTG+1') return `${a.pos}는 뒤에 행동할 사람이 많아서 불리해요. 높은 페어, A-K, A-Q 같은 좋은 패만 치세요.${G.players.length >= 7 ? ' 사람이 많은 테이블일수록 더 엄격하게 골라야 해요.' : ''}`;
       if (a.pos === 'BTN' || a.pos === 'CO') return '버튼과 컷오프는 남들이 하는 걸 보고 정할 수 있어 유리해요. 조금 더 넓은 패로 참여해도 돼요.';
       if (a.pos === 'BB') return '빅 블라인드는 이미 참가비를 냈어요. 싸게 볼 수 있으면 조금 약한 패도 따라가 볼 만해요.';
       return '좋은 시작 패: 같은 숫자 두 장(페어), A·K·Q 같은 높은 카드 두 장, 같은 무늬로 이어진 카드.';
@@ -1331,9 +1358,9 @@ body.locked { overflow: hidden; }
     maniac:   { open: 3,   limp: 99, callRaise: 3,  threeBet: 5,  postBet: 0.95, callSlack: 0.1,  bluff: 0.45 },
     balanced: { open: 6.5, limp: 5,  callRaise: 7,  threeBet: 10, postBet: 0.7,  callSlack: 0.03, bluff: 0.12 }
   };
-  const BOT_STYLE = { 민준: 'station', 서연: 'rock', 지호: 'tag', 하은: 'lag', 도윤: 'maniac', 유나: 'balanced', 시우: 'tag' };
+  const BOT_STYLE = { 민준: 'station', 서연: 'rock', 지호: 'tag', 하은: 'lag', 도윤: 'maniac', 유나: 'balanced', 시우: 'tag', 준서: 'lag', 소윤: 'station' };
   const styleKeyOf = name => BOT_STYLE[String(name).replace(/^AI /, '').replace(/\(AI\)$/, '')] || 'balanced';
-  const POS_BONUS = { BTN: 1.5, CO: 1, HJ: 0, UTG: -1, SB: 0, BB: 0 };
+  const POS_BONUS = { BTN: 1.5, CO: 1, HJ: 0.5, LJ: 0, MP: -0.5, 'UTG+1': -1, UTG: -1.5, SB: 0, BB: 0 };
 
   function botPreflop(i, a, S, D) {
     const p = G.players[i], B = BBv(), b = raiseBounds(i);
@@ -1668,7 +1695,7 @@ body.locked { overflow: hidden; }
   }
   function lobbyInfo() {
     const list = Object.entries(Net.guests).filter(([, g]) => !g.gone).map(([sid, g]) => ({ sid, name: g.name }));
-    return { seats: settings.seats, started: G.mode === 'host' && G.street !== 'over', list: list.slice(0, 7) };
+    return { seats: settings.seats, started: G.mode === 'host' && G.street !== 'over', list: list.slice(0, MAX_SEATS - 1) };
   }
   function showPanel() {
     $('pvpPanel').hidden = false;
@@ -1844,7 +1871,7 @@ body.locked { overflow: hidden; }
     const json = JSON.stringify(s);
     if (json === Net.lastApplied) return;
     Net.lastApplied = json;
-    if (!s || !Array.isArray(s.players) || s.players.length < 2 || s.players.length > 8) return;
+    if (!s || !Array.isArray(s.players) || s.players.length < 2 || s.players.length > MAX_SEATS) return;
     const myHole = Array.isArray(s.mine) && s.mine.length === 2 ? s.mine : null;
     if (G.mode !== 'guest' || G.gid !== s.gid) {
       G = baseState('guest'); G.gid = s.gid;
@@ -1932,6 +1959,7 @@ body.locked { overflow: hidden; }
 
   function seatsHTML() {
     const N = G.players.length, base = G.me >= 0 ? G.me : 0;
+    const edge = N >= 7 ? 38 : 46;
     let html = '';
     G.players.forEach((p, s) => {
       const d = (s - base + N) % N;
@@ -1944,9 +1972,9 @@ body.locked { overflow: hidden; }
       const pos = G.pos[s];
       const cat = see && G.board.length >= 3 && s !== G.me ? `<div class="pcat">${CAT_KO[catOf(eval7(p.hole.concat(G.board)))]}</div>` : '';
       const tag = p.kind === 'human' && s !== G.me && G.mode !== 'guest' ? ' (친구)' : '';
-      html += `<div class="${cls}" data-seat="${s}" title="눌러서 이 사람의 성향 보기" style="left:clamp(46px, ${x.toFixed(1)}%, calc(100% - 46px));top:${y.toFixed(1)}%">
+      html += `<div class="${cls}" data-seat="${s}" title="눌러서 이 사람의 성향 보기" style="left:clamp(${edge}px, ${x.toFixed(1)}%, calc(100% - ${edge}px));top:${y.toFixed(1)}%">
         <div class="pcards">${cards}</div>${cat}
-        <div class="pbox"><div class="pname">${pos ? `<span class="posb${pos === 'BTN' ? ' is-btn' : ''}">${pos}</span>` : ''}${esc(p.name)}${tag}</div>
+        <div class="pbox"><div class="pname">${pos ? `<span class="posb${pos === 'BTN' ? ' is-btn' : ''}">${pos}</span>` : ''}${esc(N >= 7 ? p.name.replace(/^AI /, '') : p.name)}${tag}</div>
         <div class="pstack">${won(p.stack)}</div></div>
         <div class="pact">${esc(p.last || (s === G.toAct && !ended() ? (s === G.me ? '내 차례' : '생각 중…') : ''))}</div>
       </div>`;
@@ -2020,6 +2048,7 @@ body.locked { overflow: hidden; }
     $('stats').innerHTML = [['내 칩', me ? won(me.stack) : '–'], ['칩 순위', rank], ['판 수', G.stats.hands], ['평균 점수', avg]]
       .map(([k, v]) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`).join('');
 
+    $('table').classList.toggle('many', G.players.length >= 7);
     $('seats').innerHTML = seatsHTML();
     $('street').textContent = STREET_KO[G.street] || '';
     $('notice').textContent = G.notice || '';
