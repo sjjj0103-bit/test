@@ -221,9 +221,33 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
 .history summary b { font-family: var(--font-display); font-weight: 400; font-size: 20px; color: var(--brass); }
 .history .h-body { font-size: 15px; display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
 .history .h-body p { margin: 0; }
+
+/* 상대 선택 · 친구 대전 */
+.setup { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 12px 16px; display: flex; flex-wrap: wrap; gap: 10px 16px; align-items: center; }
+.setup-label { font-family: var(--font-display); font-size: 19px; }
+.seg { display: flex; flex-wrap: wrap; gap: 6px; }
+.setup .sub { color: var(--muted); font-size: 14px; margin: 0; flex: 1 1 220px; }
+.toggle:disabled { opacity: .45; cursor: not-allowed; }
+.pvp { background: var(--panel); border: 2px solid var(--good); border-radius: 16px; padding: 16px; display: flex; flex-wrap: wrap; gap: 16px; align-items: flex-start; }
+.qr { background: #fff; padding: 10px; border-radius: 10px; width: 200px; height: 200px; flex: none; display: flex; align-items: center; justify-content: center; }
+.qr img, .qr canvas { display: block; max-width: 100%; }
+.pvp-body { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 10px; }
+.pvp-body h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.pvp-body p { margin: 0; }
+.code { font: 600 26px var(--font-num); letter-spacing: 3px; color: var(--brass); }
+.linkbox { font: 13px var(--font-num); background: var(--panel-2); border-radius: 8px; padding: 8px 10px; user-select: all; overflow-wrap: anywhere; }
+.pvp-status { font-weight: 700; }
+.pvp-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.joinrow { display: flex; gap: 8px; flex-wrap: wrap; }
+.joinrow input { flex: 1 1 140px; min-width: 0; background: var(--panel-2); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; color: var(--ink); font: 600 16px var(--font-num); letter-spacing: 2px; }
+.turn-head { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; justify-content: space-between; }
+.btn-hint { border: 1px solid var(--brass); background: transparent; color: var(--brass); border-radius: 999px; padding: 6px 16px; font-size: 15px; font-weight: 700; cursor: pointer; }
+.btn-hint:disabled { opacity: .35; cursor: not-allowed; }
+.hint-tag { font-size: 12px; color: var(--brass); border: 1px solid var(--brass); border-radius: 999px; padding: 0 8px; margin-left: 6px; white-space: nowrap; }
 </style>
 </head>
 <body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <div class="wrap">
   <header>
@@ -239,6 +263,36 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       </div>
     </div>
   </header>
+
+  <section class="setup" aria-label="상대 선택">
+    <span class="setup-label">상대</span>
+    <div class="seg">
+      <button class="toggle" type="button" data-diff="easy" aria-pressed="false">컴퓨터 · 쉬움</button>
+      <button class="toggle" type="button" data-diff="normal" aria-pressed="true">컴퓨터 · 보통</button>
+      <button class="toggle" type="button" data-diff="hard" aria-pressed="false">컴퓨터 · 어려움</button>
+      <button class="toggle" type="button" id="pvpBtn" aria-pressed="false">친구와 1:1 (QR)</button>
+    </div>
+    <p class="sub" id="setupNote">쉬움: 아무 패로나 잘 따라와요 · 보통: 기본기 있는 상대 · 어려움: 계산이 정확하고 블러핑도 섞어요.</p>
+  </section>
+
+  <section class="pvp" id="pvpPanel" hidden aria-live="polite">
+    <div class="qr" id="qr" aria-label="친구 초대 QR 코드"></div>
+    <div class="pvp-body">
+      <h2 id="pvpTitle">친구 초대하기</h2>
+      <p class="pvp-status" id="pvpStatus">친구가 들어오기를 기다리는 중이에요.</p>
+      <p>친구가 휴대폰 카메라로 QR을 찍거나, 아래 링크를 열면 바로 1:1 대결이 시작돼요. 링크가 안 되면 친구 화면에서 "친구와 1:1"을 누르고 방 코드를 입력하면 돼요.</p>
+      <div>방 코드 <span class="code" id="pvpCode">------</span></div>
+      <div class="linkbox" id="pvpLink"></div>
+      <div class="pvp-actions">
+        <button class="chip" type="button" id="copyLink">링크 복사</button>
+        <button class="chip" type="button" id="leavePvp">컴퓨터와 하기로 돌아가기</button>
+      </div>
+      <div class="joinrow">
+        <input id="joinCode" type="text" inputmode="text" autocomplete="off" maxlength="8" placeholder="친구의 방 코드" aria-label="친구의 방 코드">
+        <button class="chip" type="button" id="joinBtn">코드로 참가</button>
+      </div>
+    </div>
+  </section>
 
   <section class="session" id="sessionEnd" hidden aria-live="polite"></section>
 
@@ -256,7 +310,10 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       </div>
 
       <div class="controls" id="controls">
-        <div class="turnline" id="turnline"></div>
+        <div class="turn-head">
+          <div class="turnline" id="turnline"></div>
+          <button class="btn-hint" id="bHint" type="button">힌트 보기</button>
+        </div>
         <div class="btnrow" id="btnrow">
           <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
           <button class="btn btn-call" id="bCall" type="button">체크<small>넘기기</small></button>
@@ -275,7 +332,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
           <button class="btn-next" id="bNext" type="button">다음 판 시작</button>
           <button class="btn-end" id="bEnd" type="button">게임 끝내고 결과 저장</button>
         </div>
-        <label class="coach-toggle"><input type="checkbox" id="coachHint"> 내 차례에 코치 힌트 미리 보기</label>
+        <label class="coach-toggle"><input type="checkbox" id="coachHint"> 내 차례마다 힌트 자동으로 보기</label>
       </div>
     </section>
 
@@ -542,13 +599,27 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   let G;
   const mkP = (name, stack) => ({ name, stack, hole: [], bet: 0, folded: false, allIn: false, acted: false, last: '' });
 
-  function newGame(data) {
-    G = {
-      players: [mkP('나', START), mkP('컴퓨터', START)],
+  // 난이도별 컴퓨터 성향
+  const DIFF = {
+    easy:   { label: '쉬움',   noise: 0.15, foldPre: 0.3,  callSlack: 0.12, raiseBig: 0.3,  raiseMid: 0.1,  bluff: 0.05, betStrong: 0.5,  sims: 250 },
+    normal: { label: '보통',   noise: 0.04, foldPre: 0.75, callSlack: 0.03, raiseBig: 0.65, raiseMid: 0.25, bluff: 0.15, betStrong: 0.8,  sims: 600 },
+    hard:   { label: '어려움', noise: 0,    foldPre: 0.85, callSlack: 0.01, raiseBig: 0.8,  raiseMid: 0.35, bluff: 0.22, betStrong: 0.85, sims: 1500 }
+  };
+  let difficulty = 'normal';
+  const oppName = () => (G && G.mode === 'pvp' ? '상대' : '컴퓨터');
+
+  function baseState(mode, role) {
+    return {
+      mode, role,
+      players: [mkP('나', START), mkP(mode === 'pvp' ? '상대' : '컴퓨터', START)],
       button: 1, handNo: 0, board: [], pot: 0, street: 'preflop', currentBet: 0, minRaise: BB, toAct: 0,
       aggr: [0, 0], decisions: [], log: [], result: null, pending: null, lastFb: null, busy: false,
-      stats: { dec: 0, good: 0, ok: 0, bad: 0, won: 0, hands: 0 }, allDecs: [], ended: null
+      stats: { dec: 0, good: 0, ok: 0, bad: 0, won: 0, hands: 0, hints: 0 }, allDecs: [], ended: null
     };
+  }
+
+  function newGame(data, mode = 'bot', role = null) {
+    G = baseState(mode, role);
     if (data && Array.isArray(data.stacks) && data.stacks.every(s => s > 0)) {
       G.players[0].stack = data.stacks[0]; G.players[1].stack = data.stacks[1];
       if (data.stats) Object.assign(G.stats, data.stats);
@@ -601,9 +672,9 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     if (G.players[i].allIn || G.players[i].folded) { i = G.toAct = 1 - i; }
     if (i === 1) {
       G.busy = true; G.pending = null; render();
-      setTimeout(botAct, 850);
+      if (G.mode !== 'pvp') setTimeout(botAct, 850);   // 친구 대전은 상대의 선택을 기다려요
     } else {
-      G.busy = false; G.sliderSet = false; G.pending = analyze(0); render();
+      G.busy = false; G.sliderSet = false; G.showHint = false; G.pending = analyze(0); render();
     }
   }
 
@@ -684,7 +755,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     const r = G.result;
     G.log.push(r.winner === -1 ? `무승부, 판돈 ${r.amount} 나눔` : `${G.players[r.winner].name} 승리 +${r.amount}`);
     Sound.sfx(r.winner === 0 ? 'win' : r.winner === 1 ? 'lose' : 'card');
-    if (G.players.some(p => p.stack <= 0)) { G.street = 'over'; endSession('bust'); }
+    if (G.players.some(p => p.stack <= 0)) { G.street = 'over'; G.endReason = 'bust'; endSession('bust'); }
     render();
   }
 
@@ -712,7 +783,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     const need = toCall > 0 ? toCall / (potTotal + toCall) : 0;
     const oppAggr = G.aggr[1 - i];
     const minChen = oppAggr >= 2 ? 7 : oppAggr === 1 ? 4 : -99;
-    const E = equity(p.hole, G.board, minChen, i === 0 ? 2000 : 600);
+    const E = equity(p.hole, G.board, minChen, i === 0 ? 2000 : DIFF[difficulty].sims);
     const b = raiseBounds(i);
     const pf = G.street === 'preflop';
     const a = {
@@ -887,31 +958,39 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     const to = type === 'raise' ? Number($('raiseAmt').value) : 0;
     const j = judge(a, type, to);
     const action = actName(type, a.toCall) + (type === 'raise' ? ` ${won(to)}까지` : type === 'call' ? ` ${won(Math.min(a.toCall, G.players[0].stack))}` : '');
-    const d = { street: G.street, type, action, a, ...j };
+    const hint = !!(G.showHint || $('coachHint').checked);
+    const d = { street: G.street, type, action, a, hint, ...j };
     G.decisions.push(d);
-    G.allDecs.push({ score: j.score, level: j.level, mistake: j.mistake, type, street: G.street });
+    G.allDecs.push({ score: j.score, level: j.level, mistake: j.mistake, type, street: G.street, hint });
     G.lastFb = d;
     G.stats.dec++; G.stats[j.level]++;
+    if (hint) G.stats.hints++;
     Sound.sfx(j.level === 'bad' ? 'bad' : j.level === 'good' ? 'good' : null);
-    act(0, type, to);
+    if (G.mode === 'pvp' && G.role === 'guest') {
+      G.busy = true; G.sentKey = G.pendKey; G.pending = null;
+      Net.send({ type, to });
+      render();
+    } else act(0, type, to);
   }
 
   /* ---------- 컴퓨터 ---------- */
   function botAct() {
     if (G.street === 'done' || G.street === 'over') return;
+    const D = DIFF[difficulty];
     const a = analyze(1), r = Math.random();
-    const { E, need, toCall, canRaise } = a;
+    const { need, toCall, canRaise } = a;
+    const E = Math.max(0, Math.min(1, a.E + (Math.random() * 2 - 1) * D.noise));   // 쉬울수록 판단이 흐려요
     const pf = G.street === 'preflop';
     let move, f = 0.66;
     if (toCall > 0) {
-      if (pf && E < 0.4 && r < 0.75) move = 'fold';
-      else if (E < need - 0.03) { move = canRaise && r < 0.06 ? 'raise' : 'fold'; f = 0.75; }
-      else if (canRaise && ((E > 0.72 && r < 0.65) || (E > 0.6 && r < 0.25))) move = 'raise';
+      if (pf && E < 0.4 && r < D.foldPre) move = 'fold';
+      else if (E < need - D.callSlack) { move = canRaise && r < D.bluff * 0.4 ? 'raise' : 'fold'; f = 0.75; }
+      else if (canRaise && ((E > 0.72 && r < D.raiseBig) || (E > 0.6 && r < D.raiseMid))) move = 'raise';
       else move = 'call';
     } else {
-      if (canRaise && E > 0.62 && r < 0.8) move = 'raise';
-      else if (canRaise && E < 0.33 && r < 0.15) { move = 'raise'; f = 0.5; }
-      else if (canRaise && E >= 0.5 && r < 0.3) { move = 'raise'; f = 0.5; }
+      if (canRaise && E > 0.62 && r < D.betStrong) move = 'raise';
+      else if (canRaise && E < 0.33 && r < D.bluff) { move = 'raise'; f = 0.5; }
+      else if (canRaise && E >= 0.5 && r < D.raiseMid) { move = 'raise'; f = 0.5; }
       else move = 'check';
     }
     let to = 0;
@@ -954,6 +1033,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       id: 'g' + Date.now().toString(36),
       endedAt: new Date().toISOString(),
       reason, hands: G.stats.hands, won: G.stats.won, chips, chipDelta: chips - START,
+      opponent: G.mode === 'pvp' ? '친구' : `컴퓨터 ${DIFF[difficulty].label}`, hints: G.stats.hints || 0,
       decisions: n, avgScore: avg, grade, good: count('good'), ok: count('ok'), bad: count('bad'),
       summary: n ? GRADE_TEXT[grade] : '선택한 기록이 없어서 점수를 매기지 못했어요.',
       strengths, mistakes, goal
@@ -1010,7 +1090,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   function renderSession(rec, note) {
     const el = $('sessionEnd');
     const lead = rec.reason === 'bust'
-      ? (G.players[0].stack > 0 ? '컴퓨터의 칩을 모두 땄어요!' : '칩을 모두 잃었어요. 그래도 점수는 실력의 기록이에요.')
+      ? (G.players[0].stack > 0 ? `${oppName()}의 칩을 모두 땄어요!` : '칩을 모두 잃었어요. 그래도 점수는 실력의 기록이에요.')
       : '게임을 마쳤어요.';
     const stat = (v, k) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`;
     el.innerHTML = `
@@ -1024,6 +1104,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       <div class="session-stats">
         ${stat(rec.hands, '친 판 수')}${stat(rec.won, '이긴 판')}${stat(signed(rec.chipDelta), '칩 변화')}
         ${stat(rec.decisions, '내 선택 수')}${stat(`${rec.good}/${rec.ok}/${rec.bad}`, '최선/괜찮음/아쉬움')}
+        ${stat(rec.hints, '힌트 본 횟수')}${stat(esc(rec.opponent), '상대')}
       </div>
       <div class="session-cols">
         <div><h3>잘한 점</h3>${rec.strengths.length ? `<ul>${rec.strengths.map(s => `<li>${esc(s.text)}<span>최선의 선택 ${s.count}번</span></li>`).join('')}</ul>` : '<p class="empty">다음 게임에서 "최선" 판정을 모아 보세요.</p>'}</div>
@@ -1033,7 +1114,12 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       <div class="save-note">${esc(note)}</div>
       <button class="btn-next" id="bNewGame" type="button">새 게임 시작 (칩 2,000씩)</button>`;
     el.hidden = false;
-    $('bNewGame').addEventListener('click', () => { newGame({}); window.scrollTo({ top: 0, behavior: 'smooth' }); });
+    $('bNewGame').addEventListener('click', () => {
+      if (G.mode === 'pvp') { if (G.role === 'host') newGame({}, 'pvp', 'host'); else Net.send({ type: 'restart' }); }
+      else newGame({});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+    if (G.mode === 'pvp' && G.role === 'guest') $('bNewGame').textContent = '친구에게 새 게임 요청';
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
@@ -1047,11 +1133,202 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     box.innerHTML = Store.list.map(r => {
       const d = new Date(r.endedAt);
       const date = isNaN(d) ? '' : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      return `<details><summary><b>${esc(r.grade)}</b><span>평균 ${r.avgScore}점 · ${r.hands}판 · 칩 ${signed(r.chipDelta)}</span><span style="color:var(--faint)">${date}</span></summary>
+      return `<details><summary><b>${esc(r.grade)}</b><span>평균 ${r.avgScore}점 · ${r.hands}판 · 칩 ${signed(r.chipDelta)}${r.opponent ? ' · vs ' + esc(r.opponent) : ''}</span><span style="color:var(--faint)">${date}</span></summary>
         <div class="h-body"><p>${esc(r.summary)}</p>
         ${(r.mistakes || []).map(m => `<p>· 고칠 점: ${esc(m.label)} (${m.count}번)</p>`).join('')}
         <p style="color:var(--muted)">${esc(r.goal || '')}</p></div></details>`;
     }).join('');
+  }
+
+  /* ---------- 친구와 1:1 (claude.ai 실시간 방) ----------
+     방장(호스트)의 화면이 딜러 역할을 해요. 게임 상태는 방장이 presence로 알리고,
+     참가자는 자기 선택만 presence로 보내요. */
+  const ARTIFACT_URL = 'https://claude.ai/artifact/3ibn7d95RHKHdECEqmKU6g';
+  const CODE_CHARS = 'abcdefghjkmnpqrstuvwxyz23456789';
+  const randCode = () => Array.from({ length: 6 }, () => CODE_CHARS[(Math.random() * CODE_CHARS.length) | 0]).join('');
+  const Net = { room: null, named: null, unsub: null, code: null, role: null, guestPeer: null, lastN: 0, n: 0, sid: randCode(), peerGone: false, lastSent: '', lastApplied: '' };
+  const inviteLink = () => `${ARTIFACT_URL}#hd-${Net.code}`;
+  const setStatus = t => { $('pvpStatus').textContent = t; };
+
+  async function initRoom() {
+    try { if (window.claude && window.claude.use) Net.room = await window.claude.use('room'); } catch (e) { Net.room = null; }
+    paintSetup();
+    tryHash();
+  }
+  function tryHash() {
+    const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
+    if (m && Net.room && Net.code !== m[1]) joinRoom(m[1]);
+  }
+  window.addEventListener('hashchange', tryHash);
+
+  async function leaveRoom() {
+    if (Net.named) {
+      try { if (Net.unsub) Net.unsub(); await Net.named.leave(); } catch (e) { /* 이미 나간 방 */ }
+    }
+    Object.assign(Net, { named: null, unsub: null, code: null, role: null, guestPeer: null, lastN: 0, n: 0, peerGone: false, lastSent: '', lastApplied: '' });
+  }
+  function roomFailed(e) {
+    $('pvpPanel').hidden = false;
+    $('qr').hidden = true;
+    setStatus(e && e.code === 'not_permitted'
+      ? '이 화면에서는 친구 대전을 열 수 없어요. 아래 안내를 확인해 주세요.'
+      : '방에 연결하지 못했어요. 잠시 뒤 다시 눌러 주세요.');
+  }
+  async function hostRoom() {
+    await leaveRoom();
+    const code = randCode();
+    try { Net.named = await Net.room.join('hd-' + code); } catch (e) { roomFailed(e); return; }
+    Object.assign(Net, { code, role: 'host' });
+    Net.named.presence({ role: 'host', waiting: true }).catch(() => {});
+    Net.unsub = Net.named.onPeers(onPeersHost, () => setStatus('연결이 끊겼어요. "친구와 1:1"을 다시 눌러 주세요.'));
+    showPanel();
+    setStatus('친구가 들어오기를 기다리는 중이에요.');
+  }
+  async function joinRoom(code) {
+    await leaveRoom();
+    try { Net.named = await Net.room.join('hd-' + code); } catch (e) { roomFailed(e); return; }
+    Object.assign(Net, { code, role: 'guest', sid: randCode() });
+    Net.named.presence({ role: 'guest', sid: Net.sid, act: null }).catch(() => {});
+    Net.unsub = Net.named.onPeers(onPeersGuest, () => setStatus('연결이 끊겼어요. 링크를 다시 열어 주세요.'));
+    showPanel();
+    setStatus('친구의 방을 찾는 중이에요…');
+  }
+  function showPanel() {
+    $('pvpPanel').hidden = false;
+    $('pvpCode').textContent = Net.code.toUpperCase();
+    $('pvpLink').textContent = inviteLink();
+    $('pvpTitle').textContent = Net.role === 'host' ? '친구 초대하기' : '친구 방에 참가했어요';
+    const qr = $('qr');
+    qr.hidden = Net.role !== 'host';
+    qr.innerHTML = '';
+    if (Net.role === 'host') {
+      if (window.QRCode) new window.QRCode(qr, { text: inviteLink(), width: 180, height: 180, correctLevel: window.QRCode.CorrectLevel.M });
+      else qr.textContent = 'QR을 불러오지 못했어요. 링크를 보내 주세요.';
+    }
+    paintSetup();
+  }
+
+  function onPeersHost(ch) {
+    const g = ch.peers.find(p => !p.sameTab && p.presence && p.presence.role === 'guest');
+    if (!g) {
+      if (Net.guestPeer && !Net.peerGone) { Net.peerGone = true; setStatus('친구가 나갔어요. 같은 링크로 다시 들어오면 이어서 할 수 있어요.'); render(); }
+      return;
+    }
+    if (g.peer !== Net.guestPeer) {
+      const first = !Net.guestPeer;
+      Object.assign(Net, { guestPeer: g.peer, lastN: 0, peerGone: false, lastSent: '' });
+      setStatus('친구가 들어왔어요! 대결 중이에요.');
+      if (first || G.mode !== 'pvp') newGame({}, 'pvp', 'host'); else render();
+    } else if (Net.peerGone) { Net.peerGone = false; setStatus('친구가 돌아왔어요! 대결 중이에요.'); render(); }
+    const msg = g.presence.act;
+    if (msg && msg.sid === g.presence.sid && msg.n > Net.lastN) { Net.lastN = msg.n; handleRemote(msg); }
+  }
+
+  function handleRemote(msg) {
+    if (G.mode !== 'pvp') return;
+    const ended = G.street === 'done' || G.street === 'over';
+    if (msg.type === 'next') { if (G.street === 'done') startHand(); return; }
+    if (msg.type === 'end') { if (G.street === 'done') { G.street = 'over'; G.endReason = 'quit'; endSession('quit'); render(); } return; }
+    if (msg.type === 'restart') { if (G.street === 'over') newGame({}, 'pvp', 'host'); return; }
+    if (ended || G.toAct !== 1 || !G.busy) return;
+    const p = G.players[1], toCall = G.currentBet - p.bet;
+    let type = msg.type;
+    if (type === 'raise') {
+      const b = raiseBounds(1);
+      if (b.can && p.stack > toCall) return act(1, 'raise', Math.max(b.minTo, Math.min(b.maxTo, Math.round(Number(msg.to) || 0))));
+      type = toCall > 0 ? 'call' : 'check';
+    }
+    if (type === 'check' && toCall > 0) return;
+    if (type === 'call' && toCall <= 0) type = 'check';
+    if (!['fold', 'check', 'call'].includes(type)) return;
+    act(1, type, 0);
+  }
+
+  function serialize() {
+    const reveal = (G.street === 'done' || G.street === 'over') && G.result && G.result.how === 'showdown';
+    return {
+      v: 1, handNo: G.handNo, button: G.button, board: G.board, pot: G.pot, street: G.street,
+      currentBet: G.currentBet, minRaise: G.minRaise, toAct: G.toAct, aggr: G.aggr, endReason: G.endReason || null,
+      result: G.result ? { winner: G.result.winner, how: G.result.how, amount: G.result.amount } : null,
+      log: G.log.slice(-8),
+      players: G.players.map((p, i) => ({ stack: p.stack, bet: p.bet, folded: p.folded, allIn: p.allIn, last: p.last, hole: i === 1 || reveal ? p.hole : [-1, -1] }))
+    };
+  }
+  Net.publish = () => {
+    if (!Net.named || Net.role !== 'host') return;
+    const st = serialize(), json = JSON.stringify(st);
+    if (json === Net.lastSent) return;
+    Net.lastSent = json;
+    Net.named.presence({ role: 'host', waiting: false, state: st }).catch(() => {});
+  };
+  Net.send = msg => {
+    if (!Net.named) return;
+    Net.n++;
+    Net.named.presence({ role: 'guest', sid: Net.sid, act: { ...msg, n: Net.n, sid: Net.sid } }).catch(() => {});
+  };
+
+  function onPeersGuest(ch) {
+    const h = ch.peers.find(p => !p.sameTab && p.presence && p.presence.role === 'host');
+    if (!h) {
+      Net.peerGone = true;
+      setStatus(G.mode === 'pvp' ? '방장과 연결이 끊겼어요. 다시 들어오기를 기다려요.' : '방을 찾는 중이에요. 코드가 맞는지 확인해 주세요.');
+      if (G.mode === 'pvp') render();
+      return;
+    }
+    Net.peerGone = false;
+    if (h.presence.state) { setStatus('대결 중이에요.'); applyState(h.presence.state); }
+    else setStatus('방을 찾았어요. 곧 시작해요.');
+  }
+
+  function applyState(s) {
+    const json = JSON.stringify(s);
+    if (json === Net.lastApplied) return;
+    Net.lastApplied = json;
+    if (!s || !Array.isArray(s.players) || s.players.length !== 2) return;
+    if (G.mode !== 'pvp' || G.role !== 'guest' || s.handNo < G.handNo || (G.street === 'over' && s.street !== 'over')) {
+      G = baseState('pvp', 'guest');
+      $('sessionEnd').hidden = true;
+      paintSetup();
+    }
+    const flip = i => 1 - i;
+    const prevHand = G.handNo, prevBoard = G.board.length, prevPot = G.pot + G.players[0].bet + G.players[1].bet;
+    const P = (q, name) => ({ name, stack: q.stack, bet: q.bet, folded: q.folded, allIn: q.allIn, last: q.last, hole: q.hole, acted: false });
+    G.players = [P(s.players[1], '나'), P(s.players[0], '상대')];
+    Object.assign(G, {
+      button: flip(s.button), toAct: flip(s.toAct), aggr: [s.aggr[1], s.aggr[0]], board: s.board.slice(), pot: s.pot,
+      street: s.street, currentBet: s.currentBet, minRaise: s.minRaise, log: s.log.slice(), endReason: s.endReason
+    });
+    if (s.handNo !== G.handNo) { G.handNo = s.handNo; G.decisions = []; G.countedHand = false; $('bNext').disabled = false; }
+    G.result = s.result ? { ...s.result, winner: s.result.winner === -1 ? -1 : flip(s.result.winner) } : null;
+    const ended = G.street === 'done' || G.street === 'over';
+    if (G.result && ended && !G.countedHand) {
+      G.countedHand = true; G.stats.hands++;
+      if (G.result.winner === 0) G.stats.won++;
+      Sound.sfx(G.result.winner === 0 ? 'win' : G.result.winner === 1 ? 'lose' : 'card');
+    } else if (G.handNo !== prevHand || G.board.length > prevBoard) Sound.sfx('card');
+    else if (G.pot + G.players[0].bet + G.players[1].bet > prevPot) Sound.sfx('chips');
+
+    const me = G.players[0];
+    const key = `${G.handNo}|${G.street}|${G.currentBet}|${me.bet}|${G.log.length}|${G.log[G.log.length - 1] || ''}`;
+    if (!ended && G.toAct === 0 && !me.folded && !me.allIn && key !== G.sentKey) {
+      if (key !== G.pendKey) { G.pendKey = key; G.pending = analyze(0); G.sliderSet = false; G.showHint = false; }
+      G.busy = false;
+    } else { G.pending = null; G.busy = !ended; }
+    if (G.street === 'over' && !G.ended) endSession(s.endReason || 'quit');
+    render();
+  }
+
+  function paintSetup() {
+    document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', String(G.mode !== 'pvp' && !Net.named && b.dataset.diff === difficulty)));
+    $('pvpBtn').setAttribute('aria-pressed', String(G.mode === 'pvp' || !!Net.named));
+    const notes = {
+      easy: '쉬움: 아무 패로나 잘 따라오고 실수가 많아요. 규칙과 흐름을 익힐 때 좋아요.',
+      normal: '보통: 기본기 있는 상대예요. 승률 계산대로 치면 이길 수 있어요.',
+      hard: '어려움: 계산이 정확하고 블러핑도 섞어요. 쉽게 따라가면 칩을 잃어요.'
+    };
+    $('setupNote').textContent = (G.mode === 'pvp' || Net.named)
+      ? '친구와 1:1 대결 중이에요. 코치 피드백은 각자 화면에서 따로 나와요.'
+      : notes[difficulty];
   }
 
   /* ---------- 화면 ---------- */
@@ -1065,14 +1342,15 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
 
   function seatHTML(i) {
     const p = G.players[i], ended = G.street === 'done' || G.street === 'over';
-    const show = i === 0 || ended;
+    const known = p.hole.length && p.hole[0] >= 0;
+    const show = i === 0 || (ended && known && (G.mode !== 'pvp' || (G.result && G.result.how === 'showdown')));
     const cards = p.hole.map(c => cardHTML(c, { hidden: !show, big: i === 0, dim: p.folded })).join('');
     let label = '';
     if (show) label = G.board.length ? describe(eval7(p.hole.concat(G.board))) : preflopName(p.hole);
-    if (i === 1 && ended) label = '공개: ' + label;
+    if (i === 1 && show) label = '공개: ' + label;
     const info = `<div class="seat-info">
         ${G.button === i ? '<span class="dealer" title="딜러 (작은 블라인드)">D</span>' : ''}
-        <span class="nameplate">${p.name} <span class="num">${won(p.stack)}</span></span>
+        <span class="nameplate">${p.name}${i === 1 && G.mode !== 'pvp' ? ` (${DIFF[difficulty].label})` : ''} <span class="num">${won(p.stack)}</span></span>
         <span class="actbubble">${p.last}</span>
       </div>`;
     const bet = `<span class="betchip">${p.bet ? p.bet : ''}</span>`;
@@ -1152,7 +1430,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     if (r) {
       if (r.winner === -1) res = `무승부 · 판돈 ${won(r.amount)}을 나눠 가져요`;
       else if (r.winner === 0) res = `내가 이겼어요 · +${won(r.amount)}${r.how === 'fold' ? ' (상대 포기)' : ''}`;
-      else res = `컴퓨터 승리 · ${won(r.amount)}${r.how === 'fold' ? ' (내가 포기)' : ''}`;
+      else res = `${oppName()} 승리 · ${won(r.amount)}${r.how === 'fold' ? ' (내가 포기)' : ''}`;
     }
     $('result').textContent = res;
 
@@ -1163,7 +1441,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     if (G.street === 'over') turn = '게임이 끝났어요. 위에서 전체 결과를 확인하세요.';
     else if (ended) turn = '이번 판을 돌아본 뒤, 다음 판을 시작하거나 게임을 끝내고 결과를 저장하세요.';
     else if (myTurn) turn = G.pending.toCall > 0 ? `<b>내 차례</b> · 상대가 걸었어요. 따라가려면 ${won(G.pending.toCall)}칩이 필요해요.` : '<b>내 차례</b> · 아무도 안 걸었어요. 체크하거나 먼저 걸 수 있어요.';
-    else turn = '컴퓨터가 생각 중이에요…';
+    else turn = G.mode === 'pvp' ? (Net.peerGone ? '상대와 연결이 끊겼어요. 다시 들어오기를 기다려요.' : '상대가 고르는 중이에요…') : '컴퓨터가 생각 중이에요…';
     $('turnline').innerHTML = turn;
 
     if (!ended) {
@@ -1186,17 +1464,22 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       updateRaiseLabel(canRaise);
     }
 
-    $('hint').innerHTML = myTurn && $('coachHint').checked ? hintHTML(G.pending) : '';
+    const hintOn = myTurn && ($('coachHint').checked || G.showHint);
+    $('hint').innerHTML = hintOn ? hintHTML(G.pending) : '';
+    $('bHint').hidden = ended;
+    $('bHint').disabled = !myTurn || hintOn;
+    $('bHint').textContent = hintOn && myTurn ? '힌트를 보는 중' : '힌트 보기';
     $('feedback').innerHTML = G.lastFb ? fbHTML(G.lastFb) : '<p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p>';
 
     if (ended) {
-      const rows = G.decisions.map(d => `<div class="review-row"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${d.action}${d.level !== 'good' ? `<span class="rec"> → 추천 ${recLabel(d.a)}</span>` : ''}</span></div>`).join('');
+      const rows = G.decisions.map(d => `<div class="review-row"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${d.action}${d.hint ? '<span class="hint-tag">힌트 봄</span>' : ''}${d.level !== 'good' ? `<span class="rec"> → 추천 ${recLabel(d.a)}</span>` : ''}</span></div>`).join('');
       $('review').innerHTML = `<div class="review">${rows}<div class="lesson">${lessonFor(G.decisions)}</div></div>`;
     } else if (!G.decisions.length) {
       $('review').innerHTML = '<p class="empty">판이 끝나면 이번 판 선택들을 점수와 함께 정리해 줘요.</p>';
     }
     $('log').innerHTML = G.log.slice(-14).map(l => `<div>${l}</div>`).join('');
     $('log').scrollTop = $('log').scrollHeight;
+    if (G.mode === 'pvp' && G.role === 'host') Net.publish();
   }
 
   function updateRaiseLabel(canRaise) {
@@ -1218,8 +1501,15 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     $('raiseAmt').value = sizeTo(0, f);
     updateRaiseLabel(true);
   }));
-  $('bNext').addEventListener('click', () => startHand());
-  $('bEnd').addEventListener('click', () => { G.street = 'over'; endSession('quit'); render(); });
+  $('bNext').addEventListener('click', () => {
+    if (G.mode === 'pvp' && G.role === 'guest') { Net.send({ type: 'next' }); $('bNext').disabled = true; return; }
+    startHand();
+  });
+  $('bEnd').addEventListener('click', () => {
+    if (G.mode === 'pvp' && G.role === 'guest') { Net.send({ type: 'end' }); return; }
+    G.street = 'over'; G.endReason = 'quit'; endSession('quit'); render();
+  });
+  $('bHint').addEventListener('click', () => { if (G.pending) { G.showHint = true; render(); } });
 
   const pref = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : v === '1'; } catch (e) { return def; } };
   const setPref = (k, v) => { try { localStorage.setItem(k, v ? '1' : '0'); } catch (e) {} };
@@ -1249,7 +1539,40 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   try {
     window.claude?.hot?.snapshot?.(() => ({ stacks: G.players.map(p => p.stack), stats: G.stats, allDecs: G.allDecs, handNo: G.handNo, button: G.button }));
   } catch (e) {}
-  const boot = d => { newGame(d || {}); initStore(); };
+  difficulty = (() => { try { const v = localStorage.getItem('holdemDiff'); return DIFF[v] ? v : 'normal'; } catch (e) { return 'normal'; } })();
+  document.querySelectorAll('[data-diff]').forEach(btn => btn.addEventListener('click', async () => {
+    difficulty = btn.dataset.diff;
+    try { localStorage.setItem('holdemDiff', difficulty); } catch (e) {}
+    if (G.mode === 'pvp' || Net.named) { await leaveRoom(); $('pvpPanel').hidden = true; newGame({}); }
+    paintSetup(); render();
+  }));
+  $('pvpBtn').addEventListener('click', () => {
+    if (!Net.room) {
+      $('setupNote').textContent = '친구 대전은 claude.ai 링크로 열었을 때만 쓸 수 있어요. 친구도 claude.ai에 로그인하고, 이 페이지를 공유받아야 해요.';
+      return;
+    }
+    if (Net.named) { $('pvpPanel').hidden = false; $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    hostRoom();
+  });
+  $('leavePvp').addEventListener('click', async () => {
+    await leaveRoom();
+    $('pvpPanel').hidden = true;
+    try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
+    newGame({}); paintSetup();
+  });
+  $('joinBtn').addEventListener('click', () => {
+    const code = $('joinCode').value.toLowerCase().replace(/[^a-z0-9]/g, '');
+    if (code.length < 4) { setStatus('방 코드 6자리를 입력해 주세요.'); return; }
+    if (!Net.room) { $('pvpPanel').hidden = false; setStatus('친구 대전은 claude.ai 링크로 열었을 때만 쓸 수 있어요.'); return; }
+    joinRoom(code);
+  });
+  $('copyLink').addEventListener('click', () => {
+    const btn = $('copyLink');
+    const fallback = () => { const r = document.createRange(); r.selectNodeContents($('pvpLink')); const s = getSelection(); s.removeAllRanges(); s.addRange(r); btn.textContent = '링크를 선택했어요. 복사해 주세요'; };
+    try { navigator.clipboard.writeText(inviteLink()).then(() => { btn.textContent = '복사했어요'; }, fallback); } catch (e) { fallback(); }
+  });
+
+  const boot = d => { newGame(d || {}); paintSetup(); initStore(); initRoom(); };
   if (window.claude?.hot?.ready) window.claude.hot.ready(boot); else boot(window.claude?.hot?.data ?? {});
 })();
 </script>
