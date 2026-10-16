@@ -41,7 +41,7 @@ body {
   line-height: 1.65;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
-  padding-block: 16px 48px;
+  padding-block: 16px 96px;
   word-break: keep-all;
   overflow-wrap: anywhere;
 }
@@ -299,6 +299,59 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
 .lobby-row .dot.off { background: var(--faint); }
 .lobby-row .dot.bot { background: var(--brass); }
 .pubtips { margin: 10px 0 0; padding-left: 20px; display: flex; flex-direction: column; gap: 8px; font-size: 15px; }
+
+/* 팝업 · 기록실 */
+body.locked { overflow: hidden; }
+.fab { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); z-index: 60; border: 0; border-radius: 999px; padding: 12px 18px; font-size: 15px; font-weight: 700; cursor: pointer; background: var(--brass); color: var(--brass-ink); box-shadow: 0 6px 18px rgba(0,0,0,.45); display: inline-flex; gap: 6px; align-items: center; }
+.fab.good { background: var(--good); color: #0c1613; } .fab.ok { background: var(--okay); color: #0c1613; } .fab.bad { background: var(--bad); color: #0c1613; }
+.fab-tag { font-size: 12px; background: rgba(0,0,0,.2); border-radius: 999px; padding: 0 8px; }
+.fab.pulse { animation: pulse .9s ease-out; }
+@keyframes pulse { 0% { transform: scale(1); } 30% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@media (prefers-reduced-motion: reduce) { .fab.pulse { animation: none; } }
+.overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,.62); display: flex; align-items: flex-end; justify-content: center; padding-top: calc(24px + env(safe-area-inset-top, 0px)); }
+.sheet { background: var(--panel); color: var(--ink); width: min(620px, 100%); max-height: 100%; border: 1px solid var(--line); border-radius: 18px 18px 0 0; display: flex; flex-direction: column; min-height: 0; }
+.sheet.wide { width: min(820px, 100%); }
+@media (min-width: 760px) { .overlay { align-items: center; padding: 32px 16px; } .sheet { border-radius: 18px; max-height: 88vh; } }
+.sheet-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 14px max(16px, env(safe-area-inset-left, 0px)) 10px; border-bottom: 1px solid var(--line); }
+.sheet-head h2 { font-family: var(--font-display); font-weight: 400; font-size: 24px; margin: 0; }
+.sheet-body { overflow-y: auto; padding: 14px max(16px, env(safe-area-inset-left, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)); display: flex; flex-direction: column; gap: 14px; min-height: 0; }
+.tabs { display: flex; gap: 4px; padding: 10px max(16px, env(safe-area-inset-left, 0px)) 0; flex-wrap: wrap; }
+.tabs button { border: 1px solid var(--line); background: var(--panel-2); border-radius: 10px 10px 0 0; padding: 8px 14px; font-size: 15px; cursor: pointer; }
+.tabs button[aria-selected="true"] { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); font-weight: 700; }
+.rec-note { padding: 8px max(16px, env(safe-area-inset-left, 0px)) 0; margin: 0 !important; }
+.rec-sec { display: flex; flex-direction: column; gap: 6px; }
+.rec-sec h3 { margin: 0; font-size: 15px; color: var(--brass); }
+.plain { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.muted { color: var(--muted); }
+.up { color: var(--good); } .down { color: var(--bad); }
+.posgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.spark { width: 100%; max-width: 480px; height: auto; }
+.spark .grid { stroke: var(--line); stroke-width: 1; stroke-dasharray: 3 4; }
+.spark .gl { fill: var(--faint); font-size: 10px; }
+.spark .line { fill: none; stroke: var(--brass); stroke-width: 2.5; stroke-linejoin: round; }
+.spark .dot { fill: var(--brass); }
+.filters { margin-bottom: 4px; }
+.filters .chip[aria-pressed="true"] { background: var(--brass); color: var(--brass-ink); border-color: var(--brass); font-weight: 700; }
+.ranklist { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.ranklist details, .handrow { background: var(--panel-2); border-radius: 10px; padding: 8px 12px; }
+.ranklist summary, .handrow summary { cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; font-size: 15px; }
+.rk { min-width: 1.5em; color: var(--faint); }
+.gr { font-family: var(--font-display); font-weight: 400; font-size: 22px; color: var(--brass); }
+.gmain { flex: 1 1 200px; min-width: 0; }
+.gdate { font-size: 13px; }
+.stand { border-collapse: collapse; width: 100%; font-size: 14px; }
+.stand th, .stand td { text-align: left; padding: 4px 6px; border-bottom: 1px solid var(--line); }
+.stand tr.me td { color: var(--brass); font-weight: 700; }
+.handlist { display: flex; flex-direction: column; gap: 8px; }
+.minirow { display: inline-flex; gap: 2px; vertical-align: middle; }
+.minirow .mc { width: 24px; height: 34px; }
+.minirow .mc .r, .minirow .mc .s { font-size: 11px; }
+.hres { font-weight: 700; min-width: 5.5em; }
+.hboard { opacity: .9; }
+.hmeta { font-size: 13px; flex-basis: 100%; }
+.handrow .log { max-height: none; }
+.pickrow { width: 100%; background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 4px 6px; cursor: pointer; text-align: left; color: inherit; font: inherit; }
+.pickrow.on { border-color: var(--brass); }
 </style>
 </head>
 <body>
@@ -316,6 +369,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       <div class="sound">
         <button class="toggle" id="musicBtn" type="button" aria-pressed="false">♪ 배경음악 꺼짐</button>
         <button class="toggle" id="sfxBtn" type="button" aria-pressed="true">효과음 켜짐</button>
+        <button class="toggle" id="recordsBtn" type="button">기록실</button>
       </div>
     </div>
   </header>
@@ -431,9 +485,10 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
         <div class="log num" id="log"></div>
       </div>
       <div class="panel">
-        <h2>지난 기록</h2>
-        <p class="sub" id="historyNote">게임을 끝내면 점수와 전체 피드백이 여기에 저장돼요.</p>
+        <h2>기록실</h2>
+        <p class="sub" id="historyNote">한 판이 끝날 때마다 자동으로 저장돼요.</p>
         <div class="history" id="history"><p class="empty">기록을 불러오는 중이에요.</p></div>
+        <button class="btn-hint" type="button" id="openRecords">기록실 열기 (순위 · 역대 기록 · 핸드)</button>
       </div>
       <details class="box">
         <summary>홀덤펍 가기 전에 알아 둘 것</summary>
@@ -476,6 +531,28 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
         </dl>
       </details>
     </aside>
+  </div>
+</div>
+
+<button class="fab" id="fab" type="button" aria-haspopup="dialog">코치 피드백</button>
+
+<div class="overlay" id="fbSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div class="sheet-head"><h2 id="fbTitle">코치 피드백</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body" id="fbBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="recSheet" hidden>
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+    <div class="sheet-head"><h2 id="recTitle">기록실</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="sum" aria-selected="true">요약</button>
+      <button type="button" role="tab" data-tab="games" aria-selected="false">게임 순위</button>
+      <button type="button" role="tab" data-tab="hands" aria-selected="false">핸드 기록</button>
+    </div>
+    <p class="sub rec-note" id="recNote"></p>
+    <div class="sheet-body" id="recBody"></div>
   </div>
 </div>
 
@@ -784,7 +861,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
   const mkP = (name, kind, extra = {}) => ({ name, kind, stack: START, hole: [], bet: 0, total: 0, folded: false, allIn: false, acted: false, last: '', out: false, place: null, inHand: false, ...extra });
   function baseState(mode) {
     return {
-      mode, gid: newId(), me: 0, players: [], button: -1, sb: -1, bb: -1, level: 0, handNo: 0, board: [], deck: [],
+      mode, gid: newId(), recId: 'g' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), me: 0, players: [], button: -1, sb: -1, bb: -1, level: 0, handNo: 0, board: [], deck: [],
       street: 'idle', currentBet: 0, minRaise: 20, toAct: -1, aggr: [], pos: [], revealed: [], notice: '',
       decisions: [], log: [], result: null, pending: null, lastFb: null, busy: false,
       stats: { dec: 0, good: 0, ok: 0, bad: 0, won: 0, hands: 0, hints: 0 }, allDecs: [], ended: null
@@ -992,6 +1069,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
       .forEach((p, k) => { p.out = true; p.place = aliveBefore - k; p.last = `탈락 ${p.place}위`; G.log.push(`${p.name} 탈락 (${p.place}위)`); });
     const alive = G.players.filter(p => !p.out);
     if (alive.length === 1) { alive[0].place = 1; alive[0].last = '우승!'; G.log.push(`${alive[0].name} 우승!`); G.street = 'over'; G.endReason = 'bust'; }
+    recordHand();
     if (me.out && G.mode === 'solo') { G.street = 'over'; G.endReason = 'bust'; }
     if ((G.street === 'over' || me.out) && !G.ended) endSession('bust');
     render();
@@ -1277,8 +1355,11 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     const goal = mistakes.length
       ? `다음 목표: "${mistakes[0].label}" 줄이기. ${mistakes[0].advice}`
       : '다음 목표: 판단 점수 평균 90점 이상을 유지하면서, 더 많은 판을 쳐 보세요.';
+    const standings = G.players.map(p => ({ name: p === me ? '나' : p.name, place: p.place || null, chips: p.stack, me: p === me, bot: p.kind === 'bot' }))
+      .sort((a, b) => (a.place || 0) - (b.place || 0) || b.chips - a.chips);
     return {
-      id: 'g' + Date.now().toString(36), endedAt: new Date().toISOString(), reason,
+      id: G.recId, kind: 'game', status: reason === 'playing' ? 'playing' : 'done', mode: G.mode,
+      endedAt: new Date().toISOString(), reason, standings,
       hands: G.stats.hands, won: G.stats.won, chips: me.stack, chipDelta: me.stack - START,
       place: me.place || null, players: G.players.length, opponent: opponentText(), hints: G.stats.hints || 0,
       decisions: n, avgScore: avg, grade, good: count('good'), ok: count('ok'), bad: count('bad'),
@@ -1287,49 +1368,98 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     };
   }
 
-  const Store = { kind: 'local', coll: null, ready: false, list: [] };
-  const LOCAL_KEY = 'holdemCoachHistory';
-  function readLocal() { try { return JSON.parse(localStorage.getItem(LOCAL_KEY) || '[]'); } catch (e) { return []; } }
-  function writeLocal(list) { try { localStorage.setItem(LOCAL_KEY, JSON.stringify(list.slice(0, 50))); return true; } catch (e) { return false; } }
+  // 저장소: claude.ai 계정 저장소(db)가 있으면 거기에, 없으면 이 브라우저(localStorage)에.
+  // 게임 기록과 핸드(한 판 한 판) 기록을 따로 모아요.
+  const Store = { kind: 'local', games: null, handsColl: null, ready: false, list: [], handList: [] };
+  const LOCAL_KEY = 'holdemCoachHistory', HANDS_KEY = 'holdemCoachHands';
+  function readLocal(key = LOCAL_KEY) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch (e) { return []; } }
+  function writeLocal(key, list, cap) { try { localStorage.setItem(key, JSON.stringify(list.slice(0, cap))); return true; } catch (e) { return false; } }
   async function initStore() {
     try {
       if (window.claude && window.claude.use) {
         const [db, user] = await Promise.all([window.claude.use('db'), window.claude.use('user')]);
         const uid = user ? await user.id() : null;
-        if (db && uid) { Store.coll = db.collection('data/users/' + uid); Store.kind = 'db'; }
+        if (db && uid) {
+          Store.games = db.collection('data/users/' + uid);
+          Store.handsColl = db.collection(`data/users/${uid}/coach/hands`);
+          Store.kind = 'db';
+        }
       }
     } catch (e) { Store.kind = 'local'; }
     await loadHistory();
   }
   async function loadHistory() {
-    let list = [];
+    let games = [], hands = [];
     if (Store.kind === 'db') {
       try {
-        const snap = await Store.coll.orderBy('endedAt', 'desc').limit(30).get();
-        list = snap.docs.map(d => d.data()).filter(Boolean);
-      } catch (e) { Store.kind = 'local'; list = readLocal(); }
-    } else list = readLocal();
-    Store.list = list; Store.ready = true;
+        const [g, h] = await Promise.all([
+          Store.games.orderBy('endedAt', 'desc').limit(200).get(),
+          Store.handsColl.orderBy('at', 'desc').limit(300).get()
+        ]);
+        games = g.docs.map(d => d.data()).filter(Boolean);
+        hands = h.docs.map(d => d.data()).filter(Boolean);
+      } catch (e) { Store.kind = 'local'; }
+    }
+    if (Store.kind === 'local') { games = readLocal(LOCAL_KEY); hands = readLocal(HANDS_KEY); }
+    // 저장소가 늦게 응답하는 사이에 생긴 기록도 잃지 않게 합쳐요
+    const byId = new Map();
+    [...games, ...Store.list].forEach(r => { if (r && r.id && !byId.has(r.id)) byId.set(r.id, r); });
+    Store.list = [...byId.values()].sort((a, b) => String(b.endedAt).localeCompare(String(a.endedAt)));
+    const hIds = new Set(hands.map(h => h.id));
+    Store.handList = [...Store.handList.filter(h => !hIds.has(h.id)), ...hands].sort((a, b) => String(b.at).localeCompare(String(a.at)));
+    Store.ready = true;
     renderHistory();
   }
-  async function saveRecord(rec) {
+  const SAVED_DB = '내 claude.ai 계정에 저장했어요. 다른 기기에서 열어도 볼 수 있어요.';
+  const SAVED_LOCAL = '이 브라우저에 저장했어요. 인터넷 기록을 지우면 사라질 수 있어요.';
+  async function saveGame(rec) {
+    Store.list = [rec, ...Store.list.filter(r => r.id !== rec.id)];
+    renderHistory();
     if (Store.kind === 'db') {
-      try { await Store.coll.doc(rec.id).set(rec); return '내 claude.ai 계정에 저장했어요. 다른 기기에서 열어도 볼 수 있어요.'; }
-      catch (e) { /* 아래 브라우저 저장으로 */ }
+      try { await Store.games.doc(rec.id).set(rec); return SAVED_DB; } catch (e) { /* 아래 브라우저 저장으로 */ }
     }
-    const list = readLocal(); list.unshift(rec);
-    return writeLocal(list) ? '이 브라우저에 저장했어요. 인터넷 기록을 지우면 사라질 수 있어요.' : '저장하지 못했어요. 브라우저가 저장을 막고 있어요.';
+    const list = readLocal(LOCAL_KEY).filter(r => r.id !== rec.id); list.unshift(rec);
+    return writeLocal(LOCAL_KEY, list, 200) ? SAVED_LOCAL : '저장하지 못했어요. 브라우저가 저장을 막고 있어요.';
   }
+  async function saveHand(rec) {
+    Store.handList = [rec, ...Store.handList.filter(h => h.id !== rec.id)];
+    renderHistory();
+    if (Store.kind === 'db') {
+      try { await Store.handsColl.doc(rec.id).set(rec); return; } catch (e) { /* 아래 브라우저 저장으로 */ }
+    }
+    const list = readLocal(HANDS_KEY).filter(h => h.id !== rec.id); list.unshift(rec);
+    writeLocal(HANDS_KEY, list, 500);
+  }
+
+  // 한 판이 끝날 때마다 내 카드, 바닥 카드, 진행 기록, 내 선택과 점수를 저장해요.
+  function recordHand() {
+    const me = G.players[G.me], r = G.result;
+    if (!me || !r || !me.inHand || !me.hole.length || me.hole[0] < 0) return;
+    const net = ((r.gain && r.gain[G.me]) || 0) - me.total;
+    const decisions = G.decisions.map(d => ({ street: d.street, action: d.action, score: d.score, level: d.level, rec: recLabel(d.a), hint: !!d.hint }));
+    const rec = {
+      id: 'h' + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), kind: 'hand', gameId: G.recId,
+      at: new Date().toISOString(), handNo: G.handNo, mode: G.mode, players: G.players.filter(p => p.inHand).length,
+      pos: G.pos[G.me] || '', blinds: blinds(), hole: me.hole.slice(), board: G.board.slice(),
+      result: r.winners.includes(G.me) ? (r.winners.length > 1 ? 'split' : 'win') : me.folded ? 'fold' : 'lose',
+      net, pot: sum(G.players, p => p.total), how: r.how,
+      winners: r.winners.map(s => (s === G.me ? '나' : G.players[s].name)), winHand: (r.hands && r.hands[r.winners[0]]) || null,
+      myHand: G.board.length >= 3 ? describe(eval7(me.hole.concat(G.board))) : preflopName(me.hole),
+      shown: (G.revealed || []).filter(s => s !== G.me && G.players[s].hole[0] >= 0).map(s => ({ name: G.players[s].name, hole: G.players[s].hole.slice() })),
+      decisions, avg: decisions.length ? Math.round(sum(decisions, d => d.score) / decisions.length) : null,
+      log: G.log.slice(-40)
+    };
+    saveHand(rec);
+    if (G.allDecs.length && !G.ended) saveGame(summarize('playing'));   // 끝내기를 안 눌러도 게임 기록이 남아요
+  }
+
   async function endSession(reason) {
     if (G.ended) return;
     const rec = summarize(reason);
     G.ended = rec;
     renderSession(rec, '저장하는 중이에요…');
     if (!rec.decisions) { renderSession(rec, '선택 기록이 없어서 저장하지 않았어요.'); return; }
-    const note = await saveRecord(rec);
-    renderSession(rec, note);
-    Store.list = [rec, ...Store.list.filter(r => r.id !== rec.id)];
-    renderHistory();
+    renderSession(rec, await saveGame(rec));
   }
   function renderSession(rec, note) {
     const el = $('sessionEnd');
@@ -1366,21 +1496,6 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     });
     el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  function renderHistory() {
-    const box = $('history');
-    if (!Store.ready) return;
-    $('historyNote').textContent = Store.kind === 'db' ? '내 claude.ai 계정에 저장돼요. 나만 볼 수 있어요.' : '이 브라우저에 저장돼요.';
-    if (!Store.list.length) { box.innerHTML = '<p class="empty">아직 저장된 기록이 없어요. 몇 판 친 뒤 "게임 끝내고 결과 저장"을 누르면 점수와 전체 피드백이 여기에 쌓여요.</p>'; return; }
-    box.innerHTML = Store.list.map(r => {
-      const d = new Date(r.endedAt);
-      const date = isNaN(d) ? '' : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-      return `<details><summary><b>${esc(r.grade)}</b><span>평균 ${r.avgScore}점 · ${r.hands}판${r.place ? ` · ${r.players}명 중 ${r.place}위` : ''} · 칩 ${signed(r.chipDelta)}${r.opponent ? ' · vs ' + esc(r.opponent) : ''}</span><span style="color:var(--faint)">${date}</span></summary>
-        <div class="h-body"><p>${esc(r.summary)}</p>
-        ${(r.mistakes || []).map(m => `<p>· 고칠 점: ${esc(m.label)} (${m.count}번)</p>`).join('')}
-        <p style="color:var(--muted)">${esc(r.goal || '')}</p></div></details>`;
-    }).join('');
-  }
-
   /* ---------- 친구와 같이 (로그인 없이, 브라우저끼리 직접 연결) ----------
      방장의 화면이 딜러 역할을 해요. 친구 폰과 방장 폰이 PeerJS(무료 연결 중개)를 통해 직접 이어지고,
      방장은 친구마다 "그 친구의 카드만" 따로 보내요. */
@@ -1587,7 +1702,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
         currentBet: G.currentBet, minRaise: G.minRaise, toAct: G.toAct, aggr: G.aggr, pos: G.pos, notice: G.notice,
         endReason: G.endReason || null, revealed: [...reveal], seats, diff: settings.diff,
         result: r ? { how: r.how, winners: r.winners, gain: r.gain, hands: r.hands || null } : null,
-        log: G.log.slice(-6),
+        log: G.log.slice(-40),
         players: G.players.map((p, s) => ({
           name: p.name, kind: p.kind === 'bot' ? 'bot' : 'human', stack: p.stack, bet: p.bet, total: p.total,
           folded: p.folded, allIn: p.allIn, acted: p.acted, last: p.last, out: p.out, place: p.place, inHand: p.inHand,
@@ -1705,6 +1820,7 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
         const meWon = G.result.winners.includes(G.me);
         if (meWon) G.stats.won++;
         Sound.sfx(meWon ? 'win' : 'lose');
+        recordHand();
       }
     } else if (G.handNo !== prevHand || G.board.length > prevBoard) Sound.sfx('card');
     else if (potTotal() > prevPot) Sound.sfx('chips');
@@ -1910,6 +2026,8 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     $('bHint').disabled = !myTurn || hintOn;
     $('bHint').textContent = hintOn && myTurn ? '힌트를 보는 중' : '힌트 보기';
     $('feedback').innerHTML = G.lastFb ? fbHTML(G.lastFb) : '<p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p>';
+    paintFab();
+    if (UI.open === 'fb') renderFeedbackSheet();
 
     if (isEnded) {
       const rows = G.decisions.map(d => `<div class="review-row"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${d.action}${d.hint ? '<span class="hint-tag">힌트 봄</span>' : ''}${d.level !== 'good' ? `<span class="rec"> → 추천 ${recLabel(d.a)}</span>` : ''}</span></div>`).join('');
@@ -1930,6 +2048,202 @@ details.box > summary { cursor: pointer; font-family: var(--font-display); font-
     const allIn = v >= me.bet + me.stack;
     $('bRaise').innerHTML = `${allIn ? '올인' : name}<small>${won(v)}칩까지</small>`;
   }
+
+  /* ---------- 기록실 ---------- */
+  const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
+  const doneGames = () => Store.list.filter(r => r && r.decisions);
+  const RESULT_KO = { win: '이김', split: '나눔', lose: '짐', fold: '포기' };
+  const UI = { recTab: 'sum', gameSort: 'score', handFilter: 'all', handLimit: 40, open: null, fbPick: null };
+
+  function renderHistory() {
+    const box = $('history');
+    if (!Store.ready) return;
+    $('historyNote').textContent = Store.kind === 'db' ? '내 claude.ai 계정에 저장돼요. 나만 볼 수 있어요.' : '이 브라우저에 저장돼요.';
+    const games = doneGames(), hands = Store.handList;
+    if (!games.length && !hands.length) {
+      box.innerHTML = '<p class="empty">아직 저장된 기록이 없어요. 한 판이 끝날 때마다 핸드 기록이, 게임을 하면 점수와 순위가 자동으로 쌓여요.</p>';
+    } else {
+      const best = games.reduce((m, g) => Math.max(m, g.avgScore || 0), 0);
+      box.innerHTML = `<div class="session-stats">
+        <div class="stat"><b>${games.length}</b><small>게임</small></div>
+        <div class="stat"><b>${hands.length}</b><small>저장된 핸드</small></div>
+        <div class="stat"><b>${best ? best + '점' : '–'}</b><small>최고 평균 점수</small></div></div>`;
+    }
+    if (UI.open === 'rec') renderRecords();
+  }
+
+  function aggregate() {
+    const games = doneGames(), hands = Store.handList;
+    const decN = sum(games, g => g.decisions || 0);
+    const avg = decN ? Math.round(sum(games, g => (g.avgScore || 0) * (g.decisions || 0)) / decN) : 0;
+    const wins = hands.filter(h => h.result === 'win' || h.result === 'split').length;
+    const mis = {};
+    games.forEach(g => (g.mistakes || []).forEach(m => { mis[m.label] = (mis[m.label] || 0) + m.count; }));
+    const topMis = Object.entries(mis).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const bestHand = hands.reduce((b, h) => (!b || h.net > b.net ? h : b), null);
+    const worstHand = hands.reduce((b, h) => (!b || h.net < b.net ? h : b), null);
+    const posStats = {};
+    hands.forEach(h => { if (!h.pos) return; const p = posStats[h.pos] || (posStats[h.pos] = { n: 0, net: 0 }); p.n++; p.net += h.net || 0; });
+    return { games, hands, avg, wins, topMis, bestHand, worstHand, posStats, champs: games.filter(g => g.place === 1).length };
+  }
+
+  function sparkline(vals) {
+    if (vals.length < 2) return '<p class="empty">게임을 2번 이상 하면 점수 흐름이 그래프로 나와요.</p>';
+    const W = 320, H = 90, pad = 8;
+    const x = i => pad + (i * (W - pad * 2)) / (vals.length - 1);
+    const y = v => H - pad - (v / 100) * (H - pad * 2);
+    const pts = vals.map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
+    const last = vals[vals.length - 1];
+    return `<svg class="spark" viewBox="0 0 ${W} ${H}" role="img" aria-label="최근 게임 평균 점수 흐름">
+      <line x1="${pad}" x2="${W - pad}" y1="${y(80)}" y2="${y(80)}" class="grid"/><text x="${W - pad}" y="${y(80) - 3}" class="gl" text-anchor="end">80점</text>
+      <line x1="${pad}" x2="${W - pad}" y1="${y(50)}" y2="${y(50)}" class="grid"/><text x="${W - pad}" y="${y(50) - 3}" class="gl" text-anchor="end">50점</text>
+      <polyline points="${pts}" class="line"/><circle cx="${x(vals.length - 1)}" cy="${y(last)}" r="4" class="dot"/></svg>`;
+  }
+  // 문단 안에 들어가도 깨지지 않게 span으로 만들어요
+  const miniRow = cards => `<span class="minirow">${(cards || []).map(c => miniHTML(c, false).replace(/<div/g, '<span').replace(/<\/div>/g, '</span>')).join('')}</span>`;
+
+  function recSummaryHTML() {
+    const A = aggregate();
+    if (!A.games.length && !A.hands.length) return '<p class="empty">아직 기록이 없어요. 몇 판 쳐 보면 여기에 쌓여요.</p>';
+    const tile = (v, k) => `<div class="stat"><b>${v}</b><small>${k}</small></div>`;
+    const trend = A.games.slice(0, 20).map(g => g.avgScore || 0).reverse();
+    const pos = Object.entries(A.posStats).sort((a, b) => b[1].net / b[1].n - a[1].net / a[1].n);
+    return `
+      <div class="session-stats">
+        ${tile(A.games.length, '게임 수')}${tile(A.hands.length, '친 핸드')}${tile(A.hands.length ? pct(A.wins / A.hands.length) : '–', '핸드 승률')}
+        ${tile(A.avg ? A.avg + '점' : '–', '전체 평균 점수')}${tile(A.champs, '우승 횟수')}
+      </div>
+      <div class="rec-sec"><h3>점수 흐름 (최근 ${trend.length}게임)</h3>${sparkline(trend)}</div>
+      ${A.topMis.length ? `<div class="rec-sec"><h3>자주 하는 실수</h3><ul class="plain">${A.topMis.map(([l, c]) => `<li>${esc(l)} <span class="muted">${c}번</span></li>`).join('')}</ul></div>` : ''}
+      ${pos.length ? `<div class="rec-sec"><h3>자리별 성적 (판당 평균 칩)</h3><div class="posgrid">${pos.map(([k, v]) => `<div class="stat"><b class="${v.net >= 0 ? 'up' : 'down'}">${signed(Math.round(v.net / v.n))}</b><small>${k} · ${v.n}판</small></div>`).join('')}</div></div>` : ''}
+      ${A.bestHand ? `<div class="rec-sec"><h3>가장 크게 이긴 판</h3>${handRowHTML(A.bestHand, false)}</div>` : ''}
+      ${A.worstHand && A.worstHand.net < 0 ? `<div class="rec-sec"><h3>가장 크게 진 판</h3>${handRowHTML(A.worstHand, false)}</div>` : ''}`;
+  }
+
+  function recGamesHTML() {
+    const games = doneGames().slice();
+    if (!games.length) return '<p class="empty">아직 점수가 매겨진 게임이 없어요.</p>';
+    if (UI.gameSort === 'score') games.sort((a, b) => (b.avgScore || 0) - (a.avgScore || 0) || String(b.endedAt).localeCompare(String(a.endedAt)));
+    const chips = `<div class="seg filters">
+      <button class="chip" data-gsort="score" aria-pressed="${UI.gameSort === 'score'}">점수 높은 순</button>
+      <button class="chip" data-gsort="recent" aria-pressed="${UI.gameSort === 'recent'}">최근 순</button></div>`;
+    return chips + `<ol class="ranklist">${games.map((g, i) => `
+      <li><details><summary>
+        <span class="rk num">${UI.gameSort === 'score' ? i + 1 : ''}</span>
+        <b class="gr">${esc(g.grade)}</b>
+        <span class="gmain">평균 ${g.avgScore}점 · ${g.hands}판${g.place ? ` · ${g.players}명 중 ${g.place}위` : ''} · 칩 <span class="${g.chipDelta >= 0 ? 'up' : 'down'}">${signed(g.chipDelta)}</span>${g.status === 'playing' ? ' · <span class="muted">진행 중 저장</span>' : ''}</span>
+        <span class="muted gdate">${fmtDate(g.endedAt)}${g.opponent ? ' · vs ' + esc(g.opponent) : ''}</span>
+      </summary><div class="h-body">
+        <p>${esc(g.summary)}</p>
+        ${(g.standings || []).length ? `<table class="stand"><thead><tr><th>순위</th><th>이름</th><th>칩</th></tr></thead><tbody>${g.standings.map(p => `<tr class="${p.me ? 'me' : ''}"><td>${p.place ? p.place + '위' : '–'}</td><td>${esc(p.name)}${p.bot ? ' <span class="muted">(AI)</span>' : ''}</td><td class="num">${won(p.chips)}</td></tr>`).join('')}</tbody></table>` : ''}
+        <p>최선 ${g.good} · 괜찮음 ${g.ok} · 아쉬움 ${g.bad} · 힌트 ${g.hints || 0}번</p>
+        ${(g.mistakes || []).map(m => `<p>· 고칠 점: ${esc(m.label)} (${m.count}번)</p>`).join('')}
+        <p class="muted">${esc(g.goal || '')}</p>
+        ${Store.handList.some(h => h.gameId === g.id) ? `<button class="chip" data-gamehands="${esc(g.id)}">이 게임의 핸드 보기</button>` : ''}
+      </div></details></li>`).join('')}</ol>`;
+  }
+
+  function handRowHTML(h, withDetail = true) {
+    const resCls = h.net > 0 ? 'up' : h.net < 0 ? 'down' : '';
+    const head = `<span class="hres ${resCls}">${RESULT_KO[h.result] || ''} <span class="num">${signed(h.net || 0)}</span></span>
+      ${miniRow(h.hole)}<span class="hboard">${miniRow(h.board)}</span>
+      <span class="muted hmeta">${h.pos || ''} · ${h.players}명 · ${fmtDate(h.at)}${h.avg != null ? ` · 판단 ${h.avg}점` : ''}</span>`;
+    if (!withDetail) return `<div class="handrow">${head}</div>`;
+    return `<details class="handrow"><summary>${head}</summary><div class="h-body">
+      <p><b>내 패</b> ${esc(h.myHand || '')}${h.winHand ? ` · <b>이긴 패</b> ${esc(h.winHand)}` : ''} · 판돈 ${won(h.pot || 0)} · 블라인드 ${(h.blinds || []).join('/')}</p>
+      ${(h.shown || []).length ? `<p><b>공개된 카드</b> ${h.shown.map(x => `${esc(x.name)} ${miniRow(x.hole)}`).join(' · ')}</p>` : ''}
+      ${(h.decisions || []).length ? `<div class="review">${h.decisions.map(d => `<div class="review-row"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street] || ''} · ${esc(d.action)}${d.hint ? '<span class="hint-tag">힌트 봄</span>' : ''}${d.level !== 'good' ? `<span class="rec"> → 추천 ${esc(d.rec)}</span>` : ''}</span></div>`).join('')}</div>` : '<p class="muted">이 판은 내가 고를 일이 없었어요.</p>'}
+      <div class="log num">${(h.log || []).map(l => `<div>${esc(l)}</div>`).join('')}</div>
+    </div></details>`;
+  }
+
+  function recHandsHTML() {
+    let hands = Store.handList;
+    if (!hands.length) return '<p class="empty">아직 저장된 핸드가 없어요. 한 판이 끝날 때마다 자동으로 저장돼요.</p>';
+    const f = UI.handFilter;
+    if (f === 'win') hands = hands.filter(h => h.net > 0);
+    else if (f === 'lose') hands = hands.filter(h => h.net < 0);
+    else if (f === 'miss') hands = hands.filter(h => (h.decisions || []).some(d => d.level === 'bad'));
+    else if (f.startsWith('g:')) hands = hands.filter(h => h.gameId === f.slice(2));
+    const btn = (k, l) => `<button class="chip" data-hfilter="${k}" aria-pressed="${f === k}">${l}</button>`;
+    return `<div class="seg filters">${btn('all', '전체')}${btn('win', '이긴 판')}${btn('lose', '진 판')}${btn('miss', '아쉬운 선택 있는 판')}${f.startsWith('g:') ? btn(f, '선택한 게임') : ''}</div>
+      <p class="muted">${hands.length}판 · 눌러서 진행 기록과 내 선택 점수를 볼 수 있어요.</p>
+      <div class="handlist">${hands.slice(0, UI.handLimit).map(h => handRowHTML(h)).join('')}</div>
+      ${hands.length > UI.handLimit ? '<button class="chip" id="moreHands">더 보기</button>' : ''}`;
+  }
+
+  function renderRecords() {
+    document.querySelectorAll('#recSheet [data-tab]').forEach(b => b.setAttribute('aria-selected', String(b.dataset.tab === UI.recTab)));
+    $('recNote').textContent = Store.ready ? (Store.kind === 'db' ? '내 claude.ai 계정에 저장돼요 (나만 볼 수 있어요).' : '이 브라우저에 저장돼요.') : '기록을 불러오는 중이에요…';
+    $('recBody').innerHTML = UI.recTab === 'sum' ? recSummaryHTML() : UI.recTab === 'games' ? recGamesHTML() : recHandsHTML();
+  }
+
+  /* ---------- 팝업 (코치 피드백 · 기록실) ---------- */
+  function openSheet(which) {
+    UI.open = which;
+    const el = $(which === 'fb' ? 'fbSheet' : 'recSheet');
+    if (which === 'fb') { UI.fbPick = null; renderFeedbackSheet(); } else renderRecords();
+    el.hidden = false;
+    document.body.classList.add('locked');
+    el.querySelector('[data-close]').focus();
+  }
+  function closeSheet() {
+    ['fbSheet', 'recSheet'].forEach(id => { $(id).hidden = true; });
+    UI.open = null;
+    document.body.classList.remove('locked');
+    $('fab').focus();
+  }
+  function renderFeedbackSheet() {
+    const myTurn = !G.busy && G.toAct === G.me && G.pending && !ended();
+    const parts = [];
+    if (myTurn) {
+      parts.push(G.showHint || $('coachHint').checked ? hintHTML(G.pending)
+        : '<div class="fb hint"><div class="fb-title">지금 내 차례예요</div><p class="muted">추천이 궁금하면 힌트를 보세요. 힌트를 본 선택은 기록에 표시돼요.</p><button class="btn-hint" type="button" id="sheetHint">힌트 보기</button></div>');
+    }
+    const ds = G.decisions;
+    const pick = UI.fbPick != null && ds[UI.fbPick] ? ds[UI.fbPick] : G.lastFb;
+    parts.push(pick ? fbHTML(pick) : '<p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p>');
+    if (ds.length > 1) {
+      parts.push(`<div class="rec-sec"><h3>이번 판 내 선택 (눌러서 다시 보기)</h3><div class="review">${ds.map((d, i) => `<button class="review-row pickrow${pick === d ? ' on' : ''}" data-pick="${i}" type="button"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${esc(d.action)}</span></button>`).join('')}</div></div>`);
+    }
+    $('fbBody').innerHTML = parts.join('');
+  }
+  function paintFab() {
+    const fab = $('fab');
+    const myTurn = !G.busy && G.toAct === G.me && G.pending && !ended();
+    const d = G.lastFb;
+    fab.className = 'fab' + (d ? ' ' + d.level : '');
+    fab.innerHTML = d ? `코치 피드백 <b class="num">${d.score}점</b>` : '코치 피드백';
+    if (myTurn) fab.innerHTML += ' <span class="fab-tag">힌트</span>';
+    if (d && d !== UI.lastFabFb) {
+      UI.lastFabFb = d;
+      fab.classList.add('pulse');
+      setTimeout(() => fab.classList.remove('pulse'), 900);
+    }
+  }
+
+  $('fab').addEventListener('click', () => openSheet('fb'));
+  $('recordsBtn').addEventListener('click', () => openSheet('rec'));
+  $('openRecords').addEventListener('click', () => openSheet('rec'));
+  document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => {
+    if (e.target === o || e.target.closest('[data-close]')) closeSheet();
+  }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && UI.open) closeSheet(); });
+  $('fbBody').addEventListener('click', e => {
+    const pickBtn = e.target.closest('[data-pick]');
+    if (pickBtn) { UI.fbPick = Number(pickBtn.dataset.pick); renderFeedbackSheet(); $('fbBody').scrollTop = 0; return; }
+    if (e.target.closest('#sheetHint') && G.pending) { G.showHint = true; render(); }
+  });
+  $('recSheet').addEventListener('click', e => {
+    const t = e.target.closest('[data-tab],[data-gsort],[data-hfilter],[data-gamehands],#moreHands');
+    if (!t) return;
+    if (t.dataset.tab) UI.recTab = t.dataset.tab;
+    else if (t.dataset.gsort) UI.gameSort = t.dataset.gsort;
+    else if (t.dataset.hfilter) { UI.handFilter = t.dataset.hfilter; UI.handLimit = 40; }
+    else if (t.dataset.gamehands) { UI.recTab = 'hands'; UI.handFilter = 'g:' + t.dataset.gamehands; UI.handLimit = 40; }
+    else if (t.id === 'moreHands') UI.handLimit += 40;
+    renderRecords();
+  });
 
   /* ---------- 버튼 연결 ---------- */
   $('bFold').addEventListener('click', () => userAct('fold'));
