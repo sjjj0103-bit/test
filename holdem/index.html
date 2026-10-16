@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<meta name="holdem-build" content="2026-10-16b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -391,6 +392,7 @@ body.locked { overflow: hidden; }
   .table.many .center .card { width: 30px; height: 43px; }
   .table.many .center .card .r, .table.many .center .card .s { font-size: 13px; }
 }
+.build { font-size: 12px; color: var(--faint); white-space: nowrap; }
 </style>
 </head>
 <body>
@@ -401,7 +403,7 @@ body.locked { overflow: hidden; }
   <header>
     <div class="brand">
       <h1>홀덤 <span>코치</span></h1>
-      <p>홀덤펍처럼 최대 9명이 앉는 테이블. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요.</p>
+      <p>홀덤펍처럼 최대 9명이 앉는 테이블. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요. <span class="build">버전 10/16 · 9인 테이블</span></p>
     </div>
     <div class="head-right">
       <div class="stats" id="stats"></div>
@@ -2617,6 +2619,19 @@ body.locked { overflow: hidden; }
     });
   }
   paintSound();
+
+  // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
+  // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
+  const BUILD = '2026-10-16b';
+  if (/github\.io$/.test(location.hostname)) {
+    fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
+      const m = t.match(/name="holdem-build" content="([^"]+)"/);
+      if (!m || m[1] === BUILD) return;
+      if (ss.get('hb-reloaded') === m[1]) return;   // 한 번만 시도해요
+      ss.set('hb-reloaded', m[1]);
+      location.reload();
+    }).catch(() => {});
+  }
 
   newSoloGame();
   paintSetup();
