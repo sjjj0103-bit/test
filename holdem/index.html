@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-16c">
+<meta name="holdem-build" content="2026-10-16d">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -393,29 +393,212 @@ body.locked { overflow: hidden; }
   .table.many .center .card .r, .table.many .center .card .s { font-size: 13px; }
 }
 .build { font-size: 12px; color: var(--faint); white-space: nowrap; }
+
+/* ===== 앱처럼 한 화면 (폰 크기에 맞춤) ===== */
+html, body { height: 100%; }
+body { margin: 0; padding-block: 0 !important; overflow: hidden; }
+body.locked { overflow: hidden; }
+.app { height: 100%; max-width: 820px; margin: 0 auto; display: flex; flex-direction: column; gap: 8px; padding-block: 8px 0; }
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex: none; }
+.brand-mini { display: flex; align-items: baseline; gap: 6px; font-family: var(--font-display); font-size: 20px; white-space: nowrap; }
+.brand-mini b { font-weight: 400; } .brand-mini span { color: var(--brass); }
+.topbar .stats { flex-wrap: nowrap; gap: 4px; min-width: 0; overflow: hidden; }
+.topbar .stat { min-width: 0; padding: 2px 8px; border-radius: 8px; flex: 0 1 auto; }
+.topbar .stat b { font-size: 14px; line-height: 1.2; }
+.topbar .stat small { font-size: 10px; line-height: 1.2; white-space: nowrap; }
+.table-wrap { flex: 1 1 auto; min-height: 0; display: flex; }
+.table, .table.many { height: 100% !important; width: 100%; min-height: 300px; }
+.dock { flex: none; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 8px 10px; display: flex; flex-direction: column; gap: 6px; }
+.dock .mystrip { gap: 4px 10px; flex-wrap: nowrap; }
+.dock .mystrip .card.big { width: 40px; height: 56px; }
+.dock .mystrip .card.big .r, .dock .mystrip .card.big .s { font-size: 18px; }
+.dock .myinfo { flex: 1 1 auto; }
+.dock .myhand { font-size: 15px; line-height: 1.3; }
+.dock .mypos { font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.dock .turnline { font-size: 14px; line-height: 1.4; }
+.dock .btn-hint { padding: 3px 12px; font-size: 13px; }
+.dock .btn { padding: 9px 6px; font-size: 17px; }
+.dock .btn small { font-size: 12px; }
+.dock .btn-next, .dock .btn-end { padding: 11px; font-size: 15px; }
+.nav { flex: none; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px)); }
+.navbtn { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 9px 4px; font-size: 14px; font-weight: 700; cursor: pointer; display: flex; gap: 4px; align-items: center; justify-content: center; white-space: nowrap; }
+.navbtn[data-level="good"] { background: var(--good); color: #0c1613; border-color: var(--good); }
+.navbtn[data-level="ok"] { background: var(--okay); color: #0c1613; border-color: var(--okay); }
+.navbtn[data-level="bad"] { background: var(--bad); color: #0c1613; border-color: var(--bad); }
+.navbtn.pulse { animation: pulse .9s ease-out; }
+.navbtn .fab-tag { font-size: 11px; background: rgba(0,0,0,.25); border-radius: 999px; padding: 0 6px; }
+.pact.clock { background: var(--brass); color: var(--brass-ink); font-weight: 700; }
+.pact.clock.hurry, .tclock.hurry { background: var(--bad); color: #0c1613; }
+.tclock { font-weight: 700; background: var(--brass); color: var(--brass-ink); border-radius: 6px; padding: 0 6px; }
+.sheet.compact { width: min(460px, 100%); }
+.raise-show { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+.raise-show b { font-size: 34px; color: var(--brass); }
+.raise-show span { color: var(--muted); font-size: 14px; text-align: center; }
+.pctgrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.pctgrid .chip { padding: 10px 4px; font-size: 15px; font-weight: 700; }
+.stepper { display: flex; gap: 8px; align-items: center; }
+.stepper .chip { width: 44px; height: 40px; font-size: 20px; padding: 0; flex: none; }
+.stepper input { flex: 1; min-width: 0; }
+.raise-tip { font-size: 13px; margin: 0; }
+#raiseGo { width: 100%; }
+.sheet .setup { border: 0; padding: 0; background: none; }
+.sheet .pvp { border: 0; padding: 0; background: none; }
+.sheet .session { border: 0; padding: 0; background: none; }
+@media (max-width: 560px) {
+  .table, .table.many { border-radius: 40px; border-width: 6px; }
+  .table .center .card { width: 30px; height: 43px; } .table .center .card .r, .table .center .card .s { font-size: 13px; }
+  .table .result { font-size: 14px; }
+  .street { font-size: 15px; } .pot { font-size: 13px; padding: 2px 10px; }
+  .blindinfo { display: none; }
+}
+@media (max-height: 700px) { .dock .mypos { display: none; } }
 </style>
 </head>
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 
-<div class="wrap">
-  <header>
-    <div class="brand">
-      <h1>홀덤 <span>코치</span></h1>
-      <p>홀덤펍처럼 최대 9명이 앉는 테이블. 선택할 때마다 점수와 더 좋은 방법을 알려 줘요. <span class="build">버전 10/16 · 9인 테이블</span></p>
-    </div>
-    <div class="head-right">
-      <div class="stats" id="stats"></div>
-      <div class="sound">
-        <button class="toggle" id="musicBtn" type="button" aria-pressed="false">♪ 배경음악 꺼짐</button>
-        <button class="toggle" id="sfxBtn" type="button" aria-pressed="true">효과음 켜짐</button>
-        <button class="toggle" id="recordsBtn" type="button">기록실</button>
-      </div>
-    </div>
+<div class="app">
+  <header class="topbar">
+    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/16</span></div>
+    <div class="stats" id="stats"></div>
   </header>
 
-  <section class="setup" aria-label="테이블 설정">
+  <section class="table-wrap" aria-label="게임 테이블">
+    <div class="table" id="table">
+      <div class="center">
+        <div class="street" id="street"></div>
+        <div class="notice" id="notice"></div>
+        <div class="cards" id="board"></div>
+        <div class="pot" id="pot"></div>
+        <div class="result" id="result"></div>
+        <div class="blindinfo" id="blindinfo"></div>
+      </div>
+      <div id="seats"></div>
+    </div>
+  </section>
+
+  <section class="dock" id="controls" aria-label="내 차례">
+    <div class="mystrip" id="mystrip"></div>
+    <div class="turn-head">
+      <div class="turnline" id="turnline"></div>
+      <button class="btn-hint" id="bHint" type="button">힌트</button>
+    </div>
+    <div class="btnrow" id="btnrow">
+      <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
+      <button class="btn btn-call" id="bCall" type="button">체크<small>넘기기</small></button>
+      <button class="btn btn-raise" id="bRaise" type="button">벳<small>금액 정하기</small></button>
+    </div>
+    <div class="endrow" id="endrow" hidden>
+      <button class="btn-next" id="bNext" type="button">다음 판 시작</button>
+      <button class="btn-end" id="bEnd" type="button">게임 끝내고 저장</button>
+    </div>
+  </section>
+
+  <nav class="nav" aria-label="메뉴">
+    <button class="navbtn" id="fab" type="button" aria-haspopup="dialog">코치</button>
+    <button class="navbtn" id="recordsBtn" type="button" aria-haspopup="dialog">기록실</button>
+    <button class="navbtn" id="pvpBtn" type="button" aria-haspopup="dialog">친구 초대</button>
+    <button class="navbtn" id="menuBtn" type="button" aria-haspopup="dialog">설정</button>
+  </nav>
+</div>
+
+<div class="overlay" id="raiseSheet" hidden>
+  <div class="sheet compact" role="dialog" aria-modal="true" aria-labelledby="raiseTitle">
+    <div class="sheet-head"><h2 id="raiseTitle">얼마나 걸까요?</h2><button class="chip" type="button" data-close>취소</button></div>
+    <div class="sheet-body">
+      <div class="raise-show"><b class="num" id="raiseShow">0</b><span id="raiseNote"></span></div>
+      <div class="sizer" id="sizer">
+        <div class="presets pctgrid">
+          <button class="chip" type="button" data-f="0.2">판돈 20%</button>
+          <button class="chip" type="button" data-f="0.33">판돈 33%</button>
+          <button class="chip" type="button" data-f="0.5">판돈 50%</button>
+          <button class="chip" type="button" data-f="0.75">판돈 75%</button>
+          <button class="chip" type="button" data-f="1">판돈 100%</button>
+          <button class="chip" type="button" data-f="all">올인</button>
+        </div>
+        <div class="stepper">
+          <button class="chip" type="button" id="raiseMinus" aria-label="조금 줄이기">−</button>
+          <input type="range" id="raiseAmt" min="0" max="100" step="5" value="0" aria-label="베팅 금액">
+          <button class="chip" type="button" id="raisePlus" aria-label="조금 늘리기">+</button>
+        </div>
+        <p class="muted raise-tip">보통은 판돈의 33~75%가 무난해요. 강한 패일수록, 상대가 많을수록 조금 크게.</p>
+      </div>
+      <button class="btn-next" id="raiseGo" type="button">레이즈 확정</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="fbSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
+    <div class="sheet-head"><h2 id="fbTitle">코치 피드백</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body">
+      <div id="fbBody"></div>
+      <div class="rec-sec"><h3>이번 판 돌아보기</h3><div id="review"><p class="empty">판이 끝나면 이번 판 선택들을 점수와 함께 정리해 줘요.</p></div></div>
+      <div class="rec-sec"><h3>진행 기록</h3><div class="log num" id="log"></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="recSheet" hidden>
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="recTitle">
+    <div class="sheet-head"><h2 id="recTitle">기록실</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="tabs" role="tablist">
+      <button type="button" role="tab" data-tab="sum" aria-selected="true">요약</button>
+      <button type="button" role="tab" data-tab="games" aria-selected="false">게임 순위</button>
+      <button type="button" role="tab" data-tab="hands" aria-selected="false">핸드 기록</button>
+      <button type="button" role="tab" data-tab="players" aria-selected="false">플레이어 분석</button>
+    </div>
+    <p class="sub rec-note" id="recNote"></p>
+    <div class="sheet-body" id="recBody"></div>
+  </div>
+</div>
+
+<div class="overlay" id="pvpSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pvpTitle">
+    <div class="sheet-head"><h2 id="pvpTitle">친구 초대하기</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body">
+      <div class="pvp" id="pvpPanel" aria-live="polite">
+    <div class="qr" id="qr" aria-label="친구 초대 QR 코드"></div>
+    <div class="pvp-body">
+      <p class="pvp-status" id="pvpStatus">친구가 들어오기를 기다리는 중이에요.</p>
+      <p id="pvpHelp">친구가 휴대폰 카메라로 QR을 찍거나 아래 링크를 열면 이 테이블에 앉아요. 빈자리는 컴퓨터가 채워요.</p>
+      <div>방 코드 <span class="code" id="pvpCode">------</span></div>
+      <div class="linkbox" id="pvpLink"></div>
+      <div class="joinrow">
+        <input id="nick" type="text" autocomplete="nickname" maxlength="8" placeholder="내 이름" aria-label="테이블에 표시될 내 이름">
+        <button class="chip" type="button" id="nickSave">이름 정하기</button>
+      </div>
+      <div class="lobby" id="lobbyList"></div>
+      <div class="pvp-actions">
+        <button class="btn-next" type="button" id="startPvp">이 멤버로 게임 시작</button>
+      </div>
+      <div class="pvp-actions">
+        <button class="chip" type="button" id="copyLink">링크 복사</button>
+        <button class="chip" type="button" id="leavePvp">방 나가기 (혼자 연습으로)</button>
+      </div>
+      <div class="joinrow">
+        <input id="joinCode" type="text" inputmode="text" autocomplete="off" maxlength="8" placeholder="친구의 방 코드" aria-label="친구의 방 코드">
+        <button class="chip" type="button" id="joinBtn">코드로 참가</button>
+      </div>
+    </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="sessionSheet" hidden>
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="sessionTitle">
+    <div class="sheet-head"><h2 id="sessionTitle">게임 결과</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body"><section class="session" id="sessionEnd" aria-live="polite"></section></div>
+  </div>
+</div>
+
+<div class="overlay" id="menuSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="menuTitle">
+    <div class="sheet-head"><h2 id="menuTitle">설정</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body">
+      <section class="setup" aria-label="테이블 설정">
     <div class="setup-row">
       <span class="setup-label">인원</span>
       <div class="seg" id="seatSeg">
@@ -440,99 +623,20 @@ body.locked { overflow: hidden; }
     </div>
     <div class="setup-row">
       <button class="toggle" type="button" id="newGameBtn">이 설정으로 새 게임</button>
-      <button class="toggle" type="button" id="pvpBtn" aria-pressed="false">친구 초대 (QR)</button>
       <p class="sub" id="setupNote"></p>
     </div>
-  </section>
-
-  <section class="pvp" id="pvpPanel" hidden aria-live="polite">
-    <div class="qr" id="qr" aria-label="친구 초대 QR 코드"></div>
-    <div class="pvp-body">
-      <h2 id="pvpTitle">친구 초대하기</h2>
-      <p class="pvp-status" id="pvpStatus">친구가 들어오기를 기다리는 중이에요.</p>
-      <p id="pvpHelp">친구가 휴대폰 카메라로 QR을 찍거나 아래 링크를 열면 이 테이블에 앉아요. 빈자리는 컴퓨터가 채워요.</p>
-      <div>방 코드 <span class="code" id="pvpCode">------</span></div>
-      <div class="linkbox" id="pvpLink"></div>
-      <div class="joinrow">
-        <input id="nick" type="text" autocomplete="nickname" maxlength="8" placeholder="내 이름" aria-label="테이블에 표시될 내 이름">
-        <button class="chip" type="button" id="nickSave">이름 정하기</button>
-      </div>
-      <div class="lobby" id="lobbyList"></div>
-      <div class="pvp-actions">
-        <button class="btn-next" type="button" id="startPvp">이 멤버로 게임 시작</button>
-      </div>
-      <div class="pvp-actions">
-        <button class="chip" type="button" id="copyLink">링크 복사</button>
-        <button class="chip" type="button" id="leavePvp">방 나가기 (혼자 연습으로)</button>
-      </div>
-      <div class="joinrow">
-        <input id="joinCode" type="text" inputmode="text" autocomplete="off" maxlength="8" placeholder="친구의 방 코드" aria-label="친구의 방 코드">
-        <button class="chip" type="button" id="joinBtn">코드로 참가</button>
-      </div>
-    </div>
-  </section>
-
-  <section class="session" id="sessionEnd" hidden aria-live="polite"></section>
-
-  <div class="main">
-    <section class="table-zone" aria-label="게임 테이블">
-      <div class="table" id="table">
-        <div class="center">
-          <div class="street" id="street"></div>
-          <div class="notice" id="notice"></div>
-          <div class="cards" id="board"></div>
-          <div class="pot" id="pot"></div>
-          <div class="result" id="result"></div>
-          <div class="blindinfo" id="blindinfo"></div>
+      </section>
+      <div class="rec-sec"><h3>소리 · 코치</h3>
+        <div class="sound">
+          <button class="toggle" id="musicBtn" type="button" aria-pressed="false">♪ 배경음악 꺼짐</button>
+          <button class="toggle" id="sfxBtn" type="button" aria-pressed="true">효과음 켜짐</button>
         </div>
-        <div id="seats"></div>
+        <label class="coach-toggle"><input type="checkbox" id="coachHint"> 내 차례마다 코치 추천을 자동으로 보기</label>
       </div>
-
-      <div class="controls" id="controls">
-        <div class="mystrip" id="mystrip"></div>
-        <div class="turn-head">
-          <div class="turnline" id="turnline"></div>
-          <button class="btn-hint" id="bHint" type="button">힌트 보기</button>
-        </div>
-        <div class="btnrow" id="btnrow">
-          <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
-          <button class="btn btn-call" id="bCall" type="button">체크<small>넘기기</small></button>
-          <button class="btn btn-raise" id="bRaise" type="button">벳<small>걸기</small></button>
-        </div>
-        <div class="sizer" id="sizer">
-          <div class="presets">
-            <button class="chip" type="button" data-f="0.5">½ 판돈</button>
-            <button class="chip" type="button" data-f="0.66">⅔ 판돈</button>
-            <button class="chip" type="button" data-f="1">판돈만큼</button>
-            <button class="chip" type="button" data-f="all">올인</button>
-          </div>
-          <input type="range" id="raiseAmt" min="0" max="100" step="5" value="0" aria-label="베팅 금액">
-        </div>
-        <div class="endrow" id="endrow" hidden>
-          <button class="btn-next" id="bNext" type="button">다음 판 시작</button>
-          <button class="btn-end" id="bEnd" type="button">게임 끝내고 결과 저장</button>
-        </div>
-        <label class="coach-toggle"><input type="checkbox" id="coachHint"> 내 차례마다 힌트 자동으로 보기</label>
-      </div>
-    </section>
-
-    <aside class="coach">
-      <div class="panel">
-        <h2>코치 피드백</h2>
-        <p class="sub">선택할 때마다 100점 만점으로 채점해요. 승률은 남은 카드를 수천 번 뽑아 본 추정치예요.</p>
-        <div id="hint"></div>
-        <div id="feedback"><p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p></div>
-      </div>
-      <div class="panel">
-        <h2>이번 판 돌아보기</h2>
-        <div id="review"><p class="empty">판이 끝나면 이번 판 선택들을 점수와 함께 정리해 줘요.</p></div>
-        <div class="log num" id="log"></div>
-      </div>
-      <div class="panel">
-        <h2>기록실</h2>
+      <div class="rec-sec"><h3>기록</h3>
         <p class="sub" id="historyNote">한 판이 끝날 때마다 자동으로 저장돼요.</p>
-        <div class="history" id="history"><p class="empty">기록을 불러오는 중이에요.</p></div>
-        <button class="btn-hint" type="button" id="openRecords">기록실 열기 (순위 · 역대 기록 · 핸드)</button>
+        <div class="history" id="history"></div>
+        <button class="btn-hint" type="button" id="openRecords">기록실 열기</button>
       </div>
       <details class="box">
         <summary>홀덤펍 가기 전에 알아 둘 것</summary>
@@ -574,30 +678,7 @@ body.locked { overflow: hidden; }
           <dt>아웃츠</dt><dd>내 패를 완성시켜 줄 남은 카드 수예요. 플랍에서는 아웃츠×4, 턴에서는 아웃츠×2 하면 대략적인 완성 확률(%)이 나와요.</dd>
         </dl>
       </details>
-    </aside>
-  </div>
-</div>
-
-<button class="fab" id="fab" type="button" aria-haspopup="dialog">코치 피드백</button>
-
-<div class="overlay" id="fbSheet" hidden>
-  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="fbTitle">
-    <div class="sheet-head"><h2 id="fbTitle">코치 피드백</h2><button class="chip" type="button" data-close>닫기</button></div>
-    <div class="sheet-body" id="fbBody"></div>
-  </div>
-</div>
-
-<div class="overlay" id="recSheet" hidden>
-  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="recTitle">
-    <div class="sheet-head"><h2 id="recTitle">기록실</h2><button class="chip" type="button" data-close>닫기</button></div>
-    <div class="tabs" role="tablist">
-      <button type="button" role="tab" data-tab="sum" aria-selected="true">요약</button>
-      <button type="button" role="tab" data-tab="games" aria-selected="false">게임 순위</button>
-      <button type="button" role="tab" data-tab="hands" aria-selected="false">핸드 기록</button>
-      <button type="button" role="tab" data-tab="players" aria-selected="false">플레이어 분석</button>
     </div>
-    <p class="sub rec-note" id="recNote"></p>
-    <div class="sheet-body" id="recBody"></div>
   </div>
 </div>
 
@@ -933,7 +1014,7 @@ body.locked { overflow: hidden; }
     const names = shuffle(BOT_NAMES.slice());   // 판마다 앉는 컴퓨터가 달라져요
     for (let i = 1; i < settings.seats; i++) G.players.push(mkP('AI ' + names[i - 1], 'bot'));
     G.button = (Math.random() * G.players.length) | 0;
-    $('sessionEnd').hidden = true;
+    if (UI.open === 'session') closeSheet();
     startHand();
   }
   function newHostGame(guests) {
@@ -944,7 +1025,7 @@ body.locked { overflow: hidden; }
     let b = 0;
     while (G.players.length < Math.max(settings.seats, 2)) G.players.push(mkP('AI ' + names[b++], 'bot'));
     G.button = (Math.random() * G.players.length) | 0;
-    $('sessionEnd').hidden = true;
+    if (UI.open === 'session') closeSheet();
     startHand();
   }
 
@@ -1020,10 +1101,12 @@ body.locked { overflow: hidden; }
     if (p.kind === 'bot') {
       G.busy = true; G.pending = null; render();
       const gid = G.gid, hand = G.handNo;
-      setTimeout(() => { if (G.gid === gid && G.handNo === hand && G.toAct === i && !ended()) botAct(i); }, 600 + Math.random() * 500);
+      setTimeout(() => { if (G.gid === gid && G.handNo === hand && G.toAct === i && !ended() && G.players[i].kind === 'bot') botAct(i); }, 600 + Math.random() * 500);
     } else if (i === G.me) {
+      if (G.mode === 'host') G.turnStart = Date.now();
       G.busy = false; G.sliderSet = false; G.showHint = false; G.pending = analyze(i); render();
     } else {
+      G.turnStart = Date.now();
       G.busy = true; G.pending = null; G.waitSince = Date.now(); render();
     }
   }
@@ -1045,7 +1128,7 @@ body.locked { overflow: hidden; }
     } else step();
   }
 
-  function act(i, type, to) {
+  function act(i, type, to, timedOut = false) {
     const p = G.players[i], toCall = G.currentBet - p.bet;
     if (type === 'fold') { p.folded = true; p.last = '폴드'; Sound.sfx('fold'); }
     else if (type === 'check') { p.last = '체크'; }
@@ -1064,7 +1147,8 @@ body.locked { overflow: hidden; }
       Sound.sfx('chips');
     }
     p.acted = true;
-    G.log.push(`${p.name}: ${p.last}`);
+    if (timedOut) { G.log.push(`${p.name}: 시간 초과`); p.last = '시간 초과 ' + p.last; G.log.push(`${p.name}: ${p.last.replace('시간 초과 ', '')}`); }
+    else G.log.push(`${p.name}: ${p.last}`);
     const nx = nextSeat(i, canAct);
     G.toAct = nx < 0 ? i : nx;
     step();
@@ -1572,14 +1656,13 @@ body.locked { overflow: hidden; }
       ${tableReadHTML()}
       <div class="save-note">${esc(note)}${spectating ? ' 남은 사람들의 게임은 계속돼요. 아래에서 지켜볼 수 있어요.' : ''}</div>
       <button class="btn-next" id="bNewGame" type="button">${G.mode === 'guest' ? '방장에게 새 게임 요청' : '새 게임 시작'}</button>`;
-    el.hidden = false;
+    if (UI.open !== 'session') openSheet('session');
     if ($('openPlayersTab')) $('openPlayersTab').addEventListener('click', () => { UI.recTab = 'players'; UI.playerFocus = null; openSheet('rec'); });
     $('bNewGame').addEventListener('click', () => {
       if (G.mode === 'guest') { Net.send({ type: 'restart' }); $('bNewGame').textContent = '요청했어요. 방장이 시작하면 바로 앉아요'; return; }
+      closeSheet();
       if (G.mode === 'host') startHostGame(); else newSoloGame();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     });
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
   /* ---------- 친구와 같이 (로그인 없이, 브라우저끼리 직접 연결) ----------
      방장의 화면이 딜러 역할을 해요. 친구 폰과 방장 폰이 PeerJS(무료 연결 중개)를 통해 직접 이어지고,
@@ -1651,7 +1734,7 @@ body.locked { overflow: hidden; }
     if (saved.G && saved.G.players) {
       G = saved.G;
       G.busy = false; G.pending = null;
-      $('sessionEnd').hidden = true;
+      if (UI.open === 'session') closeSheet();
       setStatus('진행 중이던 게임을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.');
       if (!ended()) step(); else render();
     }
@@ -1675,7 +1758,7 @@ body.locked { overflow: hidden; }
   }
   function noPeerLib() {
     if (window.Peer) return false;
-    $('pvpPanel').hidden = false; $('qr').hidden = true;
+    openSheet('pvp'); $('qr').hidden = true;
     setStatus('연결 도구를 불러오지 못했어요. 인터넷 연결을 확인하고 새로고침해 주세요.');
     return true;
   }
@@ -1688,7 +1771,7 @@ body.locked { overflow: hidden; }
 
   // claude.ai 안에서는 외부 연결이 막혀 있어서, 친구와 치기는 공개 주소에서 열어야 해요.
   function showMovePanel() {
-    $('pvpPanel').hidden = false;
+    openSheet('pvp');
     $('pvpTitle').textContent = '친구와 치기는 이 주소에서 열어 주세요';
     setStatus('여기(claude.ai 안)에서는 친구 연결이 막혀 있어요. 아래 주소는 로그인 없이 누구나 들어올 수 있어요.');
     $('pvpHelp').innerHTML = `내 폰에서 아래 주소를 열고 "친구 초대 (QR)"을 다시 누르세요. 그러면 친구용 QR이 나와요.<br><a href="${PAGES_URL}" target="_blank" rel="noopener" style="color:var(--brass);font-weight:700">${PAGES_URL} 열기</a>`;
@@ -1696,7 +1779,6 @@ body.locked { overflow: hidden; }
     $('pvpLink').textContent = PAGES_URL;
     drawQR(PAGES_URL);
     $('startPvp').hidden = true; $('lobbyList').innerHTML = '';
-    $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
 
   function hostRoom(retry = 0, resumeCode = null) {
@@ -1709,8 +1791,8 @@ body.locked { overflow: hidden; }
     ls.del('hd-guest');
     const peer = new window.Peer('hdcoach-' + code, peerOpts());
     Net.peer = peer;
-    setStatus('방을 만드는 중이에요…');
-    showPanel();
+    setStatus(resumeCode ? '방을 다시 여는 중이에요…' : '방을 만드는 중이에요…');
+    showPanel(!resumeCode);
     peer.on('open', () => {
       if (Net.peer !== peer) return;
       keepAwake(); saveHostNow();
@@ -1727,7 +1809,9 @@ body.locked { overflow: hidden; }
       }
       if (e.type === 'unavailable-id' && retry < 3) return hostRoom(retry + 1);
       if (e.type === 'peer-unavailable') return;
-      setStatus('연결 서버에 접속하지 못했어요. 인터넷을 확인하고 "친구 초대"를 다시 눌러 주세요.');
+      // 인터넷이 잠깐 끊긴 경우: 같은 방 번호로 다시 열어요 (게임은 그대로)
+      setStatus('연결 서버와 다시 연결하는 중이에요…');
+      setTimeout(() => { if (Net.peer === peer && Net.role === 'host') hostRoom(0, code); }, 3000);
     });
   }
   function setupGuestConn(conn) {
@@ -1746,13 +1830,25 @@ body.locked { overflow: hidden; }
       const g = Net.guests[sid] || (Net.guests[sid] = { lastN: 0 });
       if (g.conn && g.conn !== conn) { try { g.conn.close(); } catch (e) {} }
       conn.sid = sid;
-      Object.assign(g, { conn, name: cleanName(msg.nick) || '친구', gone: false, goneSince: 0, lastSent: '' });
+      Object.assign(g, { conn, name: cleanName(msg.nick) || '친구', gone: false, goneSince: 0, lastSent: '', lastSeen: Date.now() });
       if (typeof msg.n === 'number' && msg.n > g.lastN) g.lastN = msg.n;   // 새로고침 전에 처리한 선택은 다시 하지 않아요
+      // 자리를 비운 사이 컴퓨터가 대신 치고 있었다면, 원래 주인에게 자리를 돌려줘요
+      if (G.mode === 'host') {
+        const seat = G.players.findIndex(q => q.sid === sid && q.kind === 'bot');
+        if (seat >= 0) {
+          const q = G.players[seat];
+          q.kind = 'human'; q.name = q.humanName || g.name;
+          if (G.toAct === seat && !ended()) { G.turnStart = Date.now(); G.busy = true; G.pending = null; }
+        }
+      }
       guestsChanged();
       return;
     }
     const g = Net.guests[conn.sid];
     if (!g || g.conn !== conn) return;
+    g.lastSeen = Date.now();
+    if (g.gone) { g.gone = false; g.goneSince = 0; g.lastSent = ''; guestsChanged(); }
+    if (msg.t === 'pong') return;
     if (msg.t === 'nick') { g.name = cleanName(msg.nick) || g.name; guestsChanged(); return; }
     if (msg.t === 'act' && typeof msg.n === 'number' && msg.n > g.lastN) { g.lastN = msg.n; handleRemote(conn.sid, msg); }
   }
@@ -1769,8 +1865,8 @@ body.locked { overflow: hidden; }
     const list = Object.entries(Net.guests).filter(([, g]) => !g.gone).map(([sid, g]) => ({ sid, name: g.name }));
     return { seats: settings.seats, started: G.mode === 'host' && G.street !== 'over', list: list.slice(0, MAX_SEATS - 1) };
   }
-  function showPanel() {
-    $('pvpPanel').hidden = false;
+  function showPanel(open = true) {
+    if (open && UI.open !== 'pvp') openSheet('pvp');
     $('pvpCode').textContent = Net.code.toUpperCase();
     $('pvpLink').textContent = inviteLink();
     $('pvpTitle').textContent = Net.role === 'host' ? '친구 초대하기' : '친구 테이블에 참가했어요';
@@ -1813,7 +1909,7 @@ body.locked { overflow: hidden; }
     G.players.forEach(p => {
       if (p.kind !== 'human') return;
       const g = Net.guests[p.sid];
-      if (!g || (g.gone && now - g.goneSince > 90000)) { p.kind = 'bot'; p.name = p.name + '(AI)'; }
+      if (!g || (g.gone && now - g.goneSince > 90000)) { p.kind = 'bot'; p.humanName = p.name; p.name = p.name + '(AI)'; }   // 돌아오면 자리를 돌려줘요
     });
   }
   function handleRemote(sid, msg) {
@@ -1834,14 +1930,70 @@ body.locked { overflow: hidden; }
     if (!['fold', 'check', 'call'].includes(type)) return;
     act(seat, type, 0);
   }
-  // 차례인 친구가 연결이 끊긴 채 20초가 지나면 체크(안 되면 폴드)로 넘겨요
+  // 친구 게임에서는 홀덤펍처럼 한 사람당 30초. 시간이 지나면 체크(안 되면 폴드)로 넘어가요.
+  // 누가 앱을 나가도 게임은 멈추지 않고 계속 진행돼요.
+  const TURN_MS = 30000;
   setInterval(() => {
-    if (!G || G.mode !== 'host' || ended() || !G.busy) return;
+    if (!G || G.mode !== 'host' || ended() || !G.turnStart) return;
     const p = G.players[G.toAct];
-    if (!p || p.kind !== 'human') return;
-    const g = Net.guests[p.sid];
-    if (g && g.gone && Date.now() - g.goneSince > 45000) act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0);
+    if (!p || p.kind === 'bot' || !canAct(p)) return;
+    if (Date.now() - G.turnStart < TURN_MS) return;
+    G.turnStart = 0;
+    if (G.toAct === G.me) { G.pending = null; G.busy = true; if (UI.open === 'raise') closeSheet(); }
+    act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0, true);
   }, 1000);
+  // 남은 시간 표시 (1초마다 숫자만 바꿔요)
+  function turnDeadline() {
+    if (!G || G.mode === 'solo' || ended()) return 0;
+    if (G.mode === 'host') return G.turnStart ? G.turnStart + TURN_MS : 0;
+    return G.turnDeadline || 0;
+  }
+  const secsLeft = () => Math.max(0, Math.ceil((turnDeadline() - Date.now()) / 1000));
+  setInterval(() => {
+    if (!turnDeadline()) return;
+    const t = secsLeft();
+    document.querySelectorAll('[data-clock]').forEach(el => { el.textContent = t + '초'; el.classList.toggle('hurry', t <= 10); });
+  }, 1000);
+
+  // 연결 확인: 방장은 2.5초마다 신호를 보내고, 10초 동안 소식이 없으면 끊긴 걸로 봐요.
+  setInterval(() => {
+    if (Net.role !== 'host') return;
+    const now = Date.now();
+    let changed = false;
+    for (const g of Object.values(Net.guests)) {
+      if (g.gone || !g.conn) continue;
+      send(g.conn, { t: 'ping' });
+      if (now - (g.lastSeen || now) > 10000) { g.gone = true; g.goneSince = now; changed = true; try { g.conn.close(); } catch (e) {} }
+    }
+    if (changed) guestsChanged();
+  }, 2500);
+  setInterval(() => {
+    if (Net.role !== 'guest' || !Net.hostConn) return;
+    if (Date.now() - (Net.lastHostMsg || Date.now()) > 10000) {
+      const c = Net.hostConn;
+      Net.hostConn = null; Net.hostGone = true;
+      try { c.close(); } catch (e) {}
+      setStatus('방장과 연결이 끊겼어요. 다시 연결하는 중이에요…');
+      if (G.mode === 'guest') render();
+      connectHost(Net.peer);
+    }
+  }, 2500);
+  // 앱을 나갔다 돌아오면 연결을 바로 다시 살려요
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || !Net.role || !Net.code) return;
+    const peer = Net.peer;
+    if (Net.role === 'host') {
+      if (!peer || peer.destroyed) hostRoom(0, Net.code);
+      else if (peer.disconnected) { try { peer.reconnect(); } catch (e) { hostRoom(0, Net.code); } }
+      if (G.mode === 'host') { Object.values(Net.guests).forEach(g => { g.lastSent = ''; }); publish(); }
+    } else {
+      if (!peer || peer.destroyed) joinRoom(Net.code, true);
+      else {
+        if (peer.disconnected) { try { peer.reconnect(); } catch (e) { joinRoom(Net.code, true); return; } }
+        if (!Net.hostConn || Date.now() - (Net.lastHostMsg || 0) > 5000) { Net.hostConn = null; connectHost(peer); }
+      }
+    }
+  });
 
   // 방장 → 친구들: 게임 상태를 보내요. 카드는 친구마다 자기 것만 넣어요.
   function publish() {
@@ -1856,6 +2008,7 @@ body.locked { overflow: hidden; }
         v: 3, gid: G.gid, handNo: G.handNo, button: G.button, level: G.level, board: G.board, street: G.street,
         currentBet: G.currentBet, minRaise: G.minRaise, toAct: G.toAct, aggr: G.aggr, pos: G.pos, notice: G.notice,
         endReason: G.endReason || null, revealed: [...reveal], seats, diff: settings.diff,
+        turnLeft: G.turnStart && !ended() ? Math.max(0, TURN_MS - (Date.now() - G.turnStart)) : null,
         result: r ? { how: r.how, winners: r.winners, gain: r.gain, hands: r.hands || null } : null,
         log: G.log.slice(-80),
         players: G.players.map((p, s) => ({
@@ -1895,21 +2048,24 @@ body.locked { overflow: hidden; }
     Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code) || ls.get('hd-n-' + code)) || 0 });
     const peer = new window.Peer(undefined, peerOpts());
     Net.peer = peer;
-    showPanel();
+    showPanel(!resuming);
     setStatus('친구의 방에 연결하는 중이에요…');
     peer.on('open', () => connectHost(peer));
     peer.on('disconnected', () => { if (Net.peer === peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500); });
     peer.on('error', e => {
       if (Net.peer !== peer) return;
       if (e.type === 'peer-unavailable') { setStatus('방을 찾을 수 없어요. 코드가 맞는지, 방장 화면이 켜져 있는지 확인해 주세요. 잠시 뒤 다시 시도해요.'); setTimeout(() => connectHost(peer), 4000); }
-      else setStatus('연결하지 못했어요. 인터넷을 확인하고 링크를 다시 열어 주세요.');
+      else {
+        setStatus('연결이 끊겼어요. 다시 연결하는 중이에요…');
+        setTimeout(() => { if (Net.peer === peer && Net.role === 'guest') joinRoom(Net.code, true); }, 3000);
+      }
     });
   }
   function connectHost(peer) {
     if (Net.peer !== peer || peer.destroyed || (Net.hostConn && Net.hostConn.open)) return;
     const conn = peer.connect('hdcoach-' + Net.code, { reliable: true });
     conn.on('open', () => {
-      Net.hostConn = conn; Net.hostGone = false;
+      Net.hostConn = conn; Net.hostGone = false; Net.lastHostMsg = Date.now();
       send(conn, { t: 'hello', sid: Net.sid, nick: Net.nick || '친구', n: Net.n });
       ls.set('hd-guest', JSON.stringify({ code: Net.code, at: Date.now() }));
       keepAwake();
@@ -1927,6 +2083,8 @@ body.locked { overflow: hidden; }
     conn.on('close', lost); conn.on('error', lost);
   }
   function onHostMsg(msg) {
+    Net.lastHostMsg = Date.now();
+    if (msg && msg.t === 'ping') { send(Net.hostConn, { t: 'pong' }); return; }
     if (!msg || msg.t !== 'sync') return;
     const lobby = msg.lobby || {};
     renderLobby({ ...lobby, host: msg.hostNick });
@@ -1954,7 +2112,7 @@ body.locked { overflow: hidden; }
     const myHole = Array.isArray(s.mine) && s.mine.length === 2 ? s.mine : null;
     if (G.mode !== 'guest' || G.gid !== s.gid) {
       G = baseState('guest'); G.gid = s.gid;
-      $('sessionEnd').hidden = true;
+      if (UI.open === 'session' || UI.open === 'pvp') closeSheet();   // 게임이 시작되면 초대 창은 알아서 닫혀요
       paintSetup();
     }
     const prevHand = G.handNo, prevBoard = G.board.length, prevPot = potTotal();
@@ -1973,6 +2131,7 @@ body.locked { overflow: hidden; }
       log: (s.log || []).map(String), endReason: s.endReason, revealed: [...revealed]
     });
     if (s.handNo !== G.handNo) { G.handNo = s.handNo; G.decisions = []; G.countedHand = false; $('bNext').disabled = false; }
+    G.turnDeadline = s.turnLeft != null ? Date.now() + s.turnLeft : 0;
     G.result = s.result;
     const isEnded = ended();
     if (G.result && isEnded && !G.countedHand) {
@@ -2003,7 +2162,7 @@ body.locked { overflow: hidden; }
     document.querySelectorAll('[data-seats]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.seats) === settings.seats)));
     $('pubMode').checked = settings.pub;
     $('pvpBtn').setAttribute('aria-pressed', String(inRoom));
-    $('pvpBtn').textContent = inRoom ? '친구 방 보기' : '친구 초대 (QR)';
+    $('pvpBtn').textContent = inRoom ? '친구 방' : '친구 초대';
     const guest = G && G.mode === 'guest';
     document.querySelectorAll('[data-diff],[data-seats],#pubMode,#newGameBtn').forEach(b => { b.disabled = guest; });
     const notes = {
@@ -2055,7 +2214,7 @@ body.locked { overflow: hidden; }
         <div class="pcards">${cards}</div>${cat}
         <div class="pbox"><div class="pname">${pos ? `<span class="posb${pos === 'BTN' ? ' is-btn' : ''}">${pos}</span>` : ''}${esc(N >= 7 ? p.name.replace(/^AI /, '') : p.name)}${tag}</div>
         <div class="pstack">${won(p.stack)}</div></div>
-        <div class="pact">${esc(p.last || (s === G.toAct && !ended() ? (s === G.me ? '내 차례' : '생각 중…') : ''))}</div>
+        ${s === G.toAct && !ended() && turnDeadline() && p.kind !== 'bot' ? `<div class="pact clock" data-clock>${secsLeft()}초</div>` : `<div class="pact">${esc(p.last || (s === G.toAct && !ended() ? (s === G.me ? '내 차례' : '생각 중…') : ''))}</div>`}
       </div>`;
       if (p.bet) html += `<div class="pbet" style="left:${bx.toFixed(1)}%;top:${by.toFixed(1)}%">${won(p.bet)}</div>`;
     });
@@ -2152,13 +2311,15 @@ body.locked { overflow: hidden; }
 
     const myTurn = !G.busy && G.toAct === G.me && G.pending && !isEnded;
     $('btnrow').hidden = isEnded || !me || me.out; $('sizer').hidden = isEnded;
-    $('endrow').hidden = G.street !== 'done';
+    $('endrow').hidden = G.street !== 'done' && G.street !== 'over';
+    if (G.street === 'over') { $('bNext').textContent = '게임 결과 보기'; $('bNext').disabled = false; }
+    else if (G.street === 'done' && $('bNext').textContent === '게임 결과 보기') $('bNext').textContent = '다음 판 시작';
     $('bEnd').hidden = !!G.ended;
     let turn;
     const who = G.players[G.toAct];
-    if (G.street === 'over') turn = '게임이 끝났어요. 위에서 전체 결과를 확인하세요.';
+    if (G.street === 'over') turn = '게임이 끝났어요. 결과를 보고 새 게임을 시작하세요.';
     else if (isEnded) turn = '이번 판을 돌아본 뒤, 다음 판을 시작하거나 게임을 끝내고 결과를 저장하세요.';
-    else if (myTurn) turn = G.pending.toCall > 0 ? `<b>내 차례</b> · 따라가려면 ${won(G.pending.toCall)}칩이 필요해요.` : '<b>내 차례</b> · 아무도 안 걸었어요. 체크하거나 먼저 걸 수 있어요.';
+    else if (myTurn) turn = (G.pending.toCall > 0 ? `<b>내 차례</b> · 콜 ${won(G.pending.toCall)}칩` : '<b>내 차례</b> · 아무도 안 걸었어요') + (turnDeadline() ? ` · <span class="tclock" data-clock>${secsLeft()}초</span>` : '');
     else if (G.mode === 'guest' && Net.hostGone) turn = '방장과 연결이 끊겼어요. 다시 들어오기를 기다려요.';
     else if (who) turn = who.kind === 'bot' ? `${esc(who.name)}이(가) 생각 중이에요…` : `${esc(who.name)}님이 고르는 중이에요…`;
     else turn = '';
@@ -2184,12 +2345,10 @@ body.locked { overflow: hidden; }
       updateRaiseLabel(canRaise);
     }
 
-    const hintOn = myTurn && ($('coachHint').checked || G.showHint);
-    $('hint').innerHTML = hintOn ? hintHTML(G.pending) : '';
     $('bHint').hidden = isEnded || !me || me.out;
-    $('bHint').disabled = !myTurn || hintOn;
-    $('bHint').textContent = hintOn && myTurn ? '힌트를 보는 중' : '힌트 보기';
-    $('feedback').innerHTML = G.lastFb ? fbHTML(G.lastFb) : '<p class="empty">첫 선택을 하면 여기에 점수와 설명이 나와요.</p>';
+    $('bHint').disabled = !myTurn;
+    if (myTurn && $('coachHint').checked) $('turnline').innerHTML += ` · 코치 추천 <b>${actName(G.pending.rec.best, G.pending.toCall)}</b>`;
+    if (UI.open === 'raise' && !(myTurn && G.pending.canRaise)) closeSheet();
     paintFab();
     if (UI.open === 'fb') renderFeedbackSheet();
 
@@ -2225,11 +2384,18 @@ body.locked { overflow: hidden; }
 
   function updateRaiseLabel(canRaise) {
     const me = G.players[G.me];
-    const name = G.currentBet - me.bet > 0 || G.currentBet > 0 ? '레이즈' : '벳';
-    if (!canRaise) { $('bRaise').innerHTML = `${name}<small>${name === '벳' ? '먼저 걸기' : '더 올리기'}</small>`; return; }
+    const name = G.currentBet > 0 ? '레이즈' : '벳';
+    $('bRaise').innerHTML = `${name}<small>금액 정하기</small>`;
+    if (!canRaise) return;
     const v = +$('raiseAmt').value;
     const allIn = v >= me.bet + me.stack;
-    $('bRaise').innerHTML = `${allIn ? '올인' : name}<small>${won(v)}칩까지</small>`;
+    const toCall = Math.max(0, G.currentBet - me.bet);
+    const potNow = potTotal() + toCall;
+    const b = raiseBounds(G.me);
+    $('raiseShow').textContent = `${won(v)}칩${G.currentBet > 0 ? '까지' : ''}`;
+    $('raiseNote').textContent = allIn ? '올인이에요 (가진 칩 전부)'
+      : `지금 판돈 ${won(potTotal())}칩의 약 ${pct((v - G.currentBet) / potNow)}${v === b.minTo ? ' · 가능한 최소 금액' : ''}`;
+    $('raiseGo').textContent = `${allIn ? '올인' : name} ${won(v)}칩${G.currentBet > 0 ? '까지' : ''} 확정`;
   }
 
   /* ---------- 기록실 ---------- */
@@ -2551,19 +2717,23 @@ body.locked { overflow: hidden; }
   }
 
   /* ---------- 팝업 (코치 피드백 · 기록실) ---------- */
+  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet' };
   function openSheet(which) {
+    Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
     UI.open = which;
-    const el = $(which === 'fb' ? 'fbSheet' : 'recSheet');
-    if (which === 'fb') { UI.fbPick = null; renderFeedbackSheet(); } else renderRecords();
+    if (which === 'fb') { UI.fbPick = null; renderFeedbackSheet(); }
+    else if (which === 'rec') renderRecords();
+    else if (which === 'menu') renderHistory();
+    const el = $(SHEETS[which]);
     el.hidden = false;
     document.body.classList.add('locked');
-    el.querySelector('[data-close]').focus();
+    const c = el.querySelector('[data-close]');
+    if (c && which !== 'raise') c.focus();
   }
   function closeSheet() {
-    ['fbSheet', 'recSheet'].forEach(id => { $(id).hidden = true; });
+    Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
     UI.open = null;
     document.body.classList.remove('locked');
-    $('fab').focus();
   }
   function renderFeedbackSheet() {
     const myTurn = !G.busy && G.toAct === G.me && G.pending && !ended();
@@ -2584,9 +2754,8 @@ body.locked { overflow: hidden; }
     const fab = $('fab');
     const myTurn = !G.busy && G.toAct === G.me && G.pending && !ended();
     const d = G.lastFb;
-    fab.className = 'fab' + (d ? ' ' + d.level : '');
-    fab.innerHTML = d ? `코치 피드백 <b class="num">${d.score}점</b>` : '코치 피드백';
-    if (myTurn) fab.innerHTML += ' <span class="fab-tag">힌트</span>';
+    fab.dataset.level = d ? d.level : '';
+    fab.innerHTML = `코치${d ? ` <b class="num">${d.score}점</b>` : ''}${myTurn ? ' <span class="fab-tag">힌트</span>' : ''}`;
     if (d && d !== UI.lastFabFb) {
       UI.lastFabFb = d;
       fab.classList.add('pulse');
@@ -2600,6 +2769,7 @@ body.locked { overflow: hidden; }
     if (seat && G.players[+seat.dataset.seat]) openPlayer(seatKey(+seat.dataset.seat));
   });
   $('recordsBtn').addEventListener('click', () => openSheet('rec'));
+  $('menuBtn').addEventListener('click', () => openSheet('menu'));
   $('openRecords').addEventListener('click', () => openSheet('rec'));
   document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => {
     if (e.target === o || e.target.closest('[data-close]')) closeSheet();
@@ -2627,7 +2797,23 @@ body.locked { overflow: hidden; }
   /* ---------- 버튼 연결 ---------- */
   $('bFold').addEventListener('click', () => userAct('fold'));
   $('bCall').addEventListener('click', () => userAct(G.pending && G.pending.toCall > 0 ? 'call' : 'check'));
-  $('bRaise').addEventListener('click', () => userAct('raise'));
+  // 레이즈: 바로 걸지 않고, 금액을 고르는 창을 먼저 열어요
+  $('bRaise').addEventListener('click', () => {
+    if (!G.pending || !G.pending.canRaise || G.busy) return;
+    const b = raiseBounds(G.me), sl = $('raiseAmt');
+    sl.min = b.minTo; sl.max = b.maxTo; sl.step = 5;
+    sl.value = G.pending.suggestTo || b.minTo;
+    updateRaiseLabel(true);
+    openSheet('raise');
+  });
+  $('raiseGo').addEventListener('click', () => { closeSheet(); userAct('raise'); });
+  const nudge = dir => {
+    const sl = $('raiseAmt'), stepAmt = Math.max(5, Math.round(BBv() / 2 / 5) * 5);
+    sl.value = Math.max(+sl.min, Math.min(+sl.max, +sl.value + dir * stepAmt));
+    updateRaiseLabel(true);
+  };
+  $('raiseMinus').addEventListener('click', () => nudge(-1));
+  $('raisePlus').addEventListener('click', () => nudge(1));
   $('raiseAmt').addEventListener('input', () => updateRaiseLabel(true));
   document.querySelectorAll('.presets .chip').forEach(btn => btn.addEventListener('click', () => {
     if (!G.pending) return;
@@ -2636,6 +2822,7 @@ body.locked { overflow: hidden; }
     updateRaiseLabel(true);
   }));
   $('bNext').addEventListener('click', () => {
+    if (G.street === 'over') { if (G.ended) openSheet('session'); else endSession(G.endReason || 'quit'); return; }
     if (G.mode === 'guest') { Net.send({ type: 'next' }); $('bNext').disabled = true; return; }
     startHand();
   });
@@ -2645,7 +2832,7 @@ body.locked { overflow: hidden; }
     if (G.mode === 'host') { G.street = 'over'; G.endReason = 'quit'; }
     render();
   });
-  $('bHint').addEventListener('click', () => { if (G.pending) { G.showHint = true; render(); } });
+  $('bHint').addEventListener('click', () => { if (G.pending) { G.showHint = true; render(); openSheet('fb'); } });
   $('coachHint').checked = pref('holdemHint', '0') === '1';
   $('coachHint').addEventListener('change', () => { setPref('holdemHint', $('coachHint').checked ? '1' : '0'); render(); });
 
@@ -2661,14 +2848,14 @@ body.locked { overflow: hidden; }
   $('newGameBtn').addEventListener('click', () => { if (G.mode === 'host') startHostGame(); else newSoloGame(); });
   $('pvpBtn').addEventListener('click', () => {
     if (!P2P_OK) { showMovePanel(); return; }
-    if (Net.peer) { $('pvpPanel').hidden = false; $('pvpPanel').scrollIntoView({ behavior: 'smooth', block: 'start' }); return; }
+    if (Net.peer) { openSheet('pvp'); return; }
     hostRoom();
   });
-  $('startPvp').addEventListener('click', () => { if (Net.role === 'host') startHostGame(); });
+  $('startPvp').addEventListener('click', () => { if (Net.role === 'host') { startHostGame(); closeSheet(); } });
   $('leavePvp').addEventListener('click', async () => {
     ls.del('hd-host'); ls.del('hd-guest');
     await leaveRoom();
-    $('pvpPanel').hidden = true;
+    closeSheet();
     try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
     newSoloGame(); paintSetup();
   });
@@ -2719,7 +2906,7 @@ body.locked { overflow: hidden; }
 
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-16c';
+  const BUILD = '2026-10-16d';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
