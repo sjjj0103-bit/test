@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-17b">
+<meta name="holdem-build" content="2026-10-17c">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -597,6 +597,17 @@ body.locked { overflow: hidden; }
   </div>
 </div>
 
+<div class="overlay" id="rebuySheet" hidden>
+  <div class="sheet compact" role="dialog" aria-modal="true" aria-labelledby="rebuyTitle">
+    <div class="sheet-head"><h2 id="rebuyTitle">칩을 다 잃었어요</h2><button class="chip" type="button" data-close>나중에</button></div>
+    <div class="sheet-body">
+      <p id="rebuyText"></p>
+      <button class="btn-next" id="rebuyYes" type="button">리바인</button>
+      <button class="btn-end" id="rebuyNo" type="button">그만하고 결과 보기</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="tourSheet" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="tourTitle">
     <div class="sheet-head"><h2 id="tourTitle">대회 현황</h2><button class="chip" type="button" data-close>닫기</button></div>
@@ -631,6 +642,17 @@ body.locked { overflow: hidden; }
         <button class="toggle" type="button" data-diff="pro" aria-pressed="false">프로</button>
       </div>
       <label class="pubtoggle"><input type="checkbox" id="pubMode" checked> 블라인드 올리기 (펍 토너먼트처럼 6판마다)</label>
+    </div>
+    <div class="setup-row">
+      <span class="setup-label">리바인</span>
+      <div class="seg">
+        <button class="toggle" type="button" data-rebuy="0" aria-pressed="false">없음</button>
+        <button class="toggle" type="button" data-rebuy="1" aria-pressed="true">1번</button>
+        <button class="toggle" type="button" data-rebuy="2" aria-pressed="false">2번</button>
+        <button class="toggle" type="button" data-rebuy="3" aria-pressed="false">3번</button>
+        <button class="toggle" type="button" data-rebuy="99" aria-pressed="false">무제한</button>
+      </div>
+      <span class="muted" style="font-size:13px">사람(나·친구)만 · 블라인드 300/600 전까지</span>
     </div>
     <div class="setup-row">
       <span class="setup-label">대회</span>
@@ -993,7 +1015,8 @@ body.locked { overflow: hidden; }
     seats: Math.min(MAX_SEATS, Math.max(2, Number(pref('holdemSeats', 6)) || 6)),
     diff: DIFF[pref('holdemDiff', 'normal')] ? pref('holdemDiff', 'normal') : 'normal',
     pub: pref('holdemPub', '1') === '1',
-    field: Number(pref('holdemField', 0)) || 0
+    field: Number(pref('holdemField', 0)) || 0,
+    rebuy: Number(pref('holdemRebuy', 1))
   };
 
   // 상대 수에 맞춘 기준 승률 (상대가 많을수록 평균 몫이 작아져요)
@@ -1090,17 +1113,20 @@ body.locked { overflow: hidden; }
   function startHand() {
     if (G.mode === 'host') replaceGoneHumans();
     if (G.tour) tourBeforeHand();
-    const alive = G.players.filter(p => !p.out);
-    if (alive.length < 2) { G.street = 'over'; render(); return; }
+    const alive = G.players.filter(p => !p.out && !p.rebuyPending);
+    if (alive.length < 2) {
+      if (G.players.some(p => p.rebuyPending)) { G.notice = '리바인 결정을 기다리는 중이에요'; render(); return; }
+      G.street = 'over'; render(); return;
+    }
     G.handNo++;
     if (!G.tour) G.notice = '';
     if (settings.pub || G.tour) {
       const lv = Math.min(LEVELS.length - 1, Math.floor((G.handNo - 1) / hpl()));
       if (lv !== G.level) { G.level = lv; G.notice = G.notice || `블라인드가 ${blinds()[0]}/${blinds()[1]}로 올랐어요`; }
     }
-    G.button = nextSeat(G.button, p => !p.out);
+    G.button = nextSeat(G.button, p => !p.out && !p.rebuyPending);
     G.deck = shuffle([...Array(52).keys()]);
-    for (const p of G.players) Object.assign(p, { hole: [], bet: 0, total: 0, folded: false, allIn: false, acted: false, last: p.out ? '탈락' : '', inHand: !p.out });
+    for (const p of G.players) Object.assign(p, { hole: [], bet: 0, total: 0, folded: false, allIn: false, acted: false, last: p.out ? '탈락' : p.rebuyPending ? '리바인 고민 중' : '', inHand: !p.out && !p.rebuyPending });
     for (let r = 0; r < 2; r++) for (let d = 1; d <= G.players.length; d++) {
       const s = (G.button + d) % G.players.length;
       if (G.players[s].inHand) G.players[s].hole.push(G.deck.pop());
@@ -1242,11 +1268,18 @@ body.locked { overflow: hidden; }
     if (meWon) G.stats.won++;
     r.winners.forEach(s => G.log.push(`${G.players[s].name} 승리 +${won(r.gain[s])}${r.hands ? ` (${r.hands[s]})` : ''}`));
     Sound.sfx(meWon ? 'win' : me.inHand && !me.folded ? 'lose' : 'card');
+    // 리바인: 칩을 다 잃은 사람(나·친구)은 바로 탈락하지 않고 다시 살지 고를 수 있어요
+    G.players.forEach(p => {
+      if (!p.out && !p.rebuyPending && p.stack <= 0 && canRebuy(p)) {
+        p.rebuyPending = true; p.last = '리바인 고민 중';
+        G.log.push(`${p.name} 칩을 다 잃었어요 (리바인 가능)`);
+      }
+    });
     // 탈락 처리: 같은 판에 여러 명이 탈락하면 걸었던 칩이 적은 사람이 더 낮은 순위
     if (G.tour) {
       syncG2T();
       const before = tourAlive();
-      G.players.filter(p => !p.out && p.stack <= 0 && p.tid != null).sort((a, b) => a.total - b.total).forEach((p, k) => {
+      G.players.filter(p => !p.out && !p.rebuyPending && p.stack <= 0 && p.tid != null).sort((a, b) => a.total - b.total).forEach((p, k) => {
         const tp = G.tour.players[p.tid];
         tp.out = true; tp.place = before - k; p.out = true; p.place = tp.place; p.last = `탈락 ${p.place}위`;
         G.log.push(`${p.name} 탈락 (${p.place}위 / ${G.tour.total}명)`);
@@ -1258,15 +1291,65 @@ body.locked { overflow: hidden; }
       }
     } else {
       const aliveBefore = G.players.filter(p => !p.out).length;
-      G.players.filter(p => !p.out && p.stack <= 0).sort((a, b) => a.total - b.total)
+      G.players.filter(p => !p.out && !p.rebuyPending && p.stack <= 0).sort((a, b) => a.total - b.total)
         .forEach((p, k) => { p.out = true; p.place = aliveBefore - k; p.last = `탈락 ${p.place}위`; G.log.push(`${p.name} 탈락 (${p.place}위)`); });
       const alive = G.players.filter(p => !p.out);
       if (alive.length === 1) { alive[0].place = 1; alive[0].last = '우승!'; G.log.push(`${alive[0].name} 우승!`); G.street = 'over'; G.endReason = 'bust'; }
     }
     recordHand();
+    if (me && me.rebuyPending && UI.open !== 'rebuy') setTimeout(() => { if (me.rebuyPending) openSheet('rebuy'); }, 900);
     if (me.out && G.mode === 'solo') { G.street = 'over'; G.endReason = 'bust'; }
     if ((G.street === 'over' || me.out) && !G.ended) endSession('bust');
     render();
+  }
+
+  /* ---------- 리바인 ---------- */
+  const REBUY_LEVEL = 8;   // 블라인드 레벨 8(300/600) 전까지만 리바인할 수 있어요 (펍의 "리바인 마감")
+  const rebuyLeft = p => (settings.rebuy >= 99 ? Infinity : settings.rebuy - (p.rebuys || 0));
+  const rebuyHandsLeft = () => Math.max(0, REBUY_LEVEL * hpl() - G.handNo);
+  function canRebuy(p) {
+    return (p.kind === 'me' || p.kind === 'human') && rebuyLeft(p) > 0 && G.level < REBUY_LEVEL && G.street !== 'over';
+  }
+  function doRebuy(seat, yes) {
+    const p = G.players[seat];
+    if (!p || !p.rebuyPending) return;
+    p.rebuyPending = false;
+    if (yes) {
+      p.stack = START; p.rebuys = (p.rebuys || 0) + 1; p.last = '리바인!';
+      if (G.tour && p.tid != null) G.tour.players[p.tid].chips = START;
+      G.log.push(`${p.name} 리바인! 칩 ${won(START)}개로 다시 참여해요 (${p.rebuys}번째)`);
+      if (seat === G.me) G.stats.rebuys = (G.stats.rebuys || 0) + 1;
+    } else {
+      if (G.tour) {
+        syncG2T();
+        const before = tourAlive(), tp = G.tour.players[p.tid];
+        tp.out = true; tp.place = before; p.out = true; p.place = before;
+        G.log.push(`${p.name} 탈락 (${p.place}위 / ${G.tour.total}명)`);
+        if (tourAlive() === 1) {
+          const w = G.tour.players.find(q => !q.out); w.place = 1;
+          const ws = G.players.find(q => q.tid === w.id); if (ws) { ws.place = 1; ws.last = '우승!'; }
+          G.street = 'over'; G.endReason = 'bust';
+        }
+      } else {
+        p.place = G.players.filter(q => !q.out).length; p.out = true;
+        G.log.push(`${p.name} 탈락 (${p.place}위)`);
+        const alive = G.players.filter(q => !q.out);
+        if (alive.length === 1) { alive[0].place = 1; alive[0].last = '우승!'; G.street = 'over'; G.endReason = 'bust'; }
+      }
+      p.last = `탈락 ${p.place}위`;
+      if (seat === G.me && G.mode === 'solo') { G.street = 'over'; G.endReason = 'bust'; }
+      if ((seat === G.me || G.street === 'over') && !G.ended) endSession('bust');
+    }
+    // 테이블이 리바인을 기다리며 멈춰 있었다면 다시 진행해요
+    if (G.street === 'done' && G.notice === '리바인 결정을 기다리는 중이에요' && G.mode !== 'guest') { G.notice = ''; startHand(); return; }
+    render();
+  }
+  function paintRebuy() {
+    const me = G.players[G.me];
+    if (!me) return;
+    const left = me.rebuyPending ? rebuyLeft(me) : 0;
+    $('rebuyText').innerHTML = `리바인하면 다음 판부터 칩 <b>${won(START)}</b>개로 다시 앉아요.<br>남은 리바인: <b>${left === Infinity ? '무제한' : left + '번'}</b> · 마감까지 <b>${rebuyHandsLeft()}판</b>${G.tour ? '<br>대회 순위와 인원은 그대로예요. 리바인한 칩만큼 판돈이 커진 셈이에요.' : ''}`;
+    $('rebuyYes').textContent = `리바인 (칩 ${won(START)}개 다시 받기)`;
   }
 
   /* ---------- 분석 / 코치 ---------- */
@@ -1820,7 +1903,7 @@ body.locked { overflow: hidden; }
     return {
       id: G.recId, kind: 'game', status: reason === 'playing' ? 'playing' : 'done', mode: G.mode,
       endedAt: new Date().toISOString(), reason, standings,
-      hands: G.stats.hands, won: G.stats.won, chips: me.stack, chipDelta: me.stack - START,
+      hands: G.stats.hands, won: G.stats.won, chips: me.stack, chipDelta: me.stack - START * (1 + (me.rebuys || 0)), rebuys: me.rebuys || 0,
       place: me.place || null, players: G.tour ? G.tour.total : G.tsum ? G.tsum.total : G.players.length, opponent: G.tour || G.tsum ? `대회 ${(G.tour || G.tsum).total}명 (${DIFF[settings.diff].label})` : opponentText(), hints: G.stats.hints || 0,
       decisions: n, avgScore: avg, grade, good: count('good'), ok: count('ok'), bad: count('bad'),
       summary: n ? GRADE_TEXT[grade] : '선택한 기록이 없어서 점수를 매기지 못했어요.',
@@ -1942,7 +2025,7 @@ body.locked { overflow: hidden; }
       </div>
       <div class="session-stats">
         ${stat(rec.place ? `${rec.place}위` : '–', '최종 순위')}${stat(rec.hands, '친 판 수')}${stat(rec.won, '이긴 판')}${stat(signed(rec.chipDelta), '칩 변화')}
-        ${stat(`${rec.good}/${rec.ok}/${rec.bad}`, '최선/괜찮음/아쉬움')}${stat(rec.hints, '힌트 본 횟수')}${stat(esc(rec.opponent), '상대')}
+        ${stat(`${rec.good}/${rec.ok}/${rec.bad}`, '최선/괜찮음/아쉬움')}${stat(rec.hints, '힌트 본 횟수')}${rec.rebuys ? stat(rec.rebuys + '번', '리바인') : ''}${stat(esc(rec.opponent), '상대')}
       </div>
       <div class="session-cols">
         <div><h3>잘한 점</h3>${rec.strengths.length ? `<ul>${rec.strengths.map(s => `<li>${esc(s.text)}<span>최선의 선택 ${s.count}번</span></li>`).join('')}</ul>` : '<p class="empty">다음 게임에서 "최선" 판정을 모아 보세요.</p>'}</div>
@@ -2212,6 +2295,7 @@ body.locked { overflow: hidden; }
     if (G.mode !== 'host') return;
     if (msg.type === 'next') { if (G.street === 'done') startHand(); return; }
     if (msg.type === 'restart') { if (G.street === 'over') startHostGame(); return; }
+    if (msg.type === 'rebuy') { const seat = G.players.findIndex(p => p.kind === 'human' && p.sid === sid); if (seat >= 0) doRebuy(seat, !!msg.yes); return; }
     const seat = G.players.findIndex(p => p.kind === 'human' && p.sid === sid);
     if (seat < 0 || ended() || G.toAct !== seat || !G.busy) return;
     const p = G.players[seat], toCall = G.currentBet - p.bet;
@@ -2303,14 +2387,14 @@ body.locked { overflow: hidden; }
       base = {
         v: 3, gid: G.gid, handNo: G.handNo, button: G.button, level: G.level, board: G.board, street: G.street,
         currentBet: G.currentBet, minRaise: G.minRaise, toAct: G.toAct, aggr: G.aggr, pos: G.pos, notice: G.notice,
-        rng: G.rng, pap: G.pap, raisesPre: G.raisesPre || 0, pfAggr: G.pfAggr ?? -1, tsum: G.tour ? tourSummary() : null,
+        rng: G.rng, pap: G.pap, raisesPre: G.raisesPre || 0, pfAggr: G.pfAggr ?? -1, tsum: G.tour ? tourSummary() : null, rebuyMax: settings.rebuy,
         endReason: G.endReason || null, revealed: [...reveal], seats, diff: settings.diff,
         turnLeft: G.turnStart && !ended() ? Math.max(0, TURN_MS - (Date.now() - G.turnStart)) : null,
         result: r ? { how: r.how, winners: r.winners, gain: r.gain, hands: r.hands || null } : null,
         log: G.log.slice(-80),
         players: G.players.map((p, s) => ({
           name: p.name, kind: p.kind === 'bot' ? 'bot' : p.kind === 'empty' ? 'empty' : 'human', stack: p.stack, bet: p.bet, total: p.total,
-          folded: p.folded, allIn: p.allIn, acted: p.acted, last: p.last, out: p.out, place: p.place, inHand: p.inHand,
+          folded: p.folded, allIn: p.allIn, acted: p.acted, last: p.last, out: p.out, place: p.place, inHand: p.inHand, rebuyPending: !!p.rebuyPending, rebuys: p.rebuys || 0,
           shown: reveal.has(s) ? p.hole : null
         }))
       };
@@ -2417,11 +2501,12 @@ body.locked { overflow: hidden; }
     const revealed = new Set(s.revealed || []);
     G.players = s.players.map((q, idx) => ({
       name: cleanName(q.name) || '?', kind: q.kind === 'bot' ? 'bot' : q.kind === 'empty' ? 'empty' : 'human', empty: q.kind === 'empty', stack: +q.stack || 0, bet: +q.bet || 0, total: +q.total || 0,
-      folded: !!q.folded, allIn: !!q.allIn, acted: !!q.acted, last: String(q.last || '').slice(0, 20), out: !!q.out, place: q.place || null, inHand: !!q.inHand,
+      folded: !!q.folded, allIn: !!q.allIn, acted: !!q.acted, last: String(q.last || '').slice(0, 20), out: !!q.out, place: q.place || null, inHand: !!q.inHand, rebuyPending: !!q.rebuyPending, rebuys: +q.rebuys || 0,
       hole: idx === G.me && myHole ? myHole : revealed.has(idx) && Array.isArray(q.shown) ? q.shown : q.inHand ? [-1, -1] : []
     }));
     if (G.me >= 0) G.players[G.me].name = '나';
     if (DIFF[s.diff]) settings.diff = s.diff;
+    if (s.rebuyMax != null) settings.rebuy = +s.rebuyMax;   // 리바인 규칙은 방장 설정을 따라요
     Object.assign(G, {
       button: s.button, level: Math.min(LEVELS.length - 1, Math.max(0, s.level | 0)), board: (s.board || []).slice(0, 5), street: s.street,
       currentBet: s.currentBet, minRaise: s.minRaise, toAct: s.toAct, aggr: s.aggr || [], pos: s.pos || [], notice: s.notice || '',
@@ -2450,6 +2535,8 @@ body.locked { overflow: hidden; }
       if (key !== G.pendKey) { G.pendKey = key; G.pending = analyze(G.me); G.sliderSet = false; G.showHint = false; }
       G.busy = false;
     } else { G.pending = null; G.busy = !isEnded; }
+    if (me && me.rebuyPending && UI.open !== 'rebuy' && G.rebuyAsked !== G.handNo) { G.rebuyAsked = G.handNo; setTimeout(() => openSheet('rebuy'), 600); }
+    if (me && !me.rebuyPending && UI.open === 'rebuy') closeSheet();
     if (me && !G.ended && (G.street === 'over' || me.out)) endSession(s.endReason || 'quit');
     render();
   }
@@ -2459,11 +2546,12 @@ body.locked { overflow: hidden; }
     document.querySelectorAll('[data-diff]').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.diff === settings.diff)));
     document.querySelectorAll('[data-seats]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.seats) === settings.seats)));
     document.querySelectorAll('[data-field]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.field) === settings.field)));
+    document.querySelectorAll('[data-rebuy]').forEach(b => b.setAttribute('aria-pressed', String(Number(b.dataset.rebuy) === settings.rebuy)));
     $('pubMode').checked = settings.pub;
     $('pvpBtn').setAttribute('aria-pressed', String(inRoom));
     $('pvpBtn').textContent = inRoom ? '친구 방' : '친구 초대';
     const guest = G && G.mode === 'guest';
-    document.querySelectorAll('[data-diff],[data-seats],[data-field],#pubMode,#newGameBtn').forEach(b => { b.disabled = guest; });
+    document.querySelectorAll('[data-diff],[data-seats],[data-field],[data-rebuy],#pubMode,#newGameBtn').forEach(b => { b.disabled = guest; });
     const notes = {
       easy: '쉬움: 아무 패로나 잘 따라오고 실수가 많아요. 규칙과 흐름을 익힐 때 좋아요.',
       normal: '보통: 기본기 있는 상대예요. 승률 계산대로 치면 이길 수 있어요.',
@@ -2799,9 +2887,12 @@ body.locked { overflow: hidden; }
 
     const myTurn = !G.busy && G.toAct === G.me && G.pending && !isEnded;
     $('btnrow').hidden = isEnded || !me || me.out; $('sizer').hidden = isEnded;
-    $('endrow').hidden = G.street !== 'done' && G.street !== 'over';
+    const pendingMe = me && me.rebuyPending;
+    $('endrow').hidden = G.street !== 'done' && G.street !== 'over' && !pendingMe;
     if (G.street === 'over') { $('bNext').textContent = '게임 결과 보기'; $('bNext').disabled = false; }
-    else if (G.street === 'done' && $('bNext').textContent === '게임 결과 보기') $('bNext').textContent = '다음 판 시작';
+    else if (pendingMe) { $('bNext').textContent = '리바인 할까요?'; $('bNext').disabled = false; }
+    else if (G.street === 'done' && ['게임 결과 보기', '리바인 할까요?'].includes($('bNext').textContent)) $('bNext').textContent = '다음 판 시작';
+    if (UI.open === 'rebuy') paintRebuy();
     $('bEnd').hidden = !!G.ended;
     let turn;
     const who = G.players[G.toAct];
@@ -3207,7 +3298,7 @@ body.locked { overflow: hidden; }
   }
 
   /* ---------- 팝업 (코치 피드백 · 기록실) ---------- */
-  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet' };
+  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet', rebuy: 'rebuySheet' };
   function openSheet(which) {
     Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
     UI.open = which;
@@ -3215,6 +3306,7 @@ body.locked { overflow: hidden; }
     else if (which === 'rec') renderRecords();
     else if (which === 'menu') renderHistory();
     else if (which === 'tour') renderTour();
+    else if (which === 'rebuy') paintRebuy();
     const el = $(SHEETS[which]);
     el.hidden = false;
     document.body.classList.add('locked');
@@ -3262,6 +3354,13 @@ body.locked { overflow: hidden; }
   $('recordsBtn').addEventListener('click', () => openSheet('rec'));
   $('menuBtn').addEventListener('click', () => openSheet('menu'));
   $('tourBtn').addEventListener('click', () => openSheet('tour'));
+  const answerRebuy = yes => {
+    closeSheet();
+    if (G.mode === 'guest') { Net.send({ type: 'rebuy', yes }); return; }
+    doRebuy(G.me, yes);
+  };
+  $('rebuyYes').addEventListener('click', () => answerRebuy(true));
+  $('rebuyNo').addEventListener('click', () => answerRebuy(false));
   $('openRecords').addEventListener('click', () => openSheet('rec'));
   document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => {
     if (e.target === o || e.target.closest('[data-close]')) closeSheet();
@@ -3314,6 +3413,7 @@ body.locked { overflow: hidden; }
     updateRaiseLabel(true);
   }));
   $('bNext').addEventListener('click', () => {
+    if (G.players[G.me] && G.players[G.me].rebuyPending && G.street !== 'over') { openSheet('rebuy'); return; }
     if (G.street === 'over') { if (G.ended) openSheet('session'); else endSession(G.endReason || 'quit'); return; }
     if (G.mode === 'guest') { Net.send({ type: 'next' }); $('bNext').disabled = true; return; }
     startHand();
@@ -3335,6 +3435,10 @@ body.locked { overflow: hidden; }
   document.querySelectorAll('[data-seats]').forEach(btn => btn.addEventListener('click', () => {
     settings.seats = Number(btn.dataset.seats); setPref('holdemSeats', settings.seats);
     paintSetup(); renderLobby(); publish();
+  }));
+  document.querySelectorAll('[data-rebuy]').forEach(btn => btn.addEventListener('click', () => {
+    settings.rebuy = Number(btn.dataset.rebuy); setPref('holdemRebuy', settings.rebuy);
+    paintSetup();
   }));
   document.querySelectorAll('[data-field]').forEach(btn => btn.addEventListener('click', () => {
     settings.field = Number(btn.dataset.field); setPref('holdemField', settings.field);
@@ -3403,7 +3507,7 @@ body.locked { overflow: hidden; }
   if (/[?&]debug\b/.test(location.search)) window.__hd = { get G() { return G; }, bot: i => gtoBot(i) };   // 테스트용
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-17b';
+  const BUILD = '2026-10-17c';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
