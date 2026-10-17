@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-16d">
+<meta name="holdem-build" content="2026-10-17a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -460,7 +460,7 @@ body.locked { overflow: hidden; }
 
 <div class="app">
   <header class="topbar">
-    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/16</span></div>
+    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/17</span></div>
     <div class="stats" id="stats"></div>
   </header>
 
@@ -618,6 +618,7 @@ body.locked { overflow: hidden; }
         <button class="toggle" type="button" data-diff="easy" aria-pressed="false">쉬움</button>
         <button class="toggle" type="button" data-diff="normal" aria-pressed="true">보통</button>
         <button class="toggle" type="button" data-diff="hard" aria-pressed="false">어려움</button>
+        <button class="toggle" type="button" data-diff="pro" aria-pressed="false">프로</button>
       </div>
       <label class="pubtoggle"><input type="checkbox" id="pubMode" checked> 블라인드 올리기 (펍 토너먼트처럼 6판마다)</label>
     </div>
@@ -961,7 +962,8 @@ body.locked { overflow: hidden; }
   const DIFF = {
     easy:   { label: '쉬움',   noise: 0.15, foldPre: 0.3,  callSlack: 0.12, raiseBig: 0.3,  raiseMid: 0.1,  bluff: 0.05, betStrong: 0.5,  sims: 250 },
     normal: { label: '보통',   noise: 0.04, foldPre: 0.75, callSlack: 0.03, raiseBig: 0.65, raiseMid: 0.25, bluff: 0.15, betStrong: 0.8,  sims: 600 },
-    hard:   { label: '어려움', noise: 0,    foldPre: 0.85, callSlack: 0.01, raiseBig: 0.8,  raiseMid: 0.35, bluff: 0.22, betStrong: 0.85, sims: 1200 }
+    hard:   { label: '어려움', noise: 0,    foldPre: 0.85, callSlack: 0.01, raiseBig: 0.8,  raiseMid: 0.35, bluff: 0.22, betStrong: 0.85, sims: 1200 },
+    pro:    { label: '프로',   noise: 0,    foldPre: 0.9,  callSlack: 0,    raiseBig: 0.8,  raiseMid: 0.35, bluff: 0.2,  betStrong: 0.9,  sims: 1500 }
   };
   const pref = (k, def) => { try { const v = localStorage.getItem(k); return v == null ? def : v; } catch (e) { return def; } };
   const setPref = (k, v) => { try { localStorage.setItem(k, String(v)); } catch (e) {} };
@@ -1069,7 +1071,7 @@ body.locked { overflow: hidden; }
       const s = (G.button + d) % G.players.length;
       if (G.players[s].inHand) G.players[s].hole.push(G.deck.pop());
     }
-    Object.assign(G, { board: [], street: 'preflop', aggr: G.players.map(() => 0), decisions: [], log: [], result: null, pending: null, revealed: [] });
+    Object.assign(G, { board: [], street: 'preflop', aggr: G.players.map(() => 0), decisions: [], log: [], result: null, pending: null, revealed: [], raisesPre: 0, pfAggr: -1, streetAggr: -1, prevAggr: -1 });
     G.sb = alive.length === 2 ? G.button : nextSeat(G.button, p => p.inHand);
     G.bb = nextSeat(G.sb, p => p.inHand);
     const [S, B] = blinds();
@@ -1114,6 +1116,7 @@ body.locked { overflow: hidden; }
   function endStreet() {
     for (const p of G.players) { p.bet = 0; p.acted = false; p.last = p.folded ? '폴드' : p.out ? '탈락' : p.allIn && p.inHand ? '올인' : ''; }
     G.currentBet = 0; G.minRaise = BBv();
+    G.prevAggr = G.streetAggr; G.streetAggr = -1;
     if (G.street === 'river') return showdown();
     if (G.street === 'preflop') { G.board.push(G.deck.pop(), G.deck.pop(), G.deck.pop()); G.street = 'flop'; }
     else if (G.street === 'flop') { G.board.push(G.deck.pop()); G.street = 'turn'; }
@@ -1143,6 +1146,8 @@ body.locked { overflow: hidden; }
         G.players.forEach((q, s) => { if (s !== i && canAct(q)) q.acted = false; });
       }
       G.aggr[i]++;
+      G.streetAggr = i;
+      if (G.street === 'preflop' && p.bet > was) { G.raisesPre = (G.raisesPre || 0) + 1; G.pfAggr = i; }
       p.last = `${p.allIn ? '올인' : was > 0 ? '레이즈' : '벳'} ${won(p.bet)}`;
       Sound.sfx('chips');
     }
@@ -1465,9 +1470,84 @@ body.locked { overflow: hidden; }
     return act(i, a.toCall === 0 ? 'check' : 'fold', 0);
   }
 
+  /* ---------- 프로 난이도 ----------
+     펍 상위 레귤러처럼: 자리별로 정해진 패만 레이즈로 시작(림프 없음), 강한 패와 일부 블러핑으로 3벳,
+     플랍에서 컨티뉴에이션 벳, 드로우로 세미 블러핑, 그리고 필요한 승률이 안 되면 미련 없이 폴드해요. */
+  const PRO_OPEN = { UTG: 8, 'UTG+1': 8, MP: 7.5, LJ: 7, HJ: 6.5, CO: 6, BTN: 5, SB: 5.5, BB: 8 };
+  const proIsLag = name => ['lag', 'maniac'].includes(styleKeyOf(name));
+  function boardWet() {
+    const b = G.board;
+    if (b.length < 3) return false;
+    const suits = [0, 0, 0, 0]; b.forEach(c => suits[c & 3]++);
+    const ranks = [...new Set(b.map(c => c >> 2))].sort((x, y) => x - y);
+    const connected = ranks.some((r, k) => k > 0 && r - ranks[k - 1] <= 2);
+    return Math.max(...suits) >= 2 || connected;
+  }
+  function proPreflop(i, a, lag) {
+    const p = G.players[i], B = BBv(), b = raiseBounds(i);
+    const [h1, h2] = p.hole, c = chen(h1, h2);
+    const pos = G.pos[i] || 'MP';
+    const ip = pos === 'BTN' || pos === 'CO' || pos === 'HJ';
+    const depth = (p.stack + p.bet) / B;
+    const adj = lag ? -1 : 0;
+    const pair = h1 >> 2 === h2 >> 2;
+    const suitedWheelAce = (h1 & 3) === (h2 & 3) && Math.max(h1 >> 2, h2 >> 2) === 12 && Math.min(h1 >> 2, h2 >> 2) <= 3;
+    const to = x => Math.max(b.minTo, Math.min(b.maxTo, Math.round(x / 5) * 5));
+    const raiseOr = (x, alt) => (b.can ? act(i, 'raise', to(x)) : act(i, alt, 0));
+    const passive = () => act(i, a.toCall === 0 ? 'check' : 'fold', 0);
+    const raises = G.raisesPre || 0;
+    // 칩이 적으면(12BB 이하) 올인 아니면 폴드
+    if (depth <= 12) {
+      if (raises === 0) return c >= Math.max(4.5, (PRO_OPEN[pos] || 7) - 1.5) && b.can ? act(i, 'raise', b.maxTo) : passive();
+      return c >= 9 || (c >= 8 && a.need < 0.35) ? act(i, a.toCall > 0 ? 'call' : 'check', 0) : passive();
+    }
+    if (raises === 0) {
+      const limpers = G.players.filter((q, s) => s !== G.bb && s !== i && q.inHand && !q.folded && q.bet === B).length;
+      if (pos === 'BB' && a.toCall === 0) return c >= 8 + adj ? raiseOr(B * (4 + limpers), 'check') : act(i, 'check', 0);
+      if (c >= (PRO_OPEN[pos] ?? 7) + adj) return raiseOr(B * (pos === 'SB' ? 3 : 2.5) + B * limpers, 'call');
+      return passive();
+    }
+    if (raises === 1) {
+      if (c >= 10 + adj || (suitedWheelAce && ip && Math.random() < (lag ? 0.5 : 0.3))) return raiseOr(G.currentBet * (ip ? 3 : 3.8), 'call');
+      if (pos === 'BB' && c >= 5 && a.need <= 0.3) return act(i, 'call', 0);
+      if (c >= (ip ? 7 : 8) + adj || (pair && depth >= 25 && a.need <= 0.25)) return act(i, 'call', 0);
+      return passive();
+    }
+    if (raises === 2) {
+      if (c >= 12) return depth <= 40 ? (b.can ? act(i, 'raise', b.maxTo) : act(i, 'call', 0)) : raiseOr(G.currentBet * 2.3, 'call');
+      if (c >= 10 && depth >= 30) return act(i, 'call', 0);
+      return passive();
+    }
+    if (c >= 16) return b.can ? act(i, 'raise', b.maxTo) : act(i, 'call', 0);
+    if (c >= 12 || (c >= 10 && a.need < 0.3)) return act(i, 'call', 0);
+    return passive();
+  }
+  function proPostflop(i, a, lag) {
+    const p = G.players[i], { E, need, toCall, canRaise, T, k } = a;
+    const outs = countOuts(p.hole, G.board);
+    const draw = outs >= 8 && G.street !== 'river';
+    const wet = boardWet(), r = Math.random();
+    const pfa = G.pfAggr === i, barrel = G.prevAggr === i;
+    const bet = f => act(i, 'raise', sizeTo(i, f));
+    if (toCall === 0) {
+      if (canRaise && E > T.value) return bet(G.street === 'river' ? 0.75 : wet ? 0.66 : 0.5);
+      if (canRaise && draw && r < (lag ? 0.6 : 0.45)) return bet(0.5);
+      if (canRaise && G.street === 'flop' && pfa && k <= (lag ? 2 : 1) && r < (lag ? 0.8 : 0.65)) return bet(wet ? 0.5 : 0.33);
+      if (canRaise && G.street === 'turn' && barrel && k === 1 && (E > T.medium || outs >= 6) && r < 0.6) return bet(0.6);
+      if (canRaise && G.street === 'river' && barrel && k === 1 && E < T.weak && r < (lag ? 0.35 : 0.22)) return bet(0.75);
+      return act(i, 'check', 0);
+    }
+    if (canRaise && E > Math.min(0.85, T.strong + 0.05) && r < 0.6) return bet(0.9);
+    if (canRaise && draw && G.street === 'flop' && k === 1 && r < (lag ? 0.3 : 0.15)) return bet(0.8);
+    const margin = G.street === 'river' ? 0 : 0.03;
+    if (E >= need + margin) return act(i, 'call', 0);
+    return act(i, 'fold', 0);
+  }
+
   function botAct(i) {
     const D = DIFF[settings.diff], p = G.players[i], S = STYLES[styleKeyOf(p.name)];
     const a = analyze(i);
+    if (settings.diff === 'pro') return G.street === 'preflop' ? proPreflop(i, a, proIsLag(p.name)) : proPostflop(i, a, proIsLag(p.name));
     if (G.street === 'preflop') return botPreflop(i, a, S, D);
     const r = Math.random();
     const { need, toCall, canRaise, T, k } = a;
@@ -2168,7 +2248,8 @@ body.locked { overflow: hidden; }
     const notes = {
       easy: '쉬움: 아무 패로나 잘 따라오고 실수가 많아요. 규칙과 흐름을 익힐 때 좋아요.',
       normal: '보통: 기본기 있는 상대예요. 승률 계산대로 치면 이길 수 있어요.',
-      hard: '어려움: 계산이 정확하고 블러핑도 섞어요. 쉽게 따라가면 칩을 잃어요.'
+      hard: '어려움: 계산이 정확하고 블러핑도 섞어요. 쉽게 따라가면 칩을 잃어요.',
+      pro: '프로: 펍 상위 레귤러처럼 쳐요. 자리별로 정해진 패만 레이즈로 들어오고(림프 없음), 3벳·컨티뉴에이션 벳·세미 블러핑을 쓰고, 승률이 모자라면 바로 접어요.'
     };
     $('setupNote').textContent = guest ? '친구 테이블에 앉아 있어요. 설정은 방장이 정해요. 코치 피드백은 내 화면에만 나와요.'
       : `${notes[settings.diff]} 인원과 블라인드 설정은 "이 설정으로 새 게임"을 누르면 적용돼요.`;
@@ -2675,7 +2756,7 @@ body.locked { overflow: hidden; }
       <div class="fb-sec"><h3>${me ? '내 스타일' : '이런 사람이에요'}</h3><p>${T.analogy} ${T.signs}</p></div>
       ${c.tags.length ? `<ul class="plain ptags">${c.tags.map(t => `<li>${t}</li>`).join('')}</ul>` : ''}
       <div class="fb-sec better"><h3>${me ? '이렇게 고쳐 보세요' : '이 사람 상대법'}</h3><p>${(me ? myAdvice(c) : T.vs).join('<br>')}</p></div>
-      ${s.bot ? `<details class="answer"><summary>정답 확인: 이 AI의 실제 성격</summary><p>${TYPES[styleKeyOf(k.split('|')[0])] ? TYPES[styleKeyOf(k.split('|')[0])].name : '균형형'}로 만들어진 컴퓨터예요. ${c.type === 'unknown' ? '' : c.type === styleKeyOf(k.split('|')[0]) ? '분석이 정확히 맞혔어요!' : '아직 분석과 다르면, 판이 더 쌓이면 가까워져요.'}</p></details>` : ''}
+      ${s.bot ? (() => { const [bn, bd] = k.split('|'); const sk = bd === 'pro' ? (proIsLag(bn) ? 'lag' : 'tag') : styleKeyOf(bn); return `<details class="answer"><summary>정답 확인: 이 AI의 실제 성격</summary><p>${bd === 'pro' ? '프로 레귤러 · ' : ''}${TYPES[sk] ? TYPES[sk].name : '균형형'}로 만들어진 컴퓨터예요. ${c.type === 'unknown' ? '' : c.type === sk ? '분석이 정확히 맞혔어요!' : '아직 분석과 다르면, 판이 더 쌓이면 가까워져요.'}</p></details>`; })() : ''}
       ${s.shows.length ? `<div class="fb-sec"><h3>쇼다운에서 보여 준 패</h3><div class="shows">${s.shows.map(x => `<span class="showitem">${miniRow(x.hole)} ${CAT_SHORT[x.cat]}${x.riverBet ? ' · 리버에 걸었음' : ''}${x.won ? ' · 이김' : ''}</span>`).join('')}</div></div>` : ''}
     </div>`;
   }
@@ -2906,7 +2987,7 @@ body.locked { overflow: hidden; }
 
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-16d';
+  const BUILD = '2026-10-17a';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
