@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-17c">
+<meta name="holdem-build" content="2026-10-18b">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -454,6 +454,27 @@ body.locked { overflow: hidden; }
 @media (max-height: 700px) { .dock .mypos { display: none; } }
 
 .tourbtn { padding: 4px 10px; font-size: 13px; flex: none; }
+
+/* GTO 차트 */
+:root { --fold-c: #2f4840; }
+.chartctl { display: flex; flex-wrap: wrap; gap: 8px 10px; align-items: flex-end; }
+.chartctl label { display: flex; flex-direction: column; gap: 2px; font-size: 12px; color: var(--muted); }
+.chartctl select { background: var(--panel-2); color: var(--ink); border: 1px solid var(--line); border-radius: 8px; padding: 6px 8px; font: 500 14px var(--font-body); }
+.hgrid { display: grid; grid-template-columns: repeat(13, minmax(0, 1fr)); gap: 2px; width: 100%; max-width: 560px; }
+.hcell { aspect-ratio: 1; border: 0; border-radius: 3px; padding: 0; font: 600 10px var(--font-num); color: #0c1613; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1; min-width: 0; overflow: hidden; }
+.hcell i { font-style: normal; font-size: 8px; opacity: .7; }
+.hcell.mine { outline: 3px solid var(--ink); outline-offset: -1px; }
+@media (min-width: 600px) { .hcell { font-size: 12px; } .hcell i { font-size: 9px; } }
+.hlegend { display: flex; gap: 14px; font-size: 13px; color: var(--muted); margin-top: 6px; }
+.hlegend i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; margin-right: 4px; vertical-align: -1px; }
+.hintbtns { display: inline-flex; gap: 6px; }
+
+.blindbadge { background: rgba(0,0,0,.55); border: 1px solid var(--brass); border-radius: 999px; padding: 2px 12px; font-size: 13px; display: flex; gap: 8px; align-items: baseline; white-space: nowrap; }
+.blindbadge b { color: var(--brass); font-family: var(--font-num); font-weight: 600; }
+.blindbadge span { font-size: 11px; color: var(--muted); }
+.endrow { flex-wrap: wrap; }
+#bTopup { grid-column: 1 / -1; }
+@media (max-width: 560px) { .blindbadge span { display: none; } .blindbadge { font-size: 12px; padding: 1px 10px; } }
 </style>
 </head>
 <body>
@@ -462,7 +483,7 @@ body.locked { overflow: hidden; }
 
 <div class="app">
   <header class="topbar">
-    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/17</span></div>
+    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/18</span></div>
     <button class="navbtn tourbtn" id="tourBtn" type="button" hidden aria-haspopup="dialog">대회</button>
     <div class="stats" id="stats"></div>
   </header>
@@ -470,6 +491,7 @@ body.locked { overflow: hidden; }
   <section class="table-wrap" aria-label="게임 테이블">
     <div class="table" id="table">
       <div class="center">
+        <div class="blindbadge" id="blindBadge"></div>
         <div class="street" id="street"></div>
         <div class="notice" id="notice"></div>
         <div class="cards" id="board"></div>
@@ -485,7 +507,7 @@ body.locked { overflow: hidden; }
     <div class="mystrip" id="mystrip"></div>
     <div class="turn-head">
       <div class="turnline" id="turnline"></div>
-      <button class="btn-hint" id="bHint" type="button">힌트</button>
+      <span class="hintbtns"><button class="btn-hint" id="bChart" type="button">차트</button><button class="btn-hint" id="bHint" type="button">힌트</button></span>
     </div>
     <div class="btnrow" id="btnrow">
       <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
@@ -495,6 +517,7 @@ body.locked { overflow: hidden; }
     <div class="endrow" id="endrow" hidden>
       <button class="btn-next" id="bNext" type="button">다음 판 시작</button>
       <button class="btn-end" id="bEnd" type="button">게임 끝내고 저장</button>
+      <button class="btn-end" id="bTopup" type="button" hidden>리바인 +2,000</button>
     </div>
   </section>
 
@@ -597,6 +620,17 @@ body.locked { overflow: hidden; }
   </div>
 </div>
 
+<div class="overlay" id="chartSheet" hidden>
+  <div class="sheet wide" role="dialog" aria-modal="true" aria-labelledby="chartTitle">
+    <div class="sheet-head"><h2 id="chartTitle">GTO 프리플랍 차트</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body">
+      <div class="chartctl" id="chartCtl"></div>
+      <div id="chartGrid"></div>
+      <div id="chartPick"></div>
+    </div>
+  </div>
+</div>
+
 <div class="overlay" id="rebuySheet" hidden>
   <div class="sheet compact" role="dialog" aria-modal="true" aria-labelledby="rebuyTitle">
     <div class="sheet-head"><h2 id="rebuyTitle">칩을 다 잃었어요</h2><button class="chip" type="button" data-close>나중에</button></div>
@@ -652,7 +686,7 @@ body.locked { overflow: hidden; }
         <button class="toggle" type="button" data-rebuy="3" aria-pressed="false">3번</button>
         <button class="toggle" type="button" data-rebuy="99" aria-pressed="false">무제한</button>
       </div>
-      <span class="muted" style="font-size:13px">사람(나·친구)만 · 블라인드 300/600 전까지</span>
+      <span class="muted" style="font-size:13px">사람(나·친구)만 · 칩이 다 떨어지거나 1,000개 이하일 때 · 블라인드 150/300 전까지 · 한 번에 칩 2,000개</span>
     </div>
     <div class="setup-row">
       <span class="setup-label">대회</span>
@@ -1304,11 +1338,34 @@ body.locked { overflow: hidden; }
   }
 
   /* ---------- 리바인 ---------- */
-  const REBUY_LEVEL = 8;   // 블라인드 레벨 8(300/600) 전까지만 리바인할 수 있어요 (펍의 "리바인 마감")
+  // 리바인 규칙 (펍에서 흔한 방식)
+  //  · 블라인드 150/300이 되기 전까지(레벨 6 전)만 가능 = 리바인 마감
+  //  · 칩을 다 잃었을 때, 또는 판과 판 사이에 칩이 시작 칩의 절반(1,000개) 이하일 때
+  //  · 한 번에 시작 칩만큼(2,000개)을 더 받아요 · 횟수는 설정(없음/1/2/3/무제한)
+  const REBUY_LEVEL = 6;
+  const REBUY_UNDER = START / 2;
   const rebuyLeft = p => (settings.rebuy >= 99 ? Infinity : settings.rebuy - (p.rebuys || 0));
   const rebuyHandsLeft = () => Math.max(0, REBUY_LEVEL * hpl() - G.handNo);
   function canRebuy(p) {
     return (p.kind === 'me' || p.kind === 'human') && rebuyLeft(p) > 0 && G.level < REBUY_LEVEL && G.street !== 'over';
+  }
+  function canTopup(p) {
+    return p && !p.out && !p.rebuyPending && p.stack > 0 && p.stack <= REBUY_UNDER && (p.kind === 'me' || p.kind === 'human')
+      && rebuyLeft(p) > 0 && G.level < REBUY_LEVEL && G.street !== 'over' && (ended() || !p.inHand);
+  }
+  // 칩이 적을 때 판과 판 사이에 미리 리바인 (칩 +2,000)
+  function doTopup(seat) {
+    const p = G.players[seat];
+    if (!canTopup(p)) return;
+    p.stack += START; p.rebuys = (p.rebuys || 0) + 1; p.last = '리바인!';
+    if (G.tour && p.tid != null) G.tour.players[p.tid].chips = p.stack;
+    G.log.push(`${p.name} 리바인! 칩 +${won(START)} (${p.rebuys}번째)`);
+    if (seat === G.me) G.stats.rebuys = (G.stats.rebuys || 0) + 1;
+    render();
+  }
+  function rebuyRuleText() {
+    const n = settings.rebuy >= 99 ? '무제한' : settings.rebuy ? `최대 ${settings.rebuy}번` : '없음';
+    return `리바인: ${n} · 칩이 ${won(REBUY_UNDER)}개 이하이거나 다 잃었을 때 · 블라인드 ${LEVELS[REBUY_LEVEL][0]}/${LEVELS[REBUY_LEVEL][1]} 전까지 · 한 번에 칩 ${won(START)}개`;
   }
   function doRebuy(seat, yes) {
     const p = G.players[seat];
@@ -1348,7 +1405,7 @@ body.locked { overflow: hidden; }
     const me = G.players[G.me];
     if (!me) return;
     const left = me.rebuyPending ? rebuyLeft(me) : 0;
-    $('rebuyText').innerHTML = `리바인하면 다음 판부터 칩 <b>${won(START)}</b>개로 다시 앉아요.<br>남은 리바인: <b>${left === Infinity ? '무제한' : left + '번'}</b> · 마감까지 <b>${rebuyHandsLeft()}판</b>${G.tour ? '<br>대회 순위와 인원은 그대로예요. 리바인한 칩만큼 판돈이 커진 셈이에요.' : ''}`;
+    $('rebuyText').innerHTML = `리바인하면 다음 판부터 칩 <b>${won(START)}</b>개로 다시 앉아요.<br>남은 리바인: <b>${left === Infinity ? '무제한' : left + '번'}</b> · 마감까지 <b>${rebuyHandsLeft()}판</b>${G.tour ? '<br>대회 순위와 인원은 그대로예요.' : ''}<br><span class="muted">${rebuyRuleText()}</span>`;
     $('rebuyYes').textContent = `리바인 (칩 ${won(START)}개 다시 받기)`;
   }
 
@@ -1394,13 +1451,13 @@ body.locked { overflow: hidden; }
       suggestTo: b.can ? (pf ? Math.max(b.minTo, Math.min(b.maxTo, G.currentBet * 3)) : sizeTo(i, 0.66)) : 0
     };
     if (i === G.me) {
-      if (pf) {
-        const plan = gtoPreflop(i, a, GTO_PROFILE);
-        const acts = ['raise', 'call', 'check', 'fold'].filter(t => (plan[t] || 0) > 0);
-        const best = acts.sort((x, y) => (plan[y] || 0) - (plan[x] || 0))[0] || (a.toCall ? 'fold' : 'check');
-        if (plan.raiseTo) a.suggestTo = plan.raiseTo;
-        a.rec = { sit: 'gto', best, ok: acts.filter(t => t !== best && plan[t] >= 0.25), why: plan.why, rule: '자리·칩 깊이별 표준 범위(GTO 차트)대로 치기.', plan };
-      } else a.rec = recommend(a);
+      // 코치도 컴퓨터(프로)와 같은 GTO 계산으로 추천해요
+      const plan = pf ? gtoPreflop(i, a, GTO_PROFILE) : gtoPostflop(i, a, GTO_PROFILE);
+      const acts = ['raise', 'call', 'check', 'fold'].filter(t => (plan[t] || 0) > 0.001);
+      const best = acts.sort((x, y) => (plan[y] || 0) - (plan[x] || 0))[0] || (a.toCall ? 'fold' : 'check');
+      if (pf && plan.raiseTo) a.suggestTo = plan.raiseTo;
+      if (!pf && plan.raise > 0) a.suggestTo = plan.size >= 9 ? b.maxTo : sizeTo(i, plan.size);
+      a.rec = { sit: 'gto', best, ok: acts.filter(t => t !== best && plan[t] >= 0.2), why: plan.why, rule: pf ? '자리·칩 깊이별 표준 범위(GTO 차트)대로 치기.' : '상대 범위 대비 승률 · 팟 오즈 · 포지션으로 판단하기.', plan };
     }
     return a;
   }
@@ -1438,7 +1495,7 @@ body.locked { overflow: hidden; }
 
   const freeFold = () => '아무도 돈을 걸지 않아서, 체크하면 공짜로 다음 카드를 볼 수 있었어요. 돈이 안 드는 상황에서 포기할 이유는 없어요.';
   const WHY = {
-    gto: { fold: a => a.rec.why, check: a => a.rec.why, call: a => a.rec.why, raise: a => a.rec.why },
+    gto: Object.fromEntries(['fold', 'check', 'call', 'raise'].map(t => [t, a => `GTO 빈도: ${freqLine(a.rec.plan)}. 내가 고른 ${(n => n + (/[콜벳]$/.test(n) ? '은' : '는'))(actName(t, a.toCall))} 이 상황에서 ${Math.round(((a.rec.plan && a.rec.plan[t]) || 0) * 100)}%로 쓰는 선택이에요. ${a.rec.why}`])),
     loseCall: {
       fold: a => `필요한 승률은 ${pct(a.need)}인데 내 승률은 ${pct(a.E)}였어요. 이길 확률이 모자랄 때 포기하는 건 칩을 지키는 좋은 판단이에요. 포기도 실력이에요.`,
       call: a => `콜 ${won(a.toCall)}칩으로 판돈 ${won(a.potTotal + a.toCall)}칩을 노리려면 최소 ${pct(a.need)}는 이겨야 하는데, 내 승률은 ${pct(a.E)}였어요. 같은 상황을 100번 반복하면 평균적으로 손해 보는 콜이에요.`,
@@ -1527,6 +1584,8 @@ body.locked { overflow: hidden; }
   function judge(a, type, to) {
     const { rec, toCall, E, potTotal: pt } = a;
     let level = type === rec.best ? 'good' : rec.ok.includes(type) ? 'ok' : 'bad';
+    const pPick = rec.plan ? (rec.plan[type] || 0) : null, pBest = rec.plan ? (rec.plan[rec.best] || 1) : null;
+    if (rec.plan) level = type === rec.best || pPick >= 0.45 ? 'good' : pPick >= 0.12 ? 'ok' : 'bad';   // GTO는 섞어 치니까 빈도로 판정
     const why = (WHY[rec.sit][type] || (() => ''))(a);
     let mistake = null;
     if (level !== 'good') {
@@ -1547,8 +1606,8 @@ body.locked { overflow: hidden; }
     const evMine = evOf(a, type, to), evBest = evOf(a, rec.best, a.suggestTo);
     const regret = Math.min(1, Math.max(0, evBest - evMine) / Math.max(pt, BBv() * 2));
     let score = level === 'good' ? 100 - Math.round(regret * 10)
-      : level === 'ok' ? 80 - Math.round(regret * 25)
-      : 45 - Math.round(regret * 35);
+      : level === 'ok' ? (rec.plan ? 60 + Math.round(20 * pPick / pBest) : 80 - Math.round(regret * 25))
+      : (rec.plan ? 15 + Math.round(30 * pPick / pBest) - Math.round(regret * 10) : 45 - Math.round(regret * 35));
     if (sizeNote) score -= 12;
     score = Math.max(5, Math.min(100, score));
     let better;
@@ -1641,7 +1700,7 @@ body.locked { overflow: hidden; }
   const PCT_TABLE = new Float32Array(52 * 52);
   for (let a = 0; a < 52; a++) for (let b = 0; b < 52; b++) if (a !== b) PCT_TABLE[a * 52 + b] = CLASS_PCT[handKey(a, b)];
   const handPct = (a, b) => PCT_TABLE[a * 52 + b];
-  const keyLabelKo = k => k.replace('T', '10').replace(/s$/, ' 수티드').replace(/o$/, ' 오프');
+  const keyLabelKo = k => k.slice(0, 2).split('').map(c => (c === 'T' ? '10' : c)).join('-') + (k[2] === 's' ? ' 수티드' : k[2] === 'o' ? ' 오프' : '');
   const BLUFF3 = new Set(['A5s', 'A4s', 'A3s', 'A2s', 'K9s', 'QTs', 'JTs', 'T9s', '98s', '87s', '76s', '65s']);
   // 처음 레이즈로 들어가는 표준 범위 (뒤에 남은 사람 수 기준, 9인 테이블 GTO 차트 근사)
   const rfiPct = h => ({ 1: 0.40, 2: 0.44, 3: 0.28, 4: 0.22, 5: 0.185, 6: 0.155, 7: 0.13 })[h] ?? 0.11;
@@ -1726,6 +1785,43 @@ body.locked { overflow: hidden; }
   }
   const GTO_PROFILE = { w: 1, ag: 1, cm: 0 };
 
+  // 프리플랍 GTO 핵심 계산 (실제 게임과 차트가 같은 공식을 써요)
+  // o: { hp, key, D, raises, behind, R, ip, isBB, free, need, E, allin, w, ag }
+  function preCore(o) {
+    const w = o.w || 1, ag = o.ag || 1;
+    const mix = (range, width = 0.025) => Math.max(0, Math.min(1, (range - o.hp) / width + 0.5));
+    let fold = 0, call = 0, raise = 0, branch, r = 0, v = 0, c = 0, bl = 0;
+    if (o.raises === 0 && o.D <= 12 && !o.free) {
+      branch = 'push'; r = Math.min(0.9, pushPct(o.D, Math.max(1, o.behind)) * w); raise = mix(r, 0.03);
+    } else if (o.raises === 0 && o.free) {
+      branch = 'bbOption'; r = 0.12 * w; raise = mix(r);
+    } else if (o.raises === 0) {
+      branch = 'open'; r = Math.min(0.6, rfiPct(Math.max(1, o.behind)) * w * (o.D < 25 ? 0.9 : 1)); raise = mix(r);
+    } else if (o.allin) {
+      branch = 'allin'; call = o.E >= o.need ? 1 : 0;
+    } else if (o.raises === 1) {
+      branch = 'vsOpen';
+      v = Math.max(0.025, o.R * 0.25) * w;
+      c = Math.min(0.5, (o.isBB ? 0.9 : o.ip ? 0.75 : 0.55) * o.R * w);
+      bl = BLUFF3.has(o.key) && o.hp > v ? (o.ip ? 0.35 : 0.2) * ag : 0;
+      raise = Math.max(mix(v, 0.01), bl);
+      call = Math.max(0, mix(c) - raise);
+      if (o.isBB) call = Math.max(call, o.E * 0.72 >= o.need ? 1 - raise : 0);   // 빅 블라인드는 포지션이 불리해 승률을 72%만 실현한다고 봐요
+    } else if (o.raises === 2) {
+      branch = 'vs3bet';
+      v = Math.max(0.02, o.R * 0.4) * w;
+      raise = mix(v, 0.008) + (o.key === 'A5s' || o.key === 'A4s' ? 0.15 * ag : 0);
+      call = o.E * (o.ip ? 0.95 : 0.85) >= o.need && o.D >= 30 ? 1 : 0;
+    } else {
+      branch = 'vs4bet'; raise = o.hp <= 0.015 ? 1 : 0; call = !raise && o.E >= o.need ? 1 : 0;
+    }
+    raise = Math.min(1, raise); call = Math.min(1 - raise, call); fold = Math.max(0, 1 - raise - call);
+    if (o.free) return { check: fold + call, raise, call: 0, fold: 0, branch, r, v, c, bl };
+    return { fold, call, raise, branch, r, v, c, bl };
+  }
+  const freqLine = plan => ['raise', 'call', 'check', 'fold'].filter(t => (plan[t] || 0) > 0.005)
+    .map(t => `${({ raise: '레이즈', call: '콜', check: '체크', fold: '폴드' })[t]} ${Math.round(plan[t] * 100)}%`).join(' · ');
+
   function gtoPreflop(i, a, pr) {
     const p = G.players[i], B = BBv(), b = raiseBounds(i);
     const [h1, h2] = p.hole, hp = handPct(h1, h2), key = handKey(h1, h2);
@@ -1733,55 +1829,39 @@ body.locked { overflow: hidden; }
     const behind = G.players.filter((q, s) => s !== i && canAct(q) && !q.acted).length;
     const pos = G.pos[i] || '';
     const ip = pos === 'BTN' || pos === 'CO' || pos === 'HJ';
-    const mix = (range, width = 0.025) => Math.max(0, Math.min(1, (range - hp) / width + 0.5));
     const to = x => Math.max(b.minTo, Math.min(b.maxTo, Math.round(x / 5) * 5));
     const handTxt = `${keyLabelKo(key)}(상위 ${pctTxt(hp)})`;
     const opener = G.pfAggr, R = opener >= 0 && G.rng ? G.rng[opener] : 1;
     const oppPos = opener >= 0 ? (G.pos[opener] || '') : '';
-    let fold = 0, call = 0, raise = 0, raiseTo = 0, why = '';
     const limpers = G.players.filter((q, s) => s !== G.bb && s !== i && q.inHand && !q.folded && q.bet === B).length;
-    if (raises === 0 && D <= 12) {
-      const r = Math.min(0.9, pushPct(D, Math.max(1, behind)) * pr.w);
-      raise = mix(r, 0.03); raiseTo = b.maxTo;
-      why = `칩이 ${D.toFixed(0)}BB(빅 블라인드 ${D.toFixed(0)}개)뿐이라 "올인 아니면 폴드" 구간이에요. 뒤에 ${behind}명이 남은 자리의 표준 올인 범위는 상위 ${pctTxt(r)}, 내 패는 ${handTxt}예요.`;
-    } else if (raises === 0 && a.toCall === 0) {
-      const r = 0.12 * pr.w;
-      raise = mix(r); raiseTo = to(B * (3.5 + limpers));
-      why = `빅 블라인드인데 아무도 레이즈하지 않았어요. 상위 ${pctTxt(r)} 정도 강한 패만 레이즈하고, 나머지는 공짜로 체크해요. 내 패는 ${handTxt}.`;
-      return { check: 1 - raise, raise: b.can ? raise : 0, raiseTo, why, fold: 0, call: 0 };
-    } else if (raises === 0) {
-      const r = Math.min(0.6, rfiPct(Math.max(1, behind)) * pr.w * (D < 25 ? 0.9 : 1));
-      raise = mix(r); raiseTo = to(B * (pos === 'SB' ? 3 : D < 25 ? 2.2 : 2.5) + B * limpers);
-      why = `${pos || '이 자리'}에서 처음 들어갈 때의 표준 범위(오픈 레이즈)는 상위 ${pctTxt(r)}예요(뒤에 ${behind}명). 내 패는 ${handTxt}${hp <= r ? '라 레이즈가 정석이에요.' : '라 폴드가 정석이에요. 그냥 따라가는 림프는 하지 않아요.'}`;
-    } else if (G.players[opener] && G.players[opener].allIn || a.toCall >= p.stack) {
-      const ok = a.E >= a.need;
-      call = ok ? 1 : 0;
-      why = `상대가 올인했어요. 상대 범위(상위 ${pctTxt(R)})를 상대로 내 승률은 ${pct(a.E)}, 따라가는 데 필요한 승률은 ${pct(a.need)}예요. ${ok ? '승률이 충분해서 콜이 이득이에요.' : '승률이 모자라서 폴드가 정석이에요.'}`;
-    } else if (raises === 1) {
-      const v = Math.max(0.025, R * 0.25) * pr.w;
-      const c = Math.min(0.5, (i === G.bb ? 0.9 : ip ? 0.75 : 0.55) * R * pr.w);
-      const bl = BLUFF3.has(key) && hp > v ? (ip ? 0.35 : 0.2) * pr.ag : 0;
-      raise = Math.max(mix(v, 0.01), bl);
-      call = Math.max(0, mix(c) - raise);
-      if (i === G.bb) call = Math.max(call, a.E * 0.85 >= a.need ? 1 - raise : 0);
+    const allin = raises > 0 && ((G.players[opener] && G.players[opener].allIn) || a.toCall >= p.stack);
+    const o = { hp, key, D, raises, behind, R, ip, isBB: i === G.bb, free: a.toCall === 0, need: a.need, E: a.E, allin, w: pr.w, ag: pr.ag };
+    const plan = preCore(o);
+    let raiseTo = 0, why = '';
+    if (plan.branch === 'push') {
+      raiseTo = b.maxTo;
+      why = `칩이 ${D.toFixed(0)}BB(빅 블라인드 ${D.toFixed(0)}개)뿐이라 "올인 아니면 폴드" 구간이에요. 뒤에 ${behind}명이 남은 자리의 표준 올인 범위는 상위 ${pctTxt(plan.r)}, 내 패는 ${handTxt}예요.`;
+    } else if (plan.branch === 'bbOption') {
+      raiseTo = to(B * (3.5 + limpers));
+      why = `빅 블라인드인데 아무도 레이즈하지 않았어요. 상위 ${pctTxt(plan.r)} 정도 강한 패만 레이즈하고, 나머지는 공짜로 체크해요. 내 패는 ${handTxt}.`;
+    } else if (plan.branch === 'open') {
+      raiseTo = to(B * (pos === 'SB' ? 3 : D < 25 ? 2.2 : 2.5) + B * limpers);
+      why = `${pos || '이 자리'}에서 처음 들어갈 때의 표준 범위(오픈 레이즈)는 상위 ${pctTxt(plan.r)}예요(뒤에 ${behind}명, 칩 ${D.toFixed(0)}BB). 내 패는 ${handTxt}${hp <= plan.r ? '라 레이즈가 정석이에요.' : '라 폴드가 정석이에요. 그냥 따라가는 림프는 하지 않아요.'}`;
+    } else if (plan.branch === 'allin') {
+      why = `상대가 올인했어요. 상대 범위(상위 ${pctTxt(R)})를 상대로 내 승률은 ${pct(a.E)}, 따라가는 데 필요한 승률은 ${pct(a.need)}예요. ${a.E >= a.need ? '승률이 충분해서 콜이 이득이에요.' : '승률이 모자라서 폴드가 정석이에요.'}`;
+    } else if (plan.branch === 'vsOpen') {
       raiseTo = to(G.currentBet * (ip ? 3 : 3.8));
       if (raiseTo >= (p.stack + p.bet) * 0.4) raiseTo = b.maxTo;
-      why = `${oppPos || '앞사람'}이(가) 레이즈했어요. 그 자리 레이즈 범위는 대략 상위 ${pctTxt(R)}예요. 그중에서도 강한 상위 ${pctTxt(v)}는 3벳(다시 올리기), 그다음 상위 ${pctTxt(c)}까지는 콜, 나머지는 폴드가 표준이에요. 내 패는 ${handTxt}${bl ? '. 이 패는 블러핑 3벳으로도 가끔 써요' : ''}.`;
-    } else if (raises === 2) {
-      const v = Math.max(0.02, R * 0.4) * pr.w;
-      raise = mix(v, 0.008) + (key === 'A5s' || key === 'A4s' ? 0.15 * pr.ag : 0);
-      call = a.E * (ip ? 0.95 : 0.85) >= a.need && D >= 30 ? 1 : 0;
+      why = `${oppPos || '앞사람'}이(가) 레이즈했어요. 그 자리 레이즈 범위는 대략 상위 ${pctTxt(R)}예요. 그중 강한 상위 ${pctTxt(plan.v)}는 3벳(다시 올리기), 상위 ${pctTxt(plan.c)}까지는 콜, 나머지는 폴드가 표준이에요. 내 패는 ${handTxt}${plan.bl ? '. 이 패는 블러핑 3벳으로도 가끔 써요' : ''}.`;
+    } else if (plan.branch === 'vs3bet') {
       raiseTo = D <= 45 ? b.maxTo : to(G.currentBet * 2.3);
-      why = `3벳을 받았어요. 3벳 범위는 상위 ${pctTxt(R)}로 강해요. 4벳은 상위 ${pctTxt(v)}(QQ 이상, AK급)만, 콜은 승률이 충분하고 칩이 넉넉할 때만 해요(내 승률 ${pct(a.E)} · 필요 ${pct(a.need)}). 내 패는 ${handTxt}.`;
+      why = `3벳을 받았어요. 3벳 범위는 상위 ${pctTxt(R)}로 강해요. 4벳은 상위 ${pctTxt(plan.v)}(QQ 이상, AK급)만, 콜은 승률이 충분하고 칩이 넉넉할 때만 해요(내 승률 ${pct(a.E)} · 필요 ${pct(a.need)}). 내 패는 ${handTxt}.`;
     } else {
-      raise = hp <= 0.015 ? 1 : 0; raiseTo = b.maxTo;
-      call = !raise && a.E >= a.need ? 1 : 0;
+      raiseTo = b.maxTo;
       why = `4벳 이상이면 최상위 패(AA, KK급)만 계속해요. 내 승률 ${pct(a.E)}, 필요 ${pct(a.need)}. 내 패는 ${handTxt}.`;
     }
-    if (!b.can) { call = Math.min(1, call + raise); raise = 0; }
-    raise = Math.min(1, raise); call = Math.min(1 - raise, call); fold = Math.max(0, 1 - raise - call);
-    if (a.toCall === 0) return { check: fold + call, raise, raiseTo, why, fold: 0, call: 0 };
-    return { fold, call, raise, raiseTo, why };
+    if (!b.can && plan.raise) { if (plan.check != null) plan.check += plan.raise; else plan.call = Math.min(1, plan.call + plan.raise); plan.raise = 0; }
+    return { ...plan, raiseTo, why };
   }
 
   function boardWet() {
@@ -1801,28 +1881,32 @@ body.locked { overflow: hidden; }
     const ip = G.players.every((q, s) => s === i || !contender(q) || rel(s) < rel(i));
     const vT = k === 1 ? 0.62 : Math.min(0.6, a.T.value * 1.05), sT = k === 1 ? 0.78 : Math.min(0.85, a.T.strong * 1.1);
     const ag = pr.ag;
+    const facts = [`상대 범위(행동으로 좁힌 패들)를 상대로 내 승률 ${pct(E)}`, ip ? '포지션 유리(나중에 행동)' : '포지션 불리(먼저 행동)', `SPR ${spr.toFixed(1)}(남은 칩 ÷ 판돈)`];
+    if (draw) facts.push(`드로우 아웃츠 ${outs}장`);
     if (toCall === 0) {
-      let pb = 0, size = 0.66;
-      if (E >= vT) { pb = 0.85; size = st === 'river' ? 0.75 : wet ? 0.66 : 0.5; }
-      else if (draw) { pb = 0.45 * ag; size = 0.5; }
-      else if (st === 'flop' && pfa && k === 1) { pb = (wet ? 0.45 : 0.7) * ag; size = wet ? 0.66 : 0.33; }
-      else if (st === 'turn' && barrel && k === 1) { pb = (E >= 0.45 || outs >= 6 ? 0.55 : 0.2) * ag; size = 0.66; }
-      else if (st === 'river' && barrel && k === 1 && E < 0.3) { pb = 0.25 * ag; size = 0.75; }
-      else if (st === 'river' && E >= 0.55 && k === 1) { pb = 0.35; size = 0.4; }
-      if (spr < 1.2 && E >= 0.55) { pb = 1; size = 9; }
+      let pb = 0, size = 0.66, why;
+      if (E >= vT) { pb = 0.85; size = st === 'river' ? 0.75 : wet ? 0.66 : 0.5; why = `승률이 ${pct(vT)} 이상인 강한 패라 가치 베팅(판돈의 ${Math.round(size * 100)}%)이 기본이에요. 더 약한 패에게 칩을 받아내요.`; }
+      else if (draw) { pb = 0.45 * ag; size = 0.5; why = '드로우(완성되면 강해지는 패)라 세미 블러핑을 섞어요. 상대가 접으면 바로 이기고, 따라와도 완성될 기회가 있어요.'; }
+      else if (st === 'flop' && pfa && k === 1) { pb = (wet ? 0.45 : 0.7) * ag; size = wet ? 0.66 : 0.33; why = `프리플랍에 레이즈한 사람이라 컨티뉴에이션 벳(판돈의 ${Math.round(size * 100)}%)을 ${Math.round(pb * 100)}% 섞어요. ${wet ? '바닥이 연결돼 있어 조금 덜 자주, 크게.' : '바닥이 말라 있어 상대가 맞지 않았을 확률이 높아 자주, 작게.'}`; }
+      else if (st === 'turn' && barrel && k === 1) { pb = (E >= 0.45 || outs >= 6 ? 0.55 : 0.2) * ag; size = 0.66; why = '플랍에 이어 턴에도 거는 "배럴"을 패 강도에 따라 섞어요.'; }
+      else if (st === 'river' && barrel && k === 1 && E < 0.3) { pb = 0.25 * ag; size = 0.75; why = '리버에서 약한 패는 일정 비율로 블러핑해야 상대가 무조건 따라오지 못해요(균형).'; }
+      else if (st === 'river' && E >= 0.55 && k === 1) { pb = 0.35; size = 0.4; why = '리버 중간 강도 패는 작게 거는 "얇은 가치 베팅"을 섞어요.'; }
+      else why = '애매한 패는 체크로 판돈을 작게 유지하고 공짜 카드를 봐요.';
+      if (spr < 1.2 && E >= 0.55) { pb = 1; size = 9; why = 'SPR이 낮아(칩이 판돈보다 적어) 승률이 괜찮으면 올인으로 마무리해요.'; }
       pb = canRaise ? Math.min(1, pb) : 0;
-      return { check: 1 - pb, raise: pb, size, fold: 0, call: 0 };
+      return { check: 1 - pb, raise: pb, size, fold: 0, call: 0, why: `${facts.join(' · ')}. ${why}` };
     }
     const callE = E * (ip ? 1 : 0.92) + (draw && spr > 3 ? 0.04 : 0);
-    let pr_ = 0, pc = 0, size = 0.9;
-    if (E >= sT && canRaise) { pr_ = 0.55 * ag; pc = 1 - pr_; }
+    let pr_ = 0, pc = 0, size = 0.9, why;
+    if (E >= sT && canRaise) { pr_ = 0.55 * ag; pc = 1 - pr_; why = `아주 강한 패(승률 ${pct(sT)} 이상)라 레이즈로 판을 키우거나, 가끔 콜로 숨겨요.`; }
     else if (callE >= need + 0.02 + pr.cm) {
-      pc = 1;
-      if (draw && st === 'flop' && k === 1 && canRaise) { pr_ = 0.18 * ag; pc = 1 - pr_; size = 0.8; }
-    } else if (callE >= need - 0.04 + pr.cm) pc = 0.4;
+      pc = 1; why = `포지션과 드로우까지 반영한 실현 승률 ${pct(callE)}이 필요한 승률 ${pct(need)}보다 높아서 콜이 이득이에요.`;
+      if (draw && st === 'flop' && k === 1 && canRaise) { pr_ = 0.18 * ag; pc = 1 - pr_; size = 0.8; why += ' 드로우라 가끔 세미 블러핑 레이즈도 섞어요.'; }
+    } else if (callE >= need - 0.04 + pr.cm) { pc = 0.4; why = `실현 승률 ${pct(callE)}과 필요한 승률 ${pct(need)}이 비슷해요. 너무 자주 접으면 블러핑에 당하니 일부는 콜로 막아요(최소 방어 빈도).`; }
+    else why = `실현 승률 ${pct(callE)}이 필요한 승률 ${pct(need)}보다 낮아서 폴드가 이득이에요.`;
     if (!canRaise) { pc = Math.min(1, pc + pr_); pr_ = 0; }
     pr_ = Math.min(1, pr_); pc = Math.min(1 - pr_, pc);
-    return { fold: Math.max(0, 1 - pr_ - pc), call: pc, raise: pr_, size };
+    return { fold: Math.max(0, 1 - pr_ - pc), call: pc, raise: pr_, size, why: `${facts.join(' · ')}. ${why}` };
   }
   function sampleAct(plan) {
     const r = Math.random();
@@ -2295,7 +2379,7 @@ body.locked { overflow: hidden; }
     if (G.mode !== 'host') return;
     if (msg.type === 'next') { if (G.street === 'done') startHand(); return; }
     if (msg.type === 'restart') { if (G.street === 'over') startHostGame(); return; }
-    if (msg.type === 'rebuy') { const seat = G.players.findIndex(p => p.kind === 'human' && p.sid === sid); if (seat >= 0) doRebuy(seat, !!msg.yes); return; }
+    if (msg.type === 'rebuy') { const seat = G.players.findIndex(p => p.kind === 'human' && p.sid === sid); if (seat >= 0) { if (msg.topup) doTopup(seat); else doRebuy(seat, !!msg.yes); } return; }
     const seat = G.players.findIndex(p => p.kind === 'human' && p.sid === sid);
     if (seat < 0 || ended() || G.toAct !== seat || !G.busy) return;
     const p = G.players[seat], toCall = G.currentBet - p.bet;
@@ -2513,7 +2597,7 @@ body.locked { overflow: hidden; }
       rng: Array.isArray(s.rng) ? s.rng : null, pap: Array.isArray(s.pap) ? s.pap : null, raisesPre: s.raisesPre || 0, pfAggr: s.pfAggr ?? -1, tsum: s.tsum || null,
       log: (s.log || []).map(String), endReason: s.endReason, revealed: [...revealed]
     });
-    if (s.handNo !== G.handNo) { G.handNo = s.handNo; G.decisions = []; G.countedHand = false; $('bNext').disabled = false; }
+    if (s.handNo !== G.handNo) { G.handNo = s.handNo; G.topupSent = 0; G.decisions = []; G.countedHand = false; $('bNext').disabled = false; }
     G.turnDeadline = s.turnLeft != null ? Date.now() + s.turnLeft : 0;
     G.result = s.result;
     const isEnded = ended();
@@ -2873,6 +2957,7 @@ body.locked { overflow: hidden; }
     $('result').textContent = isEnded ? resultText() : '';
     const [S, B] = blinds();
     const left = hpl() - ((G.handNo - 1) % hpl());
+    $('blindBadge').innerHTML = `<b>SB ${won(S)} · BB ${won(B)}</b>${(G.mode === 'solo' ? settings.pub || G.tour : true) && G.level < LEVELS.length - 1 && G.handNo ? `<span>${left}판 뒤 ${won(LEVELS[G.level + 1][0])}/${won(LEVELS[G.level + 1][1])}</span>` : ''}`;
     $('blindinfo').textContent = `블라인드 ${S}/${B}${(G.mode === 'solo' ? settings.pub : true) && G.level < LEVELS.length - 1 ? ` · ${left}판 뒤 올라요` : ''}`;
     Sound.setIntensity(!isEnded && (potTotal() >= 25 * B || G.players.some(p => p.inHand && p.allIn)));
 
@@ -2893,6 +2978,9 @@ body.locked { overflow: hidden; }
     else if (pendingMe) { $('bNext').textContent = '리바인 할까요?'; $('bNext').disabled = false; }
     else if (G.street === 'done' && ['게임 결과 보기', '리바인 할까요?'].includes($('bNext').textContent)) $('bNext').textContent = '다음 판 시작';
     if (UI.open === 'rebuy') paintRebuy();
+    const topup = canTopup(me) && (G.mode !== 'guest' || !G.topupSent);
+    $('bTopup').hidden = !topup;
+    if (topup) { $('bTopup').textContent = `리바인 +${won(START)} (칩 ${won(REBUY_UNDER)} 이하 · ${rebuyLeft(me) === Infinity ? '무제한' : rebuyLeft(me) + '번 남음'})`; $('endrow').hidden = false; }
     $('bEnd').hidden = !!G.ended;
     let turn;
     const who = G.players[G.toAct];
@@ -3298,7 +3386,7 @@ body.locked { overflow: hidden; }
   }
 
   /* ---------- 팝업 (코치 피드백 · 기록실) ---------- */
-  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet', rebuy: 'rebuySheet' };
+  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet', rebuy: 'rebuySheet', chart: 'chartSheet' };
   function openSheet(which) {
     Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
     UI.open = which;
@@ -3307,6 +3395,7 @@ body.locked { overflow: hidden; }
     else if (which === 'menu') renderHistory();
     else if (which === 'tour') renderTour();
     else if (which === 'rebuy') paintRebuy();
+    else if (which === 'chart') renderChart();
     const el = $(SHEETS[which]);
     el.hidden = false;
     document.body.classList.add('locked');
@@ -3331,6 +3420,7 @@ body.locked { overflow: hidden; }
     if (ds.length > 1) {
       parts.push(`<div class="rec-sec"><h3>이번 판 내 선택 (눌러서 다시 보기)</h3><div class="review">${ds.map((d, i) => `<button class="review-row pickrow${pick === d ? ' on' : ''}" data-pick="${i}" type="button"><span class="pts ${d.level}">${d.score}</span><span>${STREET_KO[d.street]} · ${esc(d.action)}</span></button>`).join('')}</div></div>`);
     }
+    parts.push('<button class="btn-hint" type="button" id="sheetChart">GTO 차트 보기 (모든 패의 빈도 · EV)</button>');
     $('fbBody').innerHTML = parts.join('');
   }
   function paintFab() {
@@ -3361,6 +3451,10 @@ body.locked { overflow: hidden; }
   };
   $('rebuyYes').addEventListener('click', () => answerRebuy(true));
   $('rebuyNo').addEventListener('click', () => answerRebuy(false));
+  $('bTopup').addEventListener('click', () => {
+    if (G.mode === 'guest') { Net.send({ type: 'rebuy', topup: true }); G.topupSent = G.handNo; render(); return; }
+    doTopup(G.me);
+  });
   $('openRecords').addEventListener('click', () => openSheet('rec'));
   document.querySelectorAll('.overlay').forEach(o => o.addEventListener('click', e => {
     if (e.target === o || e.target.closest('[data-close]')) closeSheet();
@@ -3370,6 +3464,7 @@ body.locked { overflow: hidden; }
     const pickBtn = e.target.closest('[data-pick]');
     if (pickBtn) { UI.fbPick = Number(pickBtn.dataset.pick); renderFeedbackSheet(); $('fbBody').scrollTop = 0; return; }
     if (e.target.closest('#sheetHint') && G.pending) { G.showHint = true; render(); }
+    if (e.target.closest('#sheetChart')) openChart(true);
   });
   $('recSheet').addEventListener('click', e => {
     const t = e.target.closest('[data-tab],[data-gsort],[data-hfilter],[data-gamehands],[data-player],[data-allplayers],#moreHands');
@@ -3383,6 +3478,152 @@ body.locked { overflow: hidden; }
     else if (t.id === 'moreHands') UI.handLimit += 40;
     renderRecords();
     $('recBody').scrollTop = 0;
+  });
+
+  /* ---------- GTO 차트 (169가지 시작 패 표) ----------
+     자리 · 칩 깊이(BB) · 상대 행동을 고르면, 모든 시작 패의 레이즈/콜/폴드 빈도와 대략적인 EV(BB 단위)를 보여 줘요.
+     빈도는 실제 코치·컴퓨터가 쓰는 공식(preCore)과 같아요. */
+  const POS_ORDER = {
+    2: ['BTN', 'BB'], 3: ['BTN', 'SB', 'BB'], 4: ['UTG', 'BTN', 'SB', 'BB'], 5: ['UTG', 'CO', 'BTN', 'SB', 'BB'], 6: ['UTG', 'HJ', 'CO', 'BTN', 'SB', 'BB'],
+    7: ['UTG', 'MP', 'HJ', 'CO', 'BTN', 'SB', 'BB'], 8: ['UTG', 'UTG+1', 'MP', 'HJ', 'CO', 'BTN', 'SB', 'BB'], 9: ['UTG', 'UTG+1', 'MP', 'LJ', 'HJ', 'CO', 'BTN', 'SB', 'BB']
+  };
+  const tableSize = () => Math.max(2, Math.min(9, G.players.filter(p => !p.empty && !p.out).length || settings.seats));
+  const behindOf = (pos, n) => { const o = POS_ORDER[n] || POS_ORDER[9]; const k = o.indexOf(pos); return k < 0 ? 1 : o.length - 1 - k; };
+  const CH = { pos: 'BTN', D: 40, act: 'open', opp: 'UTG', n: 9, pick: null };
+  const eqCache = new Map();
+  function repCombo(k) {
+    const hi = RANKS.indexOf(k[0]), lo = RANKS.indexOf(k[1]);
+    if (k.length === 2) return [hi * 4, lo * 4 + 1];
+    return k[2] === 's' ? [hi * 4, lo * 4] : [hi * 4, lo * 4 + 1];
+  }
+  function eqVs(k, pct) {
+    const ck = k + '|' + pct.toFixed(3);
+    if (!eqCache.has(ck)) eqCache.set(ck, equityR(repCombo(k), [], [{ pct, ap: 0 }], 160));
+    return eqCache.get(ck);
+  }
+  // 상황별 대략적인 EV (빅 블라인드 단위). 폴드 = 0 기준.
+  function chartRow(k) {
+    const hp = CLASS_PCT[k], n = CH.n, pos = CH.pos, D = CH.D;
+    const behind = behindOf(pos, n), ip = pos === 'BTN' || pos === 'CO' || pos === 'HJ', isBB = pos === 'BB';
+    const posted = pos === 'BB' ? 1 : pos === 'SB' ? 0.5 : 0;
+    const real = (ip ? 0.95 : isBB ? 0.72 : 0.85) * (0.75 + 0.25 * (1 - hp));   // 약한 패일수록 플랍 이후 승률을 덜 실현해요
+    let o, ev = { fold: 0 };
+    if (CH.act === 'open') {
+      if (isBB) { o = { hp, key: k, D, raises: 0, behind: 0, R: 1, ip, isBB, free: true, need: 0, E: 0 }; }
+      else o = { hp, key: k, D, raises: 0, behind, R: 1, ip, isBB, free: false, need: 0, E: 0 };
+      const plan = preCore(o);
+      if (plan.branch === 'push') {
+        const callR = Math.min(0.5, plan.r * 0.5), fe = Math.pow(1 - Math.min(0.6, callR * 1.1), Math.max(1, behind));
+        ev.raise = fe * 1.5 + (1 - fe) * (eqVs(k, callR) * (2 * D + 1.5 - posted) - (D - posted));
+      } else if (plan.branch === 'bbOption') {
+        ev.check = 0; ev.raise = 0.35 * 1.5 + 0.65 * (eqVs(k, 0.4) * real * 8.5 - 3.5 + 1);
+      } else {
+        const s = pos === 'SB' ? 3 : D < 25 ? 2.2 : 2.5;
+        const fe = Math.pow(0.86, Math.max(0, behind - 2)) * (pos === 'SB' ? 1 : 0.82) * 0.58;
+        ev.raise = fe * 1.5 + (1 - fe) * (eqVs(k, 0.18) * real * (2 * s + 1.5 - posted) - (s - posted));
+      }
+      return { plan, ev };
+    }
+    const R = CH.act === 'raise' ? rfiPct(Math.max(1, behindOf(CH.opp, n))) : CH.act === '3bet' ? 0.07 : pushPct(D, Math.max(1, behindOf(CH.opp, n)));
+    if (CH.act === 'raise') {
+      const pot = 1.5 + 2.5, toCall = 2.5 - posted, need = toCall / (pot + toCall), E = eqVs(k, R);
+      o = { hp, key: k, D, raises: 1, behind, R, ip, isBB, free: false, need, E };
+      ev.call = E * real * (pot + toCall) - toCall;
+      const s3 = ip ? 7.5 : 9.5, fe = 0.45;
+      ev.raise = fe * pot + (1 - fe) * (eqVs(k, R * 0.45) * real * (2 * s3 + 1.5 - posted) - (s3 - posted));
+    } else if (CH.act === '3bet') {
+      const pot = 1.5 + 2.5 + 8, toCall = 5.5, need = toCall / (pot + toCall), E = eqVs(k, R);
+      o = { hp, key: k, D, raises: 2, behind, R, ip, isBB, free: false, need, E };
+      ev.call = E * real * (pot + toCall) - toCall;
+      const s4 = Math.min(D, 20), fe = 0.5;
+      ev.raise = fe * pot + (1 - fe) * (eqVs(k, 0.03) * (2 * s4 + 1.5) - (s4 - 2.5));
+    } else {
+      const toCall = Math.max(0.5, D - posted), pot = 1.5 + D, need = toCall / (pot + toCall), E = eqVs(k, R);
+      o = { hp, key: k, D, raises: 1, behind, R, ip, isBB, free: false, need, E, allin: true };
+      ev.call = E * (pot + toCall) - toCall;
+    }
+    return { plan: preCore(o), ev };
+  }
+  function chartFromLive() {
+    CH.n = tableSize();
+    const me = G.players[G.me];
+    if (!me) return;
+    CH.pos = G.pos[G.me] || CH.pos;
+    CH.D = Math.max(5, Math.round((me.stack + me.bet) / BBv()));
+    CH.pick = me.hole && me.hole[0] >= 0 ? handKey(me.hole[0], me.hole[1]) : null;
+    const raises = G.raisesPre || 0, opener = G.pfAggr;
+    if (G.street !== 'preflop' || raises === 0) CH.act = 'open';
+    else if (G.players[opener] && G.players[opener].allIn) { CH.act = 'allin'; CH.opp = G.pos[opener] || 'UTG'; }
+    else if (raises === 1) { CH.act = 'raise'; CH.opp = G.pos[opener] || 'UTG'; }
+    else CH.act = '3bet';
+  }
+  const CHART_DS = [10, 15, 20, 30, 40, 60, 100];
+  function renderChart() {
+    const order = POS_ORDER[CH.n] || POS_ORDER[9];
+    if (!order.includes(CH.pos)) CH.pos = order[order.length - 3] || order[0];
+    if (!order.includes(CH.opp) || order.indexOf(CH.opp) >= order.indexOf(CH.pos)) CH.opp = order[0];
+    const nearestD = CHART_DS.reduce((b, d) => (Math.abs(d - CH.D) < Math.abs(b - CH.D) ? d : b), CHART_DS[0]);
+    const opt = (v, cur, label) => `<option value="${v}"${v === cur ? ' selected' : ''}>${label}</option>`;
+    const acts = [['open', '처음 들어갈 때 (오픈)'], ['raise', '앞사람이 레이즈했을 때'], ['3bet', '내 오픈에 3벳이 왔을 때'], ['allin', '앞사람이 올인했을 때']];
+    const oppChoices = order.slice(0, Math.max(1, order.indexOf(CH.pos)));
+    $('chartCtl').innerHTML = `
+      <label>내 자리<select id="chPos">${order.map(p => opt(p, CH.pos, p)).join('')}</select></label>
+      <label>내 칩<select id="chD">${CHART_DS.map(d => opt(d, nearestD, d + 'BB')).join('')}</select></label>
+      <label>상황<select id="chAct">${acts.map(([v, l]) => opt(v, CH.act, l)).join('')}</select></label>
+      ${CH.act === 'raise' || CH.act === 'allin' ? `<label>상대 자리<select id="chOpp">${oppChoices.map(p => opt(p, CH.opp, p)).join('')}</select></label>` : ''}
+      <button class="chip" type="button" id="chLive">지금 내 상황으로</button>`;
+    CH.D = nearestD;
+    $('chartGrid').innerHTML = '<p class="muted">계산하는 중이에요…</p>';
+    setTimeout(() => {
+      const rows = {};
+      let rangeR = 0, rangeC = 0;
+      RANKS.split('').reverse().forEach((r1, i) => RANKS.split('').reverse().forEach((r2, j) => {
+        const k = i === j ? r1 + r2 : i < j ? r1 + r2 + 's' : r2 + r1 + 'o';
+        const row = chartRow(k); rows[k] = row;
+        const n = k.length === 2 ? 6 : k[2] === 's' ? 4 : 12;
+        rangeR += (row.plan.raise || 0) * n; rangeC += (row.plan.call || 0) * n;
+      }));
+      CH.rows = rows;
+      let html = '<div class="hgrid" role="grid">';
+      RANKS.split('').reverse().forEach((r1, i) => RANKS.split('').reverse().forEach((r2, j) => {
+        const k = i === j ? r1 + r2 : i < j ? r1 + r2 + 's' : r2 + r1 + 'o';
+        const p = rows[k].plan, rz = Math.round((p.raise || 0) * 100), cl = Math.round(((p.call || 0)) * 100);
+        const bg = `linear-gradient(to right, var(--brass) 0 ${rz}%, var(--good) ${rz}% ${rz + cl}%, var(--fold-c) ${rz + cl}% 100%)`;
+        html += `<button type="button" class="hcell${CH.pick === k ? ' mine' : ''}" data-k="${k}" style="background:${bg}" aria-label="${k} 레이즈 ${rz}% 콜 ${cl}%">${k.replace(/[so]$/, '')}<i>${k.length === 3 ? k[2] : ''}</i></button>`;
+      }));
+      html += '</div>';
+      const free = CH.act === 'open' && CH.pos === 'BB';
+      $('chartGrid').innerHTML = html + `<div class="hlegend"><span><i style="background:var(--brass)"></i>${CH.act === 'open' && CH.D <= 12 ? '올인' : '레이즈'}</span><span><i style="background:var(--good)"></i>콜</span><span><i style="background:var(--fold-c)"></i>${free ? '체크' : '폴드'}</span></div>
+        <p class="muted">이 상황에서 ${CH.act === 'open' && CH.D <= 12 ? '올인' : '레이즈'}하는 패는 전체의 약 ${pctTxt(rangeR / 1326)}, 콜하는 패는 약 ${pctTxt(rangeC / 1326)}예요. 칸을 누르면 빈도와 EV가 나와요.</p>`;
+      renderChartPick();
+    }, 30);
+  }
+  function renderChartPick() {
+    const k = CH.pick, row = k && CH.rows && CH.rows[k];
+    if (!row) { $('chartPick').innerHTML = '<p class="muted">표에서 패를 눌러 보세요.</p>'; return; }
+    const p = row.plan, ev = row.ev;
+    const evTxt = x => (x == null ? '–' : `${x >= 0 ? '+' : ''}${x.toFixed(2)}BB`);
+    const lines = [['레이즈', p.raise, ev.raise], ['콜', p.call, ev.call], [p.check != null ? '체크' : '폴드', p.check != null ? p.check : p.fold, p.check != null ? ev.check : 0]]
+      .filter(([, f, e]) => (f || 0) > 0.001 || e != null);
+    $('chartPick').innerHTML = `<div class="fb hint"><div class="fb-title">${keyLabelKo(k)} · 상위 ${pctTxt(CLASS_PCT[k])}</div>
+      <table class="stand"><thead><tr><th>행동</th><th>빈도</th><th>EV(대략)</th></tr></thead><tbody>
+      ${lines.map(([l, f, e]) => `<tr><td>${l}</td><td class="num">${Math.round((f || 0) * 100)}%</td><td class="num">${evTxt(e)}</td></tr>`).join('')}
+      </tbody></table>
+      <p class="muted">EV는 같은 상황을 여러 번 반복했을 때 한 번 평균으로 얻는 칩(빅 블라인드 단위)이에요. 상대가 접는 확률과 범위 대비 승률로 계산한 근삿값이에요.</p></div>`;
+  }
+  function openChart(live = true) {
+    if (live) chartFromLive();
+    openSheet('chart');
+  }
+  $('chartSheet').addEventListener('change', e => {
+    const t = e.target;
+    if (t.id === 'chPos') CH.pos = t.value; else if (t.id === 'chD') CH.D = +t.value; else if (t.id === 'chAct') CH.act = t.value; else if (t.id === 'chOpp') CH.opp = t.value; else return;
+    renderChart();
+  });
+  $('chartSheet').addEventListener('click', e => {
+    const cell = e.target.closest('[data-k]');
+    if (cell) { CH.pick = cell.dataset.k; document.querySelectorAll('.hcell.mine').forEach(c => c.classList.remove('mine')); cell.classList.add('mine'); renderChartPick(); return; }
+    if (e.target.closest('#chLive')) { chartFromLive(); renderChart(); }
   });
 
   /* ---------- 버튼 연결 ---------- */
@@ -3424,6 +3665,7 @@ body.locked { overflow: hidden; }
     if (G.mode === 'host') { G.street = 'over'; G.endReason = 'quit'; }
     render();
   });
+  $('bChart').addEventListener('click', () => openChart(true));
   $('bHint').addEventListener('click', () => { if (G.pending) { G.showHint = true; render(); openSheet('fb'); } });
   $('coachHint').checked = pref('holdemHint', '0') === '1';
   $('coachHint').addEventListener('change', () => { setPref('holdemHint', $('coachHint').checked ? '1' : '0'); render(); });
@@ -3504,10 +3746,10 @@ body.locked { overflow: hidden; }
   }
   paintSound();
 
-  if (/[?&]debug\b/.test(location.search)) window.__hd = { get G() { return G; }, bot: i => gtoBot(i) };   // 테스트용
+  if (/[?&]debug\b/.test(location.search)) window.__hd = { get G() { return G; }, bot: i => gtoBot(i), render: () => render() };   // 테스트용
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-17c';
+  const BUILD = '2026-10-18b';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
