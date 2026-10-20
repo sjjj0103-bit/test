@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>우리 둘 달력</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="manifest" href="manifest.json">
@@ -178,13 +178,6 @@ nav.tabs button[aria-current="page"]::after { content: ""; width: 4px; height: 4
 .miss-btn.pop svg { animation: beat .6s ease-out; }
 .hero .miss-info { font-size: 11px; opacity: .6; margin-top: 8px; letter-spacing: .04em; }
 
-.say { display: flex; gap: 12px; align-items: baseline; padding: 9px 0; border: 0; border-top: 1px solid var(--line); background: none; width: 100%; text-align: left; }
-.say:first-child { border-top: 0; }
-.say .who { font-size: 12px; color: var(--muted); width: 58px; flex: none; display: flex; gap: 6px; align-items: center; overflow: hidden; white-space: nowrap; }
-.say .who i { width: 6px; height: 6px; border-radius: 50%; flex: none; }
-.say .msg { flex: 1; min-width: 0; font-family: var(--display); font-size: 15px; overflow-wrap: anywhere; }
-.say .msg.none { color: var(--muted); font-family: var(--body); font-size: 13px; }
-.say .when { font-size: 11px; color: var(--muted); flex: none; }
 
 .ms-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
 .ms-cell { padding: 2px 6px; border-left: 1px solid var(--line); text-align: center; min-width: 0; }
@@ -200,8 +193,24 @@ nav.tabs button { position: relative; }
 nav.tabs .unread-n { position: absolute; top: 8px; left: calc(50% + 6px); min-width: 16px; height: 16px; padding: 0 4px; border-radius: 999px; background: var(--accent); color: var(--surface); font-size: 10px; line-height: 16px; font-weight: 700; }
 
 /* ---- 채팅 ---- */
-.chat { display: flex; flex-direction: column; gap: 6px; padding-bottom: 72px; }
-body.emoji-open .chat { padding-bottom: 250px; }
+/* 카톡처럼: 채팅방은 화면 높이에 딱 맞는 한 칸. 대화만 안쪽에서 스크롤, 입력창은 항상 맨 아래 */
+body.chat-mode { overflow: hidden; }
+body.chat-mode .wrap { visibility: hidden; }
+.chat-screen {
+  position: fixed; left: 0; right: 0; top: var(--app-top, 0px); z-index: 15; background: var(--bg);
+  height: calc(var(--app-h, 100dvh) - var(--nav-h) - env(safe-area-inset-bottom, 0px));
+  display: flex; flex-direction: column;
+}
+body.kb-open .chat-screen { height: var(--app-h, 100dvh); }
+body.kb-open nav.tabs { display: none; }
+.chat-head { flex: none; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
+  border-bottom: 1px solid var(--line); background: var(--surface); }
+.chat-head b { font-family: var(--display); font-size: 16px; font-weight: 700; display: flex; align-items: center; gap: 7px; }
+.chat-head b i { width: 8px; height: 8px; border-radius: 50%; }
+.chat-scroll { flex: 1; min-height: 0; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch;
+  padding-left: max(14px, env(safe-area-inset-left, 0px)); padding-right: max(14px, env(safe-area-inset-right, 0px)); padding-block: 4px 12px; }
+.chat { display: flex; flex-direction: column; gap: 6px; max-width: 520px; margin: 0 auto; }
 .chat .day-sep { align-self: center; font-size: 11px; color: var(--muted); padding: 12px 0 4px; letter-spacing: .08em; }
 .chat .more { align-self: center; border: 1px solid var(--line); background: none; color: var(--muted); font-size: 12px; padding: 5px 12px; border-radius: 999px; }
 .msg-row { display: flex; align-items: flex-end; gap: 6px; }
@@ -215,18 +224,18 @@ body.emoji-open .chat { padding-bottom: 250px; }
 .mine .msg-meta { align-items: flex-end; }
 .msg-meta .unread { color: var(--accent); font-weight: 700; font-size: 11px; }
 .composer {
-  position: fixed; left: 0; right: 0; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 19;
-  background: var(--surface); border-top: 1px solid var(--line);
+  flex: none; background: var(--surface); border-top: 1px solid var(--line);
   padding-block: 8px; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px));
 }
-.composer .in { max-width: 480px; margin: 0 auto; display: flex; gap: 8px; align-items: center; }
-.composer input { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 999px; padding: 9px 14px; background: var(--bg); }
-.composer input:focus { outline: none; border-color: var(--accent); }
+.composer .in { max-width: 520px; margin: 0 auto; display: flex; gap: 8px; align-items: flex-end; }
+.composer textarea { flex: 1; min-width: 0; border: 1px solid var(--line); border-radius: 19px; padding: 8px 14px; background: var(--bg);
+  resize: none; height: 38px; max-height: 110px; line-height: 20px; font-size: 16px; overflow-y: auto; }
+.composer textarea:focus { outline: none; border-color: var(--accent); }
 .round { width: 38px; height: 38px; border-radius: 50%; border: 1px solid var(--line); background: none; flex: none; display: grid; place-items: center; color: var(--ink); }
 .round svg { width: 18px; height: 18px; }
 .round.send { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .round[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); }
-.emoji-panel { max-width: 480px; margin: 0 auto 8px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; }
+.emoji-panel { max-width: 520px; margin: 0 auto 8px; max-height: 34vh; overflow-y: auto; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 2px; }
 .emoji-panel button { font-size: 25px; border: 0; background: none; padding: 5px 0; border-radius: 8px; line-height: 1.2; }
 .emoji-panel button:hover { background: var(--accent-soft); }
 .emoji-panel p { grid-column: 1 / -1; margin: 0 0 4px; font-size: 11px; color: var(--muted); }
@@ -276,6 +285,54 @@ img.broken { min-height: 80px; }
 .cat { font-size: 10px; color: var(--accent); border: 1px solid var(--line); padding: 0 6px; border-radius: 2px; letter-spacing: .04em; }
 .link-btn { border: 0; background: none; color: var(--accent); font-size: 12px; padding: 0; white-space: nowrap; }
 
+/* ---- 홈: 왼쪽·오른쪽 각자 칸 ---- */
+.duo { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: 0; margin-top: 18px; text-align: center; }
+.duo-line { background: var(--accent); opacity: .5; margin: 6px 0; }
+.half { border: 0; background: none; color: inherit; padding: 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; border-radius: 6px; }
+.half.mine:hover { background: rgba(255, 255, 255, .05); }
+.pname { font-family: var(--display); font-size: 15px; display: flex; align-items: center; gap: 6px; justify-content: center; min-width: 0; }
+.pname i { width: 7px; height: 7px; border-radius: 50%; flex: none; }
+.pname small { font-family: var(--body); font-size: 10px; color: var(--accent); letter-spacing: .06em; }
+.pmood { font-size: 34px; line-height: 1.2; }
+.pmood.empty { width: 42px; height: 42px; border: 1px dashed var(--accent); border-radius: 50%; font-size: 18px; display: grid; place-items: center; color: var(--accent); margin: 2px 0; font-family: var(--body); }
+.pcond { font-size: 11px; opacity: .75; display: flex; align-items: center; gap: 5px; letter-spacing: .04em; }
+.psay { font-size: 12px; opacity: .9; overflow-wrap: anywhere; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; max-width: 100%; }
+.batt { width: 18px; height: 9px; border: 1px solid currentColor; border-radius: 2px; position: relative; display: inline-block; flex: none; padding: 1px; }
+.batt::after { content: ""; position: absolute; right: -3px; top: 2px; width: 2px; height: 3px; background: currentColor; border-radius: 0 1px 1px 0; }
+.batt i { display: block; height: 100%; background: currentColor; border-radius: 1px; }
+.batt[data-lv="1"] i { background: var(--sun); }
+
+/* ---- 기분 입력·기분 달력 ---- */
+.mood-pick { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.mood-pick button { border: 1px solid var(--line); background: none; border-radius: 10px; padding: 8px 0 6px; display: flex; flex-direction: column; align-items: center; gap: 2px; font-size: 11px; color: var(--muted); min-width: 0; }
+.mood-pick button span { font-size: 26px; line-height: 1.1; }
+.mood-pick button[aria-pressed="true"] { border-color: var(--ink); background: var(--accent-soft); color: var(--ink); }
+#cond-pick .chip { gap: 6px; }
+.mood-grid .day { min-height: 54px; }
+.faces { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; font-size: 14px; line-height: 1.1; width: 100%; justify-items: center; }
+.faces .blank { width: 5px; height: 5px; border-radius: 50%; background: var(--line); margin-top: 5px; }
+.msums { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
+.msum { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.msum .pname { justify-content: flex-start; }
+.msum .s { font-size: 12px; color: var(--muted); }
+.mcounts { display: flex; flex-wrap: wrap; gap: 8px; font-size: 16px; }
+.mcounts b { font-size: 11px; font-weight: 500; color: var(--muted); margin-left: 2px; font-variant-numeric: tabular-nums; }
+
+/* ---- 일정 스티커·색깔 ---- */
+.day .emos { display: flex; gap: 1px; justify-content: center; font-size: 14px; line-height: 1.1; }
+.day .emos img, img.stk { width: 16px; height: 16px; object-fit: cover; border-radius: 4px; display: block; }
+.ev-emo { margin-right: 5px; }
+.ev-emo img.stk { display: inline-block; width: 18px; height: 18px; vertical-align: -3px; }
+.stickers { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+.stickers button, .stickers label { font-size: 20px; aspect-ratio: 1; border: 1px solid transparent; background: none; border-radius: 8px; padding: 0; display: grid; place-items: center; min-width: 0; cursor: pointer; position: relative; overflow: hidden; }
+.stickers .none, .stickers .mine { font-size: 10px; color: var(--muted); border-color: var(--line); }
+.stickers [aria-pressed="true"] { border-color: var(--ink); background: var(--accent-soft); }
+.stickers img { width: 80%; height: 80%; object-fit: cover; border-radius: 4px; }
+.stickers input { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+.colors { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.colors .chip { padding: 4px 11px; font-size: 12px; }
+.field select { border: 0; border-bottom: 1px solid var(--line); background: none; border-radius: 0; padding: 9px 2px; width: 100%; min-width: 0; }
+
 /* ---- 커플 코드 화면 ---- */
 .gate { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: flex; align-items: center; justify-content: center;
   padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
@@ -305,14 +362,18 @@ img.broken { min-height: 80px; }
   <main id="view"></main>
 </div>
 
-<div class="composer" id="composer" hidden>
+<section class="chat-screen" id="chat-screen" hidden>
+ <div class="chat-head"><b id="chat-title"></b><span class="sync" id="chat-sync"></span></div>
+ <div class="chat-scroll" id="chat-scroll"></div>
+ <div class="composer" id="composer">
   <div class="emoji-panel" id="emoji-panel" hidden></div>
   <form class="in" id="chat-form">
     <button type="button" class="round" id="emoji-toggle" aria-pressed="false" aria-label="이모티콘"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M8 14.5c1 1.3 2.4 2 4 2s3-.7 4-2"/><circle cx="9" cy="10" r=".8" fill="currentColor"/><circle cx="15" cy="10" r=".8" fill="currentColor"/></svg></button>
-    <input id="chat-input" placeholder="메시지" maxlength="500" autocomplete="off" enterkeyhint="send">
-    <button type="submit" class="round send" aria-label="보내기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    <textarea id="chat-input" rows="1" placeholder="메시지" maxlength="500" autocomplete="off"></textarea>
+    <button type="submit" class="round send" id="chat-send" aria-label="보내기"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
   </form>
-</div>
+ </div>
+</section>
 
 <nav class="tabs" aria-label="메뉴">
   <div class="in">
@@ -364,8 +425,8 @@ img.broken { min-height: 80px; }
 
   // ---------- 상태 ----------
   const state = {
-    settings: {}, events: {}, anniversaries: {}, status: {}, miss: {}, wishes: {}, logs: {}, chat: {}, reads: {}, members: {},
-    tab: "home", seg: "log", wishCat: "전체", chatDays: 30, viewY: 0, viewM: 0, mode: "loading",
+    settings: {}, events: {}, anniversaries: {}, moods: {}, miss: {}, wishes: {}, logs: {}, chat: {}, reads: {}, members: {},
+    tab: "home", seg: "log", calMode: "ev", wishCat: "전체", chatShow: 200, viewY: 0, viewM: 0, mode: "loading",
   };
   { const t = today(); state.viewY = t.getFullYear(); state.viewM = t.getMonth(); }
   const lsGet = (k, f) => { try { const v = localStorage.getItem(k); return v == null ? f : v; } catch { return f; } };
@@ -629,13 +690,75 @@ img.broken { min-height: 80px; }
     .map(e => ({ ...e, end: e.endDate && e.endDate > e.date ? e.endDate : e.date }))
     .sort((x, y) => (x.date + (x.time || "99")).localeCompare(y.date + (y.time || "99")));
   const coversDay = (e, k) => e.date <= k && k <= e.end;
+
+  // 반복 일정: 매주 / 매달 같은 날 / 매달 N째 주 X요일 / 매년
+  const NTH = ["첫째", "둘째", "셋째", "넷째", "마지막"];
+  const nthOf = d => Math.min(Math.ceil(d.getDate() / 7), 5);       // 5 = 마지막 주
+  function nthDate(y, m, n, wd) {
+    if (n === 5) { const last = new Date(y, m + 1, 0); return addDays(last, -((last.getDay() - wd + 7) % 7)); }
+    const first = new Date(y, m, 1);
+    const d = new Date(y, m, 1 + ((wd - first.getDay() + 7) % 7) + (n - 1) * 7);
+    return d.getMonth() === first.getMonth() ? d : null;
+  }
+  function repeatLabel(type, startStr) {
+    if (!startStr || !type || type === "none") return "";
+    const d = parse(startStr);
+    return {
+      weekly: `매주 ${WD[d.getDay()]}요일`,
+      monthly: `매달 ${d.getDate()}일`,
+      nth: `매달 ${NTH[nthOf(d) - 1]} 주 ${WD[d.getDay()]}요일`,
+      yearly: `매년 ${d.getMonth() + 1}월 ${d.getDate()}일`,
+    }[type] || "";
+  }
+  // 일정 하나가 from~to 사이에 걸치는 날들 (반복이면 여러 번)
+  function occurrences(e, from, to) {
+    const s0 = parse(e.date), len = diff(s0, parse(e.end)), r = e.repeat || "none";
+    const until = e.until ? parse(e.until) : null;
+    const lo = addDays(from, -len), out = [];
+    const push = d => { if (d && d >= s0 && d >= lo && d <= to && (!until || d <= until)) out.push(d); };
+    if (r === "weekly") {
+      let d = lo > s0 ? addDays(s0, Math.floor(diff(s0, lo) / 7) * 7) : s0;
+      for (; d <= to; d = addDays(d, 7)) push(d);
+    } else if (r === "monthly" || r === "nth") {
+      const base = lo > s0 ? lo : s0;
+      for (let i = 0; i < 600; i++) {
+        const first = new Date(base.getFullYear(), base.getMonth() + i, 1);
+        if (first > to) break;
+        let d = r === "nth" ? nthDate(first.getFullYear(), first.getMonth(), nthOf(s0), s0.getDay())
+          : new Date(first.getFullYear(), first.getMonth(), s0.getDate());
+        if (r === "monthly" && d.getMonth() !== first.getMonth()) d = null;   // 31일이 없는 달은 건너뛰어요
+        push(d);
+      }
+    } else if (r === "yearly") {
+      for (let y = Math.max(lo.getFullYear(), s0.getFullYear()); y <= to.getFullYear(); y++) {
+        const d = new Date(y, s0.getMonth(), s0.getDate());
+        push(d.getMonth() === s0.getMonth() ? d : null);
+      }
+    } else push(s0);
+    return out.map(d => ({ ...e, date: ymd(d), end: ymd(addDays(d, len)) }));
+  }
+  const eventsBetween = (from, to) => eventsSorted().flatMap(e => occurrences(e, from, to))
+    .sort((x, y) => (x.date + (x.time || "99")).localeCompare(y.date + (y.time || "99")));
+
+  // 오늘 기분·컨디션: moods/<날짜>_<a|b> 에 날마다 따로 쌓여요
+  const MOODS = [[5, "😆", "최고"], [4, "🙂", "좋아"], [3, "😐", "그냥"], [2, "😔", "별로"], [1, "😫", "힘들어"]];
+  const CONDS = [[4, "쌩쌩"], [3, "괜찮아"], [2, "피곤"], [1, "방전"]];
+  const moodOf = (k, who) => state.moods[`${k}_${who}`];
+  const moodEmoji = v => (MOODS.find(m => m[0] === v) || [])[1] || "";
+  const moodName = v => (MOODS.find(m => m[0] === v) || [])[2] || "";
+  const condName = v => (CONDS.find(c => c[0] === v) || [])[1] || "";
+  const battery = v => `<span class="batt" data-lv="${v}"><i style="width:${v * 25}%"></i></span>`;
+
+  // 스티커와 색깔
+  const STICKERS = ["🍊", "🎉", "💼", "🏖️", "✈️", "🎂", "❤️", "🍻", "🍽️", "☕", "🎬", "🏥", "📚", "💪", "🛍️", "🚗", "🏠", "🎮", "⚽", "💤", "⭐", "🔥", "💸"];
+  const EVENT_COLORS = [["#E8833A", "주황"], ["#D9534F", "빨강"], ["#E3B23C", "노랑"], ["#6F8F7E", "초록"], ["#5F8FAF", "하늘"], ["#4A5F8A", "남색"], ["#8A6FB0", "보라"], ["#9A5B6B", "와인"]];
+  const evColor = e => e.color || whoColor(e.who);
+  const evMark = e => e.sticker ? photoTag(e.sticker, "stk") : e.icon ? esc(e.icon) : "";
   const logsSorted = () => Object.entries(state.logs).map(([id, l]) => ({ id, ...l })).filter(l => l.date)
     .sort((x, y) => y.date.localeCompare(x.date) || (y.at || 0) - (x.at || 0));
 
   // 채팅: 문서 하나 = 한 사람의 하루치 메시지 (둘이 동시에 보내도 서로 덮어쓰지 않아요)
-  const chatCutoff = () => ymd(addDays(today(), -state.chatDays));
   const chatMsgs = () => Object.values(state.chat)
-    .filter(d => d.day >= chatCutoff())
     .flatMap(d => (d.msgs || []).map(m => ({ ...m, who: d.who })))
     .filter(m => m.at && m.text)
     .sort((a, b) => a.at - b.at);
@@ -647,7 +770,7 @@ img.broken { min-height: 80px; }
 
   // ---------- 화면 ----------
   const view = document.getElementById("view");
-  const composer = document.getElementById("composer");
+  const chatScreen = document.getElementById("chat-screen"), chatScroll = document.getElementById("chat-scroll");
   let pendingRender = false;
   function render() {
     pendingRender = false;
@@ -657,9 +780,11 @@ img.broken { min-height: 80px; }
     sync.querySelector("span").textContent = state.mode === "live" ? "둘이 같이 보는 중" : state.mode === "local" ? "이 기기에만 저장" : "불러오는 중";
     const n = unreadCount(), badge = document.getElementById("unread");
     badge.hidden = !n || state.tab === "chat"; badge.textContent = n > 99 ? "99+" : n;
-    composer.hidden = state.tab !== "chat";
-    if (state.tab !== "chat") document.body.classList.remove("emoji-open");
+    chatScreen.hidden = state.tab !== "chat";
+    document.body.classList.toggle("chat-mode", state.tab === "chat");
+    if (state.tab !== "chat") { emojiPanel.hidden = true; emojiToggle.setAttribute("aria-pressed", "false"); lastChatSig = ""; }
     ({ home: renderHome, cal: renderCal, chat: renderChat, mem: renderMem, set: renderSet })[state.tab]();
+    hydratePhotos(view);
   }
   // 무언가 적는 중에는 다시 그리지 않고, 다 적고 나면 그려요 (적던 글자가 지워지지 않게)
   function soft() {
@@ -680,17 +805,28 @@ img.broken { min-height: 80px; }
       myMiss && myMiss.day === todayKey ? `나 오늘 ${myMiss.count}번` : "",
     ].filter(Boolean).join(" · ");
     const missBtn = `<button class="miss-btn" id="miss-btn">${ICON.heart}보고 싶어</button>${missInfo ? `<div class="miss-info">${missInfo}</div>` : ""}`;
+    // 왼쪽·오른쪽 각자 칸: 이름, 오늘 기분, 컨디션, 한마디 (내 칸을 누르면 기록)
+    const half = k => {
+      const p = person(k), md = moodOf(todayKey, k), mine = k === me;
+      const body = md
+        ? `<div class="pmood">${moodEmoji(md.mood) || "·"}</div>
+           <div class="pcond">${md.cond ? `${battery(md.cond)}${condName(md.cond)}` : moodName(md.mood)}</div>
+           ${md.text ? `<div class="psay">${esc(md.text)}</div>` : ""}`
+        : `<div class="pmood empty">${mine ? "+" : "?"}</div><div class="pcond">${mine ? "오늘 기분 체크" : "아직 체크 전"}</div>`;
+      const inner = `<div class="pname"><i style="background:${p.color}"></i>${esc(p.name)}${mine ? `<small>나</small>` : ""}</div>${body}`;
+      return mine ? `<button class="half mine" data-mood="${todayKey}">${inner}</button>` : `<div class="half">${inner}</div>`;
+    };
     let hero;
     if (st) {
       const n = diff(st, t) + 1;
       const todays = milestonesBetween(t, t);
       hero = `<section class="card hero">
         <div class="eyebrow">Together</div>
-        <div class="names"><span>${esc(a.name)}</span><span class="amp">&amp;</span><span>${esc(b.name)}</span></div>
         <div class="count">${n > 0 ? n.toLocaleString() : "D" + (n - 1)}<span>${n > 0 ? "일째" : ""}</span></div>
         <div class="rule"></div>
         <div class="since">SINCE ${fmtDot(S().startDate)}</div>
         ${todays.length ? `<div class="today-note">오늘은 ${todays.map(m => esc(m.title)).join(", ")}이에요</div>` : ""}
+        <div class="duo">${half("a")}<span class="duo-line" aria-hidden="true"></span>${half("b")}</div>
         ${missBtn}
       </section>`;
     } else {
@@ -701,21 +837,10 @@ img.broken { min-height: 80px; }
         <button class="btn" data-go="set">사귄 날 넣기</button>
       </section>`;
     }
-    const sayRow = k => {
-      const s = state.status[k]; const mine = k === me;
-      const msg = s && s.text ? `<span class="msg">${esc(s.text)}</span><span class="when">${ago(s.day)}</span>`
-        : `<span class="msg none">${mine ? "오늘 한마디 남기기" : "아직 안 남겼어요"}</span>`;
-      const inner = `<span class="who"><i style="background:${person(k).color}"></i>${esc(person(k).name)}</span>${msg}`;
-      return mine ? `<button class="say" data-say>${inner}</button>` : `<div class="say">${inner}</div>`;
-    };
-    const order = me ? [me, other()] : ["a", "b"];
     const ms = milestonesBetween(t, addDays(t, 400)).slice(0, 3);
-    const evs = eventsSorted().filter(e => parse(e.end) >= t).slice(0, 5);
+    const seen = new Set();
+    const evs = eventsBetween(t, addDays(t, 365)).filter(e => !seen.has(e.id) && seen.add(e.id)).slice(0, 5);
     view.innerHTML = `${hero}
-      <section class="card">
-        <h2 class="section-title">오늘의 한마디 <small>${me ? "내 줄을 누르면 적을 수 있어요" : ""}</small></h2>
-        <div class="list">${order.map(sayRow).join("")}</div>
-      </section>
       <section class="card">
         <h2 class="section-title">다가오는 기념일 <small><button data-go="mem" data-seg="ann">전체 보기</button></small></h2>
         ${ms.length ? `<div class="ms-strip">${ms.map(m => { const l = dLabel(m.date); return `<div class="ms-cell"><div class="d${l === "오늘" ? " today" : ""}">${l}</div><div class="t">${esc(m.title)}</div><div class="s">${m.date.getMonth() + 1}.${m.date.getDate()}</div></div>`; }).join("")}</div>`
@@ -734,10 +859,56 @@ img.broken { min-height: 80px; }
     const d = parse(e.date); const multi = e.end !== e.date;
     const label = multi && d <= today() ? "진행 중" : dLabel(d);
     const when = multi ? `${fmt(d)} ~ ${fmt(parse(e.end))} · ${diff(d, parse(e.end)) + 1}일` : fmt(d);
-    return `<button class="row" data-edit="${esc(e.id)}"><span class="bar" style="background:${whoColor(e.who)}"></span><div class="main"><div class="t">${esc(e.title)}</div><div class="s">${when}${e.time ? " · " + esc(e.time) : ""} · ${esc(whoName(e.who))}</div></div><span class="badge${label === "오늘" || label === "진행 중" ? " today" : ""}">${label}</span></button>`;
+    const rep = repeatLabel(e.repeat, state.events[e.id]?.date);
+    const mark = evMark(e);
+    return `<button class="row" data-edit="${esc(e.id)}"><span class="bar" style="background:${evColor(e)}"></span><div class="main"><div class="t">${mark ? `<span class="ev-emo">${mark}</span>` : ""}${esc(e.title)}</div><div class="s">${when}${e.time ? " · " + esc(e.time) : ""} · ${esc(whoName(e.who))}${rep ? " · " + rep : ""}</div></div><span class="badge${label === "오늘" || label === "진행 중" ? " today" : ""}">${label}</span></button>`;
   };
 
+  const calSwitch = () => `<div class="seg" style="grid-template-columns:1fr 1fr">
+      <button data-cal-mode="ev" aria-pressed="${state.calMode === "ev"}">일정</button><button data-cal-mode="mood" aria-pressed="${state.calMode === "mood"}">기분</button></div>`;
+  function renderMoodCal() {
+    const y = state.viewY, m = state.viewM;
+    const first = new Date(y, m, 1);
+    const gridStart = addDays(first, -first.getDay());
+    const t = ymd(today());
+    const a = person("a"), b = person("b");
+    let cells = WD.map((w, i) => `<div class="wd${i === 0 ? " sun" : i === 6 ? " sat" : ""}">${w}</div>`).join("");
+    for (let i = 0; i < 42; i++) {
+      const d = addDays(gridStart, i), k = ymd(d);
+      const cls = ["day", d.getMonth() !== m && "out", k === t && "is-today", d.getDay() === 0 && "sun", d.getDay() === 6 && "sat"].filter(Boolean).join(" ");
+      const face = who => { const md = moodOf(k, who); return md ? `<span>${moodEmoji(md.mood)}</span>` : `<span class="blank"></span>`; };
+      cells += `<button class="${cls}" data-mood-day="${k}" aria-label="${fmt(d)} 기분"><span class="n">${d.getDate()}</span><span class="faces">${face("a")}${face("b")}</span></button>`;
+    }
+    // 이번 달 요약
+    const days = new Date(y, m + 1, 0).getDate();
+    const summary = who => {
+      const list = [];
+      for (let dd = 1; dd <= days; dd++) { const md = moodOf(ymd(new Date(y, m, dd)), who); if (md) list.push(md); }
+      const avg = list.length ? list.reduce((x, md) => x + md.mood, 0) / list.length : 0;
+      const counts = MOODS.map(([v, e]) => [e, list.filter(md => md.mood === v).length]).filter(c => c[1]);
+      return `<div class="msum"><div class="pname"><i style="background:${person(who).color}"></i>${esc(person(who).name)}</div>
+        <div class="s">${list.length ? `${list.length}일 기록 · 평균 ${moodEmoji(Math.round(avg))} ${moodName(Math.round(avg))}` : "아직 기록이 없어요"}</div>
+        ${counts.length ? `<div class="mcounts">${counts.map(([e, n]) => `<span>${e}<b>${n}</b></span>`).join("")}</div>` : ""}</div>`;
+    };
+    // 내가 며칠 연속으로 기록했는지
+    let streak = 0;
+    if (me) for (let d = today(); moodOf(ymd(d), me); d = addDays(d, -1)) streak++;
+    view.innerHTML = `${calSwitch()}<section class="card">
+      <div class="cal-head">
+        <button class="icon-btn" data-month="-1" aria-label="이전 달">‹</button>
+        <h2>${y}. ${pad(m + 1)}<small>${m + 1}월</small></h2>
+        <button class="icon-btn" data-month="1" aria-label="다음 달">›</button>
+      </div>
+      <div class="legend"><span>칸 왼쪽 <b style="color:var(--ink);font-weight:500">${esc(a.name)}</b> · 오른쪽 <b style="color:var(--ink);font-weight:500">${esc(b.name)}</b></span></div>
+      <div class="grid mood-grid">${cells}</div>
+    </section>
+    <section class="card"><h2 class="section-title">${m + 1}월 기분 <small>${streak ? `나 ${streak}일 연속 기록 중` : ""}</small></h2>
+      <div class="msums">${summary("a")}${summary("b")}</div></section>
+    <button class="btn" data-mood="${t}">오늘 내 기분 기록하기</button>`;
+  }
+
   function renderCal() {
+    if (state.calMode === "mood") return renderMoodCal();
     const y = state.viewY, m = state.viewM;
     const first = new Date(y, m, 1);
     const gridStart = addDays(first, -first.getDay());
@@ -745,8 +916,7 @@ img.broken { min-height: 80px; }
     const t = ymd(today());
     const byDay = {};
     const slot = k => (byDay[k] = byDay[k] || { ev: [], ms: [] });
-    eventsSorted().forEach(e => {
-      if (e.end < ymd(gridStart) || e.date > ymd(gridEnd)) return;
+    eventsBetween(gridStart, gridEnd).forEach(e => {
       for (let d = parse(e.date), n = 0; ymd(d) <= e.end && n < 400; d = addDays(d, 1), n++) {
         if (d >= gridStart && d <= gridEnd) slot(ymd(d)).ev.push(e);
       }
@@ -759,15 +929,17 @@ img.broken { min-height: 80px; }
       const evs = info ? info.ev : [];
       const spans = evs.filter(e => e.end !== e.date).slice(0, 2).map(e => {
         const c = ["span", k === e.date && "s-start", k === e.end && "s-end"].filter(Boolean).join(" ");
-        const label = k === e.date || d.getDay() === 0 ? esc(e.title) : "&nbsp;";
-        return `<span class="${c}" style="background:${whoColor(e.who)}">${label}</span>`;
+        const label = k === e.date || d.getDay() === 0 ? (e.icon && !e.sticker ? esc(e.icon) + " " : "") + esc(e.title) : "&nbsp;";
+        return `<span class="${c}" style="background:${evColor(e)}">${label}</span>`;
       }).join("");
-      const dots = evs.filter(e => e.end === e.date).slice(0, 4).map(e => `<i style="background:${whoColor(e.who)}"></i>`).join("");
+      const singles = evs.filter(e => e.end === e.date);
+      const emos = singles.filter(e => e.icon || e.sticker).slice(0, 2).map(evMark).join("");
+      const dots = singles.filter(e => !(e.icon || e.sticker)).slice(0, 4).map(e => `<i style="background:${evColor(e)}"></i>`).join("");
       const ann = info && info.ms.length ? `<span class="ann">${esc(info.ms[0].title)}</span>` : "";
-      cells += `<button class="${cls}" data-day="${k}" aria-label="${fmt(d)}${info ? `, 일정 ${info.ev.length}개` : ""}"><span class="n">${d.getDate()}</span>${ann}${spans}<span class="dots">${dots}</span></button>`;
+      cells += `<button class="${cls}" data-day="${k}" aria-label="${fmt(d)}${info ? `, 일정 ${info.ev.length}개` : ""}"><span class="n">${d.getDate()}</span>${ann}${spans}${emos ? `<span class="emos">${emos}</span>` : ""}<span class="dots">${dots}</span></button>`;
     }
     const a = person("a"), b = person("b");
-    view.innerHTML = `<section class="card">
+    view.innerHTML = `${calSwitch()}<section class="card">
       <div class="cal-head">
         <button class="icon-btn" data-month="-1" aria-label="이전 달">‹</button>
         <h2>${y}. ${pad(m + 1)}<small>${m + 1}월</small></h2>
@@ -786,10 +958,14 @@ img.broken { min-height: 80px; }
   }
 
   // ---------- 채팅 ----------
-  let chatScrolled = false;
+  let chatScrolled = false, stickBottom = false, lastChatSig = "";
   function renderChat() {
-    const nearBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 120;
-    const msgs = chatMsgs();
+    view.innerHTML = "";
+    const op = person(other());
+    document.getElementById("chat-title").innerHTML = me ? `<i style="background:${op.color}"></i>${esc(op.name)}` : "우리 둘";
+    document.getElementById("chat-sync").textContent = document.querySelector("#sync span").textContent;
+    const all = chatMsgs();
+    const msgs = all.slice(-state.chatShow);
     const theirRead = state.reads[other()]?.at || 0;
     let html = "", lastDay = "", prevWho = null;
     msgs.forEach(m => {
@@ -802,9 +978,17 @@ img.broken { min-height: 80px; }
       html += `<div class="msg-row${mine ? " mine" : ""}">${av}<div class="bubble${big ? " big" : ""}">${esc(m.text)}</div><div class="msg-meta">${unread}<span>${hm(m.at)}</span></div></div>`;
       prevWho = m.who;
     });
-    const more = state.chatDays < 3650 ? `<button class="more" data-more-chat>이전 대화 더 보기</button>` : "";
-    view.innerHTML = `<div class="chat">${more}${html || `<div class="empty" style="text-align:center;padding:40px 0">첫 메시지를 보내 보세요.<br>왼쪽 아래 웃는 얼굴을 누르면 이모티콘을 바로 보낼 수 있어요.</div>`}</div>`;
-    if (!chatScrolled || nearBottom) { window.scrollTo(0, document.documentElement.scrollHeight); chatScrolled = true; }
+    const more = all.length > msgs.length ? `<button class="more" data-more-chat>이전 대화 더 보기 (${(all.length - msgs.length).toLocaleString()}개)</button>` : "";
+    const out = `<div class="chat">${more}${html || `<div class="empty" style="text-align:center;padding:40px 0">첫 메시지를 보내 보세요.<br>왼쪽 아래 웃는 얼굴을 누르면 이모티콘을 바로 보낼 수 있어요.</div>`}</div>`;
+    // 바뀐 게 없으면 다시 그리지 않아요 (화면이 튀지 않게)
+    if (out !== lastChatSig) {
+      const nearBottom = chatScroll.scrollHeight - chatScroll.scrollTop - chatScroll.clientHeight < 120;
+      const keepFromBottom = chatScroll.scrollHeight - chatScroll.scrollTop;
+      chatScroll.innerHTML = out; lastChatSig = out;
+      if (!chatScrolled || nearBottom || stickBottom) chatScroll.scrollTop = chatScroll.scrollHeight;
+      else chatScroll.scrollTop = chatScroll.scrollHeight - keepFromBottom;   // "이전 대화 더 보기" 뒤에도 보던 자리 그대로
+      chatScrolled = true; stickBottom = false;
+    }
     markRead();
   }
   let reading = false;
@@ -825,19 +1009,47 @@ img.broken { min-height: 80px; }
     const day = ymd(today()), id = `${day}_${me}`;
     const msgs = [...(state.chat[id]?.msgs || []), { text, at: Date.now() }];
     state.chat = { ...state.chat, [id]: { day, who: me, msgs } };
+    stickBottom = true;
     if (state.tab === "chat") render();
     queue(() => write(store.put("chat", id, { day, who: me, msgs: state.chat[id].msgs })));
   }
   const chatForm = document.getElementById("chat-form"), chatInput = document.getElementById("chat-input");
   const emojiPanel = document.getElementById("emoji-panel"), emojiToggle = document.getElementById("emoji-toggle");
   emojiPanel.innerHTML = `<p>누르면 바로 보내져요</p>` + EMOJI.map(e => `<button type="button" data-emoji="${e}">${e}</button>`).join("");
-  chatForm.addEventListener("submit", e => { e.preventDefault(); sendMsg(chatInput.value); chatInput.value = ""; chatInput.focus(); });
+  const growInput = () => { chatInput.style.height = "38px"; chatInput.style.height = Math.min(chatInput.scrollHeight + 2, 110) + "px"; };
+  chatForm.addEventListener("submit", e => { e.preventDefault(); sendMsg(chatInput.value); chatInput.value = ""; growInput(); });
+  // 보내기 버튼을 눌러도 입력칸에서 포커스가 빠지지 않게 → 키보드가 내려가지 않아요
+  document.getElementById("chat-send").addEventListener("pointerdown", e => e.preventDefault());
+  chatInput.addEventListener("input", growInput);
+  chatInput.addEventListener("keydown", e => {
+    // 컴퓨터에서는 Enter로 보내고 Shift+Enter로 줄바꿈. 폰에서는 Enter가 줄바꿈이고 보내기는 버튼으로 (카톡과 같아요)
+    if (e.key === "Enter" && !e.shiftKey && !e.isComposing && matchMedia("(pointer: fine)").matches) { e.preventDefault(); chatForm.requestSubmit(); }
+  });
+  chatInput.addEventListener("focus", () => {
+    emojiPanel.hidden = true; emojiToggle.setAttribute("aria-pressed", "false");
+    setTimeout(() => { chatScroll.scrollTop = chatScroll.scrollHeight; }, 250);
+  });
   emojiToggle.addEventListener("click", () => {
     const open = emojiPanel.hidden;
     emojiPanel.hidden = !open; emojiToggle.setAttribute("aria-pressed", open);
-    document.body.classList.toggle("emoji-open", open);
-    if (open) window.scrollTo(0, document.documentElement.scrollHeight);
+    if (open) chatInput.blur();
+    chatScroll.scrollTop = chatScroll.scrollHeight;
   });
+  // 키보드가 올라오면 보이는 화면 높이에 채팅방을 맞춰요 (아이폰·안드로이드 둘 다)
+  const vv = window.visualViewport;
+  let fullH = window.innerHeight;
+  function fitScreen() {
+    const h = vv ? vv.height : window.innerHeight;
+    fullH = Math.max(fullH, window.innerHeight, h);
+    const kb = fullH - h > 150;
+    document.documentElement.style.setProperty("--app-h", h + "px");
+    document.documentElement.style.setProperty("--app-top", (vv ? vv.offsetTop : 0) + "px");
+    document.body.classList.toggle("kb-open", kb);
+    if (state.tab === "chat" && kb) chatScroll.scrollTop = chatScroll.scrollHeight;
+  }
+  if (vv) { vv.addEventListener("resize", fitScreen); vv.addEventListener("scroll", fitScreen); }
+  window.addEventListener("orientationchange", () => { fullH = 0; setTimeout(fitScreen, 300); });
+  fitScreen();
   emojiPanel.addEventListener("click", e => { const b = e.target.closest("[data-emoji]"); if (b) sendMsg(b.dataset.emoji); });
 
   // ---------- 추억: 데이트 기록 / 가고 싶은 곳 / 기념일 ----------
@@ -958,13 +1170,13 @@ img.broken { min-height: 80px; }
 
   function daySheet(k) {
     const d = parse(k);
-    const evs = eventsSorted().filter(e => coversDay(e, k));
+    const evs = eventsBetween(d, d);
     const ms = milestonesBetween(d, d);
     const logs = logsSorted().filter(l => l.date === k);
     const logRows = logs.map(l => `<button class="row" data-log="${esc(l.id)}"><span class="ico">${ICON.camera}</span><div class="main"><div class="t">${esc(l.title || "데이트 기록")}</div><div class="s">사진 ${(l.photos || []).length}장${l.text ? " · " + esc(l.text) : ""}</div></div></button>`).join("");
     openSheet(`<h3>${fmt(d)} <button class="x" aria-label="닫기">×</button></h3>
       <div class="list">${ms.map(msRow).join("")}${evs.map(evRow).join("")}${logRows}${!ms.length && !evs.length && !logs.length ? `<div class="empty">이날은 아직 비어 있어요.</div>` : ""}</div>
-      <div class="btn-row" style="display:flex;gap:8px"><button class="btn" data-add-event="${k}">+ 일정</button><button class="btn ghost" data-new-log="${k}">+ 데이트 기록</button></div>`);
+      <div class="btn-row" style="display:flex;gap:8px"><button class="btn" data-add-event="${k}">+ 일정</button><button class="btn ghost" data-new-log="${k}">+ 데이트 기록</button></div>`, sh => { hydratePhotos(sh); });
   }
 
   function armDelete(btn, run) {
@@ -975,22 +1187,45 @@ img.broken { min-height: 80px; }
     });
   }
 
-  function statusSheet() {
+  function moodSheet(k) {
     if (!me) return chooseMe();
-    const s = state.status[me];
-    const cur = s && s.day === ymd(today()) ? s.text : "";
-    openSheet(`<h3>오늘의 한마디 <button class="x" aria-label="닫기">×</button></h3>
-      <form class="form" id="say-form">
-        <div class="field"><label for="say-text">${esc(person(other()).name)}에게 보이는 오늘 내 상태</label><input id="say-text" value="${esc(cur)}" placeholder="예: 오늘 야근이라 늦게 연락할게" maxlength="40" autocomplete="off"></div>
-        <button class="btn" type="submit">남기기</button>
+    k = k || ymd(today());
+    const cur = moodOf(k, me) || {};
+    let mood = cur.mood || 0, cond = cur.cond || 0;
+    const isToday = k === ymd(today());
+    openSheet(`<h3>${isToday ? "오늘 내 기분" : `${fmt(parse(k))} 내 기분`} <button class="x" aria-label="닫기">×</button></h3>
+      <form class="form" id="mood-form">
+        <div class="field"><span class="lbl">기분</span><div class="mood-pick" id="mood-pick">${MOODS.map(([v, e, l]) => `<button type="button" data-v="${v}" aria-pressed="${mood === v}"><span>${e}</span>${l}</button>`).join("")}</div></div>
+        <div class="field"><span class="lbl">컨디션</span><div class="chips" id="cond-pick">${CONDS.map(([v, l]) => `<button type="button" class="chip" data-v="${v}" aria-pressed="${cond === v}">${battery(v)}${l}</button>`).join("")}</div></div>
+        <div class="field"><label for="mood-text">한마디 (선택)</label><input id="mood-text" value="${esc(cur.text || "")}" placeholder="예: 오늘 야근이라 늦게 연락할게" maxlength="40" autocomplete="off"></div>
+        <p class="note" style="margin:0">기분은 날마다 따로 쌓여서, 캘린더 → 기분에서 한 달 흐름을 볼 수 있어요.</p>
+        <button class="btn" type="submit">기록하기</button>
       </form>`, sh => {
-      const input = sh.querySelector("#say-text"); input.focus();
-      sh.querySelector("#say-form").addEventListener("submit", async e => {
+      const pick = (box, set) => sh.querySelector(box).addEventListener("click", e => {
+        const b = e.target.closest("[data-v]"); if (!b) return;
+        set(Number(b.dataset.v));
+        sh.querySelectorAll(`${box} [data-v]`).forEach(x => x.setAttribute("aria-pressed", x === b));
+      });
+      pick("#mood-pick", v => { mood = v; }); pick("#cond-pick", v => { cond = v; });
+      sh.querySelector("#mood-form").addEventListener("submit", async e => {
         e.preventDefault();
-        const text = input.value.trim(); if (!text) return;
-        if (await write(store.put("status", me, { text, day: ymd(today()), at: Date.now() }))) { closeSheet(); toast("남겼어요"); }
+        if (!mood) { toast("기분을 하나 골라 주세요"); return; }
+        const data = { day: k, who: me, mood, cond, text: sh.querySelector("#mood-text").value.trim(), at: Date.now() };
+        if (await write(store.put("moods", `${k}_${me}`, data))) { closeSheet(); toast("기록했어요"); }
       });
     });
+  }
+  function moodDaySheet(k) {
+    const row = who => {
+      const p = person(who), md = moodOf(k, who);
+      return `<div class="row"><span class="ico" style="font-size:18px;border-color:${p.color}">${md ? moodEmoji(md.mood) : ""}</span><div class="main">
+        <div class="t">${esc(p.name)} · ${md ? `${moodName(md.mood)}${md.cond ? ` · 컨디션 ${condName(md.cond)}` : ""}` : "기록 없음"}</div>
+        ${md && md.text ? `<div class="s">${esc(md.text)}</div>` : ""}</div></div>`;
+    };
+    const canEdit = me && k <= ymd(today());
+    openSheet(`<h3>${fmt(parse(k))} 기분 <button class="x" aria-label="닫기">×</button></h3>
+      <div class="list">${row("a")}${row("b")}</div>
+      ${canEdit ? `<button class="btn ghost" data-mood="${k}">${moodOf(k, me) ? "내 기분 고치기" : "내 기분 기록하기"}</button>` : ""}`);
   }
 
   function sendMiss() {
@@ -1030,6 +1265,8 @@ img.broken { min-height: 80px; }
     const e = id ? state.events[id] : { title: "", date: date || ymd(today()), time: "", who: me || "a", memo: "" };
     if (!e) return;
     let who = e.who || me || "a";
+    let icon = e.icon || "", sticker = e.sticker || "", color = e.color || "", stickerFile = null, stickerUrl = "";
+    const oldSticker = e.sticker || "";
     const chip = w => `<button type="button" class="chip" data-who="${w}" aria-pressed="${who === w}"><i style="background:${whoColor(w)}"></i>${esc(whoName(w))}</button>`;
     openSheet(`<h3>${id ? "일정 수정" : "일정 추가"} <button class="x" aria-label="닫기">×</button></h3>
       <form class="form" id="ev-form">
@@ -1045,21 +1282,71 @@ img.broken { min-height: 80px; }
           <button type="button" class="chip" data-len="7">일주일</button>
         </div>
         <p class="note" id="range-note" style="margin:0"></p>
+        <div class="two">
+          <div class="field"><label for="ev-repeat">반복</label><select id="ev-repeat"></select></div>
+          <div class="field" id="until-field"><label for="ev-until">반복 끝 (선택)</label><input type="date" id="ev-until" value="${esc(e.until || "")}"></div>
+        </div>
         <div class="field"><label for="ev-time">시간 (선택)</label><input type="time" id="ev-time" value="${esc(e.time || "")}"></div>
         <div class="field"><span class="lbl">누구 일정?</span><div class="chips" id="who-chips">${chip("a")}${chip("b")}${chip("both")}</div></div>
+        <div class="field"><span class="lbl">스티커 (달력 칸에 점 대신 보여요)</span><div class="stickers" id="stickers"></div></div>
+        <div class="field"><span class="lbl">색깔</span><div class="colors" id="ev-colors">
+          <button type="button" class="chip" data-col="" aria-pressed="${!color}">사람 색</button>
+          ${EVENT_COLORS.map(([c, n]) => `<button type="button" class="sw" data-col="${c}" style="background:${c}" aria-label="${n}" title="${n}" aria-pressed="${color === c}"></button>`).join("")}
+        </div></div>
         <div class="field"><label for="ev-memo">메모 (선택)</label><textarea id="ev-memo" maxlength="300" placeholder="장소, 준비물 등">${esc(e.memo || "")}</textarea></div>
         <button class="btn" type="submit">저장</button>
         ${id ? `<button class="btn danger" type="button" id="ev-del">삭제</button>` : ""}
       </form>`, sh => {
       const startIn = sh.querySelector("#ev-date"), endIn = sh.querySelector("#ev-end"), note = sh.querySelector("#range-note");
+      // 시작 날짜를 바꾸면 끝 날짜도 같은 기간만큼 따라가요 (하루 일정이 길어지지 않게)
+      let span = startIn.value && endIn.value ? Math.max(0, diff(parse(startIn.value), parse(endIn.value))) : 0;
+      const moveEnd = () => { if (startIn.value) endIn.value = ymd(addDays(parse(startIn.value), span)); };
       const syncRange = () => {
         if (startIn.value && (!endIn.value || endIn.value < startIn.value)) endIn.value = startIn.value;
+        if (startIn.value && endIn.value) span = diff(parse(startIn.value), parse(endIn.value));
         endIn.min = startIn.value;
         const n = startIn.value && endIn.value ? diff(parse(startIn.value), parse(endIn.value)) + 1 : 1;
         note.textContent = n > 1 ? `${fmt(parse(startIn.value))}부터 ${fmt(parse(endIn.value))}까지, ${n}일 동안 달력에 표시돼요.` : "하루 일정이에요.";
         sh.querySelectorAll("[data-len]").forEach(x => x.setAttribute("aria-pressed", Number(x.dataset.len) === n));
       };
-      startIn.addEventListener("change", syncRange); endIn.addEventListener("change", syncRange);
+      // 반복: 시작 날짜에 맞춰 "매달 둘째 주 금요일" 같은 보기를 만들어요
+      const repSel = sh.querySelector("#ev-repeat"), untilField = sh.querySelector("#until-field");
+      const drawRepeat = () => {
+        const cur = repSel.value || e.repeat || "none";
+        repSel.innerHTML = [["none", "반복 안 함"], ...["weekly", "monthly", "nth", "yearly"].map(t => [t, repeatLabel(t, startIn.value)])]
+          .map(([v, l]) => `<option value="${v}"${v === cur ? " selected" : ""}>${esc(l)}</option>`).join("");
+        untilField.hidden = repSel.value === "none";
+      };
+      repSel.addEventListener("change", () => { untilField.hidden = repSel.value === "none"; });
+      drawRepeat();
+      // 스티커
+      const stickBox = sh.querySelector("#stickers");
+      const drawStickers = () => {
+        const custom = stickerUrl ? `<img src="${stickerUrl}" alt="">` : sticker ? photoTag(sticker) : "";
+        stickBox.innerHTML = `<button type="button" data-icon="" class="none" aria-pressed="${!icon && !sticker && !stickerFile}">없음</button>`
+          + STICKERS.map(x => `<button type="button" data-icon="${x}" aria-pressed="${icon === x}">${x}</button>`).join("")
+          + (assets ? `<label class="mine" aria-pressed="${!!(sticker || stickerFile)}">${custom || "내 사진"}<input type="file" id="stk-file" accept="image/*"></label>` : "");
+        hydratePhotos(stickBox);
+        const f = stickBox.querySelector("#stk-file");
+        if (f) f.addEventListener("change", () => {
+          const file = f.files[0]; if (!file) return;
+          if (stickerUrl) URL.revokeObjectURL(stickerUrl);
+          stickerFile = file; stickerUrl = URL.createObjectURL(file); icon = ""; sticker = "";
+          drawStickers();
+        });
+      };
+      stickBox.addEventListener("click", ev => {
+        const b = ev.target.closest("[data-icon]"); if (!b) return;
+        icon = b.dataset.icon; sticker = ""; stickerFile = null;
+        drawStickers();
+      });
+      drawStickers();
+      sh.querySelector("#ev-colors").addEventListener("click", ev => {
+        const b = ev.target.closest("[data-col]"); if (!b) return;
+        color = b.dataset.col;
+        sh.querySelectorAll("#ev-colors [data-col]").forEach(x => x.setAttribute("aria-pressed", x === b));
+      });
+      startIn.addEventListener("change", () => { moveEnd(); syncRange(); drawRepeat(); }); endIn.addEventListener("change", syncRange);
       sh.querySelector("#range-chips").addEventListener("click", ev => {
         const b = ev.target.closest("[data-len]"); if (!b || !startIn.value) return;
         endIn.value = ymd(addDays(parse(startIn.value), Number(b.dataset.len) - 1)); syncRange();
@@ -1076,11 +1363,35 @@ img.broken { min-height: 80px; }
         const dt = startIn.value;
         if (!title || !dt) return;
         const end = endIn.value > dt ? endIn.value : "";
-        const data = { title, date: dt, endDate: end, time: sh.querySelector("#ev-time").value, who, memo: sh.querySelector("#ev-memo").value.trim(), updatedAt: Date.now() };
-        if (await write(store.put("events", id || newId(), data))) { closeSheet(); toast(id ? "수정했어요" : "일정을 추가했어요"); }
+        const save = sh.querySelector("#ev-form button[type=submit]");
+        if (save.disabled) return;
+        save.disabled = true;
+        if (stickerFile && assets) {
+          save.textContent = "스티커 올리는 중";
+          // 스티커는 작게(240px), 투명한 배경이 남도록 PNG로
+          const small = await shrink(stickerFile, 240, "image/png");
+          try { if (small) sticker = (await assets.upload(small, { type: small.type || "image/png" })).id; }
+          catch { toast("스티커 사진을 올리지 못했어요. 일정만 저장할게요."); }
+        }
+        const repeat = repSel.value;
+        const data = {
+          title, date: dt, endDate: end, time: sh.querySelector("#ev-time").value, who, memo: sh.querySelector("#ev-memo").value.trim(),
+          repeat: repeat === "none" ? "" : repeat, until: repeat === "none" ? "" : sh.querySelector("#ev-until").value,
+          icon: sticker ? "" : icon, sticker, color, updatedAt: Date.now(),
+        };
+        if (await write(store.put("events", id || newId(), data))) {
+          if (oldSticker && oldSticker !== sticker && assets) assets.delete(oldSticker).catch(() => {});
+          closeSheet(); toast(id ? "수정했어요" : "일정을 추가했어요");
+        } else { save.disabled = false; save.textContent = "저장"; }
       });
       const del = sh.querySelector("#ev-del");
-      if (del) armDelete(del, async () => { if (await write(store.remove("events", id))) { closeSheet(); toast("삭제했어요"); } });
+      if (del) armDelete(del, async () => {
+        if (await write(store.remove("events", id))) {
+          if (oldSticker && assets) assets.delete(oldSticker).catch(() => {});
+          closeSheet(); toast(e.repeat ? "반복 일정을 모두 삭제했어요" : "삭제했어요");
+        }
+      });
+      return () => { if (stickerUrl) URL.revokeObjectURL(stickerUrl); };
     });
   }
 
@@ -1144,14 +1455,14 @@ img.broken { min-height: 80px; }
   // ---------- 데이트 기록 + 사진 ----------
   const MAX_PHOTOS = 6;
   // 폰 사진(보통 3~10MB)을 긴 쪽 1600px JPEG로 줄여서 올려요 → 장당 약 300~600KB
-  async function shrink(file) {
+  async function shrink(file, max = 1600, type = "image/jpeg") {
     try {
       const bmp = await createImageBitmap(file, { imageOrientation: "from-image" });
-      const r = Math.min(1, 1600 / Math.max(bmp.width, bmp.height));
+      const r = Math.min(1, max / Math.max(bmp.width, bmp.height));
       const c = document.createElement("canvas");
       c.width = Math.round(bmp.width * r); c.height = Math.round(bmp.height * r);
       c.getContext("2d").drawImage(bmp, 0, 0, c.width, c.height);
-      const out = await new Promise(res => c.toBlob(res, "image/jpeg", 0.82));
+      const out = await new Promise(res => c.toBlob(res, type, 0.82));
       if (out) return out;
     } catch {}
     return ["image/jpeg", "image/png", "image/webp", "image/gif"].includes(file.type) ? file : null;
@@ -1261,7 +1572,7 @@ img.broken { min-height: 80px; }
     const b = e.target.closest("[data-tab]"); if (b) go(b.dataset.tab);
   });
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-go],[data-seg],[data-add-event],[data-edit],[data-day],[data-month],[data-add-ann],[data-edit-ann],[data-me],[data-say],#miss-btn,[data-more-chat],[data-new-log],[data-log],[data-edit-log],[data-wish-toggle],[data-wish-edit],[data-wish-log],[data-wish-cat],[data-new-cat]");
+    const t = e.target.closest("[data-go],[data-seg],[data-add-event],[data-edit],[data-day],[data-month],[data-add-ann],[data-edit-ann],[data-me],[data-mood],[data-mood-day],[data-cal-mode],#miss-btn,[data-more-chat],[data-new-log],[data-log],[data-edit-log],[data-wish-toggle],[data-wish-edit],[data-wish-log],[data-wish-cat],[data-new-cat]");
     if (!t) return;
     const d = t.dataset;
     if (d.go) go(d.go, d.seg);
@@ -1278,9 +1589,11 @@ img.broken { min-height: 80px; }
     else if (t.hasAttribute("data-add-ann")) annSheet(null);
     else if (d.editAnn) annSheet(d.editAnn);
     else if (d.me) setMe(d.me);
-    else if (t.hasAttribute("data-say")) statusSheet();
+    else if (d.mood) moodSheet(d.mood);
+    else if (d.moodDay) moodDaySheet(d.moodDay);
+    else if (d.calMode) { state.calMode = d.calMode; lsSet("couple-calmode", d.calMode); render(); }
     else if (t.id === "miss-btn") sendMiss();
-    else if (t.hasAttribute("data-more-chat")) { state.chatDays = state.chatDays < 365 ? state.chatDays * 4 : 3650; subscribeChat(); }
+    else if (t.hasAttribute("data-more-chat")) { state.chatShow += 200; render(); }
     else if (t.hasAttribute("data-new-log")) logSheet(null, { date: d.newLog || "" });
     else if (d.log) logView(d.log);
     else if (d.editLog) logSheet(d.editLog);
@@ -1322,13 +1635,14 @@ img.broken { min-height: 80px; }
   {
     const saved = lsGet("couple-tab", "home");
     state.tab = saved === "ann" ? "mem" : ["home", "cal", "chat", "mem", "set"].includes(saved) ? saved : "home";
+    state.calMode = lsGet("couple-calmode", "ev") === "mood" ? "mood" : "ev";
     state.seg = saved === "ann" ? "ann" : ["log", "wish", "ann"].includes(lsGet("couple-seg", "log")) ? lsGet("couple-seg", "log") : "log";
   }
   render();
   let chatUnsub = null;
   function subscribeChat() {
     if (chatUnsub) chatUnsub();
-    chatUnsub = store.onCol("chat", v => { state.chat = v || {}; soft(); }, ["day", ">=", chatCutoff()]);
+    chatUnsub = store.onCol("chat", v => { state.chat = v || {}; soft(); });
   }
   let askedMe = false, gotSettings = false, gotMembers = false;
   function maybeAskMe() {
@@ -1338,7 +1652,7 @@ img.broken { min-height: 80px; }
   function attach(s) {
     store = s; state.mode = s.mode;
     s.onSettings(v => { state.settings = v || {}; gotSettings = true; soft(); maybeAskMe(); });
-    ["events", "anniversaries", "status", "wishes", "logs", "reads"].forEach(name => s.onCol(name, v => { state[name] = v || {}; soft(); }));
+    ["events", "anniversaries", "moods", "wishes", "logs", "reads"].forEach(name => s.onCol(name, v => { state[name] = v || {}; soft(); }));
     s.onCol("miss", v => { state.miss = v || {}; soft(); checkMiss(); });
     if (myId) s.onCol("members", v => {
       state.members = v || {}; gotMembers = true;
