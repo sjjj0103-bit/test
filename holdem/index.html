@@ -489,6 +489,22 @@ body.locked { overflow: hidden; }
 .chat-msg.mine b { display: none; }
 .chat-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
 .chat-send input { letter-spacing: 0; font: 500 16px var(--font-body, inherit); }
+/* 자리 위 말풍선 */
+.sbubble { position: absolute; left: 50%; bottom: calc(100% + 4px); transform: translateX(-50%); z-index: 8; width: max-content; max-width: 150px; background: var(--paper); color: var(--card-black); border-radius: 12px; padding: 4px 10px; font-size: 13px; font-weight: 600; line-height: 1.35; text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.45); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; animation: pop .18s ease-out; pointer-events: none; }
+.sbubble::after { content: ''; position: absolute; left: 50%; top: 100%; transform: translateX(-50%); border: 6px solid transparent; border-top-color: var(--paper); }
+.sbubble.below { bottom: auto; top: calc(100% + 4px); }
+.sbubble.below::after { top: auto; bottom: 100%; border-top-color: transparent; border-bottom-color: var(--paper); }
+.pseat.me .sbubble { background: var(--brass); color: var(--brass-ink); }
+.pseat.me .sbubble::after { border-top-color: var(--brass); }
+.sbubble.l { left: 0; transform: none; } .sbubble.l::after { left: 26px; }
+.sbubble.r { left: auto; right: 0; transform: none; } .sbubble.r::after { left: auto; right: 20px; transform: none; }
+@keyframes pop { from { scale: .6; opacity: 0; } to { scale: 1; opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .sbubble { animation: none; } }
+/* 한 번 탭 반응 줄 */
+.emobar { display: flex; gap: 6px; overflow-x: auto; padding: 2px 0 4px; scrollbar-width: none; }
+.emobar::-webkit-scrollbar { display: none; }
+.emobar .chip { flex: none; padding: 6px 12px; font-size: 14px; }
+.emobar .chip.write { background: transparent; }
 </style>
 </head>
 <body>
@@ -520,10 +536,11 @@ body.locked { overflow: hidden; }
   </section>
 
   <section class="dock" id="controls" aria-label="내 차례">
+    <div class="emobar" id="emoBar" hidden></div>
     <div class="mystrip" id="mystrip"></div>
     <div class="turn-head">
       <div class="turnline" id="turnline"></div>
-      <span class="hintbtns"><button class="btn-hint" id="bChart" type="button">차트</button><button class="btn-hint" id="bHint" type="button">힌트</button></span>
+      <span class="hintbtns"><button class="btn-hint" id="bEmo" type="button" hidden aria-expanded="false" aria-label="빠른 반응 보내기">💬</button><button class="btn-hint" id="bChart" type="button">차트</button><button class="btn-hint" id="bHint" type="button">힌트</button></span>
     </div>
     <div class="btnrow" id="btnrow">
       <button class="btn btn-fold" id="bFold" type="button">폴드<small>포기</small></button>
@@ -2331,7 +2348,7 @@ body.locked { overflow: hidden; }
   function hostSay(sid, name, text) {
     text = cleanText(text);
     if (!text || Net.role !== 'host') return;
-    const item = { id: randCode(8), sid, name: cleanName(name) || '친구', text, at: Date.now() };
+    const item = { id: randCode(8), sid, name: cleanName(name) || '친구', text, at: Date.now(), seat: seatOfSid(sid) };
     for (const g of Object.values(Net.guests)) if (!g.gone) send(g.conn, { t: 'chat', item });
     addChat(item);
     saveHostSession();
@@ -2347,31 +2364,82 @@ body.locked { overflow: hidden; }
   let toastTimer = null;
   function addChat(item) {
     if (!okChat(item)) return;
-    item = { id: String(item.id || ''), sid: String(item.sid || ''), name: cleanName(item.name) || '친구', text: cleanText(item.text), at: +item.at || Date.now() };
+    const fresh = Date.now() - (+item.at || 0) < 15000;
+    item = { id: String(item.id || ''), sid: String(item.sid || ''), name: cleanName(item.name) || '친구', text: cleanText(item.text), at: +item.at || Date.now(), seat: Number.isInteger(item.seat) ? item.seat : -1 };
     if (item.id && Net.chat.some(c => c.id === item.id)) return;
     Net.chat.push(item);
     if (Net.chat.length > 40) Net.chat = Net.chat.slice(-40);
     const mine = item.sid === Net.sid;
+    const bubbled = fresh && showBubble(item);   // 테이블에 앉은 사람은 자리 위 말풍선으로 보여요
     if (UI.open !== 'chat' && !mine) {
       UI.unread = (UI.unread || 0) + 1;
-      const t = $('chatToast');
-      t.innerHTML = `<b>${esc(item.name)}</b>${esc(item.text)}`; t.hidden = false;
-      clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
-      if (!mine) Sound.sfx('chips');
+      if (!bubbled) {
+        const t = $('chatToast');
+        t.innerHTML = `<b>${esc(item.name)}</b>${esc(item.text)}`; t.hidden = false;
+        clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+      }
+      Sound.sfx('chips');
     }
     renderChat();
   }
-  const QUICK = ['굿럭!', '나이스 핸드 👏', 'ㅋㅋㅋ', '아깝다…', '생각 좀 할게요', '빨리요~', '한 판 더?'];
+  // 빠른 반응: 상황에 맞는 말이 앞에 오도록 순서를 바꿔요
+  const Q = { nice: '👍 나이스 핸드', luck: '🍀 굿럭', lol: '😂 ㅋㅋㅋ', sad: '😭 아깝다', hurry: '⏰ 빨리요~', think: '🤔 고민 중', thx: '😎 감사합니다', wow: '😮 와…', more: '🙌 한 판 더?' };
+  function quickList() {
+    const first = [];
+    const me = G.players[G.me], who = G.players[G.toAct];
+    if (G.street === 'done' && G.result) {
+      first.push(...(G.result.winners.includes(G.me) ? ['thx', 'lol'] : ['nice', 'sad']));
+      if (G.players.some(p => p.allIn && p.inHand)) first.push('wow');
+    } else if (G.street === 'over') first.push('more', 'nice');
+    else if (me && G.toAct === G.me && !G.busy) first.push('think');
+    else if (who && who.kind === 'human' && G.toAct !== G.me && turnDeadline() && secsLeft() <= 18) first.push('hurry');
+    else if (G.players.some(p => p.allIn && p.inHand && !p.folded)) first.push('wow');
+    if ((G.handNo || 0) <= 1) first.push('luck');
+    const order = [...new Set([...first, 'nice', 'luck', 'lol', 'sad', 'hurry', 'wow', 'think', 'more'])];
+    return order.map(k => Q[k]);
+  }
+  // 자리 위 말풍선 (4초)
+  function bubbleHTML(s, x, y) {
+    const b = UI.bubbles[s];
+    if (!b || b.until < Date.now()) return '';
+    return `<div class="sbubble${y < 32 ? ' below' : ''}${x > 68 ? ' r' : x < 32 ? ' l' : ''}">${esc(b.text)}</div>`;
+  }
+  function seatOfSid(sid) {
+    if (G.mode !== 'host' || !sid) return -1;
+    if (sid === Net.sid) return G.me;
+    return G.players.findIndex(p => p.sid === sid && !p.empty);
+  }
+  function showBubble(item) {
+    const s = item.seat;
+    if (!(s >= 0) || !G.players[s] || G.players[s].empty) return false;
+    UI.bubbles[s] = { text: item.text, until: Date.now() + 4000 };
+    render();
+    setTimeout(() => { if (UI.bubbles[s] && UI.bubbles[s].until <= Date.now()) { delete UI.bubbles[s]; render(); } }, 4100);
+    return true;
+  }
+  function paintEmoBar() {
+    const bar = $('emoBar');
+    bar.innerHTML = quickList().map(q => `<button class="chip" type="button" data-say="${esc(q)}">${esc(q)}</button>`).join('')
+      + '<button class="chip write" type="button" data-write>✏️ 글쓰기</button>';
+  }
+  function toggleEmo(open) {
+    const bar = $('emoBar');
+    open = open ?? bar.hidden;
+    if (open) paintEmoBar();
+    bar.hidden = !open;
+    $('bEmo').setAttribute('aria-expanded', String(open));
+  }
   function renderChat() {
     const b = $('chatBadge'); if (!b) return;
     b.textContent = UI.unread ? String(Math.min(UI.unread, 99)) : '';
-    $('chatBtn').hidden = !Net.role;
+    $('chatBtn').hidden = !Net.role; $('bEmo').hidden = !Net.role;
+    if (!Net.role && !$('emoBar').hidden) toggleEmo(false);
     if (UI.open !== 'chat') return;
     const list = $('chatList'), atEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
     list.innerHTML = Net.chat.length ? Net.chat.map(c => `<div class="chat-msg${c.sid === Net.sid ? ' mine' : ''}"><b>${esc(c.name)}</b>${esc(c.text)}</div>`).join('')
       : '<p class="empty">아직 대화가 없어요. 아래 버튼으로 바로 인사해 보세요.</p>';
     if (atEnd) list.scrollTop = list.scrollHeight;
-    if (!$('chatQuick').childElementCount) $('chatQuick').innerHTML = QUICK.map(q => `<button class="chip" type="button" data-say="${esc(q)}">${esc(q)}</button>`).join('');
+    $('chatQuick').innerHTML = quickList().map(q => `<button class="chip" type="button" data-say="${esc(q)}">${esc(q)}</button>`).join('');
     const live = Net.role === 'host' || (Net.role === 'guest' && Net.hostConn);
     $('chatSend').disabled = !live;
     $('chatInput').placeholder = live ? '메시지 입력 (최대 80자)' : '방장과 다시 연결되면 보낼 수 있어요';
@@ -2836,7 +2904,7 @@ body.locked { overflow: hidden; }
     $('pubMode').checked = settings.pub;
     $('pvpBtn').setAttribute('aria-pressed', String(inRoom));
     $('pvpBtn').textContent = inRoom ? '친구 방' : '친구 초대';
-    $('chatBtn').hidden = !Net.role;
+    $('chatBtn').hidden = !Net.role; $('bEmo').hidden = !Net.role;
     const guest = G && G.mode === 'guest';
     document.querySelectorAll('[data-diff],[data-seats],[data-field],[data-rebuy],#pubMode,#newGameBtn').forEach(b => { b.disabled = guest; });
     const notes = {
@@ -3072,7 +3140,7 @@ body.locked { overflow: hidden; }
       html += `<div class="${cls}" data-seat="${s}" title="눌러서 이 사람의 성향 보기" style="left:clamp(${edge}px, ${x.toFixed(1)}%, calc(100% - ${edge}px));top:${y.toFixed(1)}%">
         <div class="pcards">${cards}</div>${cat}
         <div class="pbox"><div class="pname">${pos ? `<span class="posb${pos === 'BTN' ? ' is-btn' : ''}">${pos}</span>` : ''}${esc(N >= 7 ? p.name.replace(/^AI /, '') : p.name)}${tag}</div>
-        <div class="pstack">${won(p.stack)}</div></div>
+        <div class="pstack">${won(p.stack)}</div></div>${bubbleHTML(s, x, y)}
         ${s === G.toAct && !ended() && turnDeadline() && p.kind !== 'bot' ? `<div class="pact clock" data-clock>${secsLeft()}초</div>` : `<div class="pact">${esc(p.last || (s === G.toAct && !ended() ? (s === G.me ? '내 차례' : '생각 중…') : ''))}</div>`}
       </div>`;
       if (p.bet) html += `<div class="pbet" style="left:${bx.toFixed(1)}%;top:${by.toFixed(1)}%">${won(p.bet)}</div>`;
@@ -3272,7 +3340,7 @@ body.locked { overflow: hidden; }
   const fmtDate = iso => { const d = new Date(iso); return isNaN(d) ? '' : `${d.getMonth() + 1}/${d.getDate()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`; };
   const doneGames = () => Store.list.filter(r => r && r.decisions);
   const RESULT_KO = { win: '이김', split: '나눔', lose: '짐', fold: '포기' };
-  const UI = { recTab: 'sum', gameSort: 'score', handFilter: 'all', handLimit: 40, open: null, fbPick: null };
+  const UI = { recTab: 'sum', gameSort: 'score', handFilter: 'all', handLimit: 40, open: null, fbPick: null, bubbles: {}, unread: 0 };
 
   function renderHistory() {
     const box = $('history');
@@ -3654,6 +3722,12 @@ body.locked { overflow: hidden; }
   $('chatSend').addEventListener('click', sendChatInput);
   $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendChatInput(); } });
   $('chatQuick').addEventListener('click', e => { const q = e.target.closest('[data-say]'); if (q) sayChat(q.dataset.say); });
+  $('bEmo').addEventListener('click', () => toggleEmo());
+  $('emoBar').addEventListener('click', e => {
+    if (e.target.closest('[data-write]')) { toggleEmo(false); openSheet('chat'); setTimeout(() => $('chatInput').focus(), 50); return; }
+    const q = e.target.closest('[data-say]');
+    if (q && sayChat(q.dataset.say)) toggleEmo(false);
+  });
   const answerRebuy = yes => {
     closeSheet();
     if (G.mode === 'guest') { Net.send({ type: 'rebuy', yes }); return; }
