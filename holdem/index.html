@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>홀덤 코치</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<meta name="holdem-build" content="2026-10-18b">
+<meta name="holdem-build" content="2026-10-20a">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Do+Hyeon&family=Noto+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
@@ -475,6 +475,20 @@ body.locked { overflow: hidden; }
 .endrow { flex-wrap: wrap; }
 #bTopup { grid-column: 1 / -1; }
 @media (max-width: 560px) { .blindbadge span { display: none; } .blindbadge { font-size: 12px; padding: 1px 10px; } }
+/* 친구와 채팅 */
+.table-wrap { position: relative; }
+.chatbtn { position: relative; padding: 6px 12px; }
+.chatbtn .badge { position: absolute; top: -6px; right: -6px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--bad); color: #1a0d0b; font: 700 11px var(--font-num); display: flex; align-items: center; justify-content: center; padding: 0 4px; }
+.chatbtn .badge:empty { display: none; }
+.chat-toast { position: absolute; left: 50%; top: 6px; transform: translateX(-50%); z-index: 6; max-width: min(92%, 440px); background: var(--paper); color: var(--card-black); border: 0; border-radius: 12px; padding: 6px 12px; font-size: 14px; box-shadow: 0 2px 10px rgba(0,0,0,.45); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat-toast b { margin-right: 6px; }
+.chat-list { display: flex; flex-direction: column; gap: 6px; min-height: 160px; max-height: 44vh; overflow-y: auto; padding: 4px 2px; }
+.chat-msg { align-self: flex-start; max-width: 82%; background: var(--panel-2); border-radius: 12px 12px 12px 4px; padding: 6px 10px; font-size: 15px; line-height: 1.4; overflow-wrap: anywhere; }
+.chat-msg b { display: block; font-size: 12px; color: var(--muted); font-weight: 600; }
+.chat-msg.mine { align-self: flex-end; background: var(--brass); color: var(--brass-ink); border-radius: 12px 12px 4px 12px; }
+.chat-msg.mine b { display: none; }
+.chat-quick { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0 8px; }
+.chat-send input { letter-spacing: 0; font: 500 16px var(--font-body, inherit); }
 </style>
 </head>
 <body>
@@ -483,8 +497,9 @@ body.locked { overflow: hidden; }
 
 <div class="app">
   <header class="topbar">
-    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/18</span></div>
+    <div class="brand-mini"><b>홀덤 <span>코치</span></b><span class="build">10/20</span></div>
     <button class="navbtn tourbtn" id="tourBtn" type="button" hidden aria-haspopup="dialog">대회</button>
+    <button class="navbtn chatbtn" id="chatBtn" type="button" hidden aria-haspopup="dialog">채팅<span class="badge num" id="chatBadge"></span></button>
     <div class="stats" id="stats"></div>
   </header>
 
@@ -501,6 +516,7 @@ body.locked { overflow: hidden; }
       </div>
       <div id="seats"></div>
     </div>
+    <button class="chat-toast" id="chatToast" type="button" hidden></button>
   </section>
 
   <section class="dock" id="controls" aria-label="내 차례">
@@ -627,6 +643,20 @@ body.locked { overflow: hidden; }
       <div class="chartctl" id="chartCtl"></div>
       <div id="chartGrid"></div>
       <div id="chartPick"></div>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="chatSheet" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="chatTitle">
+    <div class="sheet-head"><h2 id="chatTitle">채팅</h2><button class="chip" type="button" data-close>닫기</button></div>
+    <div class="sheet-body">
+      <div class="chat-list" id="chatList" aria-live="polite"></div>
+      <div class="chat-quick" id="chatQuick"></div>
+      <div class="joinrow chat-send">
+        <input id="chatInput" type="text" maxlength="80" autocomplete="off" enterkeyhint="send" placeholder="메시지 입력" aria-label="채팅 메시지">
+        <button class="chip" type="button" id="chatSend">보내기</button>
+      </div>
     </div>
   </div>
 </div>
@@ -2149,7 +2179,10 @@ body.locked { overflow: hidden; }
     json: k => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } }
   };
   const RESUME_MS = 3 * 60 * 60 * 1000;   // 3시간 안에 돌아오면 이어서 해요
-  const Net = { peer: null, code: null, role: null, nick: pref('holdemNick', ''), sid: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '' };
+  const Net = { peer: null, code: null, role: null, nick: pref('holdemNick', ''), sid: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '', epoch: 0, succ: [], backup: null, lostAt: 0, tryK: 0, carry: null, chat: [] };
+  // 방장이 바뀔 때마다 방 번호 뒤에 -1, -2…가 붙어요 (원래 방장이 돌아와도 두 방이 생기지 않게)
+  const hostId = (code, e) => 'hdcoach-' + code + (e ? '-' + e : '');
+  const MIG_MS = 20000;   // 방장 소식이 20초 없으면 친구가 방장을 이어받아요
   const inviteLink = () => `${PAGES_URL}#hd-${Net.code}`;
   const setStatus = t => { $('pvpStatus').textContent = t; };
   const cleanName = s => String(s || '').replace(/[\u0000-\u001f<>]/g, '').trim().slice(0, 8);
@@ -2161,9 +2194,9 @@ body.locked { overflow: hidden; }
     const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
     const host = ls.json('hd-host');
     if (host && Date.now() - host.at < RESUME_MS && (!m || m[1] === host.code)) return resumeHost(host);
-    if (m) return joinRoom(m[1]);
     const guest = ls.json('hd-guest');
-    if (guest && Date.now() - guest.at < RESUME_MS) joinRoom(guest.code, true);
+    if (m) return joinRoom(m[1], false, guest && guest.code === m[1] ? guest.epoch || 0 : 0);
+    if (guest && Date.now() - guest.at < RESUME_MS) joinRoom(guest.code, true, guest.epoch || 0);
   }
   function tryHash() {
     const m = (location.hash || '').match(/^#hd-([a-z0-9]{4,10})$/);
@@ -2177,28 +2210,35 @@ body.locked { overflow: hidden; }
     clearTimeout(saveTimer);
     saveTimer = setTimeout(saveHostNow, 300);
   }
+  function hostSnapshot() {
+    const guests = {};
+    Object.entries(Net.guests).forEach(([sid, g]) => { guests[sid] = { name: g.name, lastN: g.lastN || 0, joined: g.joined || 0 }; });
+    const g = G.mode === 'host' ? { ...G, pending: null } : null;
+    return { code: Net.code, at: Date.now(), nick: Net.nick, sid: Net.sid, epoch: Net.epoch, guests, G: g, seats: settings.seats, diff: settings.diff, settings: { ...settings }, chat: Net.chat.slice(-40) };
+  }
   function saveHostNow() {
     if (Net.role !== 'host' || !Net.code) return;
-    const guests = {};
-    Object.entries(Net.guests).forEach(([sid, g]) => { guests[sid] = { name: g.name, lastN: g.lastN || 0 }; });
-    const g = G.mode === 'host' ? { ...G, pending: null } : null;
-    ls.set('hd-host', JSON.stringify({ code: Net.code, at: Date.now(), nick: Net.nick, guests, G: g, seats: settings.seats, diff: settings.diff }));
+    ls.set('hd-host', JSON.stringify(hostSnapshot()));
   }
   window.addEventListener('pagehide', () => { if (Net.role === 'host') saveHostNow(); });
   document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden' && Net.role === 'host') saveHostNow(); });
   function resumeHost(saved) {
     if (noPeerLib()) return;
     Net.nick = saved.nick || Net.nick;
+    if (saved.settings) ['seats', 'pub', 'field', 'rebuy'].forEach(k => { if (saved.settings[k] != null) settings[k] = saved.settings[k]; });
     if (saved.seats) settings.seats = saved.seats;
     if (saved.diff && DIFF[saved.diff]) settings.diff = saved.diff;
-    hostRoom(0, saved.code);
+    Net.epoch = saved.epoch || 0;
+    if (Array.isArray(saved.chat)) Net.chat = saved.chat.slice(-40);
+    if (/^s[a-z0-9]{6,12}$/.test(saved.sid || '')) Net.sid = saved.sid;
+    hostRoom(0, saved.code, !!saved.takeover);
     const now = Date.now();
-    Object.entries(saved.guests || {}).forEach(([sid, g]) => { Net.guests[sid] = { name: g.name, lastN: g.lastN || 0, gone: true, goneSince: now, lastSent: '' }; });
+    Object.entries(saved.guests || {}).forEach(([sid, g]) => { Net.guests[sid] = { name: g.name, lastN: g.lastN || 0, joined: g.joined || 0, gone: true, goneSince: now, lastSent: '' }; });
     if (saved.G && saved.G.players) {
       G = saved.G;
       G.busy = false; G.pending = null;
       if (UI.open === 'session') closeSheet();
-      setStatus('진행 중이던 게임을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.');
+      setStatus(saved.takeover ? '방장이 나가서 내가 방장을 이어받았어요. 게임은 그대로 계속돼요.' : '진행 중이던 게임을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.');
       if (!ended()) step(); else render();
     }
     renderLobby(); paintSetup();
@@ -2217,7 +2257,7 @@ body.locked { overflow: hidden; }
 
   function leaveRoom() {
     if (Net.peer) { try { Net.peer.destroy(); } catch (e) { /* 이미 닫힘 */ } }
-    Object.assign(Net, { peer: null, code: null, role: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '' });
+    Object.assign(Net, { peer: null, code: null, role: null, n: 0, guests: {}, hostConn: null, hostGone: false, lastApplied: '', lastGuestSig: '', succ: [], backup: null, lostAt: 0, tryK: 0, probe: null });
   }
   function noPeerLib() {
     if (window.Peer) return false;
@@ -2244,31 +2284,38 @@ body.locked { overflow: hidden; }
     $('startPvp').hidden = true; $('lobbyList').innerHTML = '';
   }
 
-  function hostRoom(retry = 0, resumeCode = null) {
+  function hostRoom(retry = 0, resumeCode = null, takeover = false) {
     if (noPeerLib()) return;
     const keepGuests = resumeCode && Net.code === resumeCode ? Net.guests : null;
     leaveRoom();
     if (keepGuests) Net.guests = keepGuests;
     const code = resumeCode || randCode();
+    if (!resumeCode) { Net.epoch = 0; Net.sid = 's' + randCode(8); Net.chat = []; renderChat(); }
+    if (!/^s[a-z0-9]{6,12}$/.test(Net.sid || '')) Net.sid = 's' + randCode(8);
     Object.assign(Net, { code, role: 'host' });
+    ls.set('hd-sid-' + code, Net.sid); ss.set('hd-sid-' + code, Net.sid);   // 나중에 친구로 다시 앉을 때 쓰는 내 번호표
     ls.del('hd-guest');
-    const peer = new window.Peer('hdcoach-' + code, peerOpts());
+    const peer = new window.Peer(hostId(code, Net.epoch), peerOpts());
     Net.peer = peer;
     setStatus(resumeCode ? '방을 다시 여는 중이에요…' : '방을 만드는 중이에요…');
     showPanel(!resumeCode);
     peer.on('open', () => {
       if (Net.peer !== peer) return;
       keepAwake(); saveHostNow();
-      setStatus(resumeCode ? '방을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.' : '친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.');
+      if (!takeover) setStatus(resumeCode ? '방을 다시 열었어요. 친구들이 자동으로 다시 들어오는 중이에요.' : '친구가 들어오기를 기다리는 중이에요. 다 모이면 "이 멤버로 게임 시작"을 누르세요.');
+      if (resumeCode && !takeover) probeTakeover();
     });
     peer.on('connection', conn => setupGuestConn(conn));
     peer.on('disconnected', () => { if (Net.peer === peer && !peer.destroyed) setTimeout(() => { try { peer.reconnect(); } catch (e) {} }, 1500); });
     peer.on('error', e => {
       if (Net.peer !== peer) return;
+      // 다른 친구가 먼저 방장을 이어받았어요. 그 친구 방에 손님으로 앉아요.
+      if (e.type === 'unavailable-id' && takeover) return becomeGuestOf(Net.epoch);
       // 방금 나갔다 들어오면 연결 서버가 예전 방 번호를 잠깐 붙잡고 있어요. 풀릴 때까지 다시 시도해요.
       if (e.type === 'unavailable-id' && resumeCode && retry < 30) {
         setStatus('방을 다시 여는 중이에요… 잠시만 기다려 주세요.');
-        return setTimeout(() => { if (Net.code === resumeCode) hostRoom(retry + 1, resumeCode); }, 3000);
+        if (retry % 3 === 2) probeTakeover();
+        return setTimeout(() => { if (Net.code === resumeCode && Net.role === 'host') hostRoom(retry + 1, resumeCode); }, 3000);
       }
       if (e.type === 'unavailable-id' && retry < 3) return hostRoom(retry + 1);
       if (e.type === 'peer-unavailable') return;
@@ -2276,6 +2323,108 @@ body.locked { overflow: hidden; }
       setStatus('연결 서버와 다시 연결하는 중이에요…');
       setTimeout(() => { if (Net.peer === peer && Net.role === 'host') hostRoom(0, code); }, 3000);
     });
+  }
+  /* ---------- 채팅 ----------
+     친구가 쓴 글은 방장에게 가고, 방장이 모두에게 다시 보내요. */
+  const cleanText = t => String(t || '').replace(/[\u0000-\u001f]/g, ' ').trim().slice(0, 80);
+  const okChat = it => it && typeof it === 'object' && typeof it.text === 'string' && it.text;
+  function hostSay(sid, name, text) {
+    text = cleanText(text);
+    if (!text || Net.role !== 'host') return;
+    const item = { id: randCode(8), sid, name: cleanName(name) || '친구', text, at: Date.now() };
+    for (const g of Object.values(Net.guests)) if (!g.gone) send(g.conn, { t: 'chat', item });
+    addChat(item);
+    saveHostSession();
+  }
+  function sayChat(text) {
+    text = cleanText(text);
+    if (!text) return false;
+    if (Net.role === 'host') hostSay(Net.sid, Net.nick || '방장', text);
+    else if (Net.role === 'guest' && Net.hostConn) send(Net.hostConn, { t: 'chat', text });
+    else return false;
+    return true;
+  }
+  let toastTimer = null;
+  function addChat(item) {
+    if (!okChat(item)) return;
+    item = { id: String(item.id || ''), sid: String(item.sid || ''), name: cleanName(item.name) || '친구', text: cleanText(item.text), at: +item.at || Date.now() };
+    if (item.id && Net.chat.some(c => c.id === item.id)) return;
+    Net.chat.push(item);
+    if (Net.chat.length > 40) Net.chat = Net.chat.slice(-40);
+    const mine = item.sid === Net.sid;
+    if (UI.open !== 'chat' && !mine) {
+      UI.unread = (UI.unread || 0) + 1;
+      const t = $('chatToast');
+      t.innerHTML = `<b>${esc(item.name)}</b>${esc(item.text)}`; t.hidden = false;
+      clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+      if (!mine) Sound.sfx('chips');
+    }
+    renderChat();
+  }
+  const QUICK = ['굿럭!', '나이스 핸드 👏', 'ㅋㅋㅋ', '아깝다…', '생각 좀 할게요', '빨리요~', '한 판 더?'];
+  function renderChat() {
+    const b = $('chatBadge'); if (!b) return;
+    b.textContent = UI.unread ? String(Math.min(UI.unread, 99)) : '';
+    $('chatBtn').hidden = !Net.role;
+    if (UI.open !== 'chat') return;
+    const list = $('chatList'), atEnd = list.scrollHeight - list.scrollTop - list.clientHeight < 40;
+    list.innerHTML = Net.chat.length ? Net.chat.map(c => `<div class="chat-msg${c.sid === Net.sid ? ' mine' : ''}"><b>${esc(c.name)}</b>${esc(c.text)}</div>`).join('')
+      : '<p class="empty">아직 대화가 없어요. 아래 버튼으로 바로 인사해 보세요.</p>';
+    if (atEnd) list.scrollTop = list.scrollHeight;
+    if (!$('chatQuick').childElementCount) $('chatQuick').innerHTML = QUICK.map(q => `<button class="chip" type="button" data-say="${esc(q)}">${esc(q)}</button>`).join('');
+    const live = Net.role === 'host' || (Net.role === 'guest' && Net.hostConn);
+    $('chatSend').disabled = !live;
+    $('chatInput').placeholder = live ? '메시지 입력 (최대 80자)' : '방장과 다시 연결되면 보낼 수 있어요';
+  }
+
+  // 원래 방장이 돌아왔을 때: 그사이 친구가 방장을 이어받았는지 확인해요. 그랬다면 그 방에 손님으로 앉아요.
+  function probeTakeover() {
+    if (Net.role !== 'host' || Net.probe || !window.Peer) return;
+    const code = Net.code, base = Net.epoch;
+    const pp = new window.Peer(undefined, peerOpts());
+    Net.probe = pp;
+    const done = () => { try { pp.destroy(); } catch (e) {} if (Net.probe === pp) Net.probe = null; };
+    const t = setTimeout(done, 9000);
+    pp.on('open', () => [1, 2].forEach(k => {
+      const c = pp.connect(hostId(code, base + k), { reliable: true });
+      c.on('open', () => {
+        clearTimeout(t); done();
+        if (Net.role === 'host' && Net.code === code && Net.epoch === base) becomeGuestOf(base + k);
+      });
+    }));
+    pp.on('error', e => { if (e.type !== 'peer-unavailable') { clearTimeout(t); done(); } });
+  }
+  function becomeGuestOf(e) {
+    const code = Net.code;
+    if (G && G.gid) Net.carry = { gid: G.gid, recId: G.recId, stats: G.stats, allDecs: G.allDecs };
+    ls.del('hd-host');
+    G = baseState('guest');
+    joinRoom(code, true, e);
+    setStatus('내가 없는 사이 친구가 방장을 이어받았어요. 같은 자리로 다시 앉는 중이에요…');
+    paintSetup(); render();
+  }
+  // 친구 쪽: 방장이 사라졌을 때 미리 받아 둔 게임 상태로 내가 방장이 돼요
+  function takeOver() {
+    const b = Net.backup;
+    if (!b || !b.G || !b.G.players) return;
+    const mySid = Net.sid, oldSid = b.sid, now = Date.now();
+    const g = b.G;
+    const mine = G && G.mode === 'guest' && G.gid === g.gid ? { recId: G.recId, stats: G.stats, allDecs: G.allDecs } : null;
+    const old = g.players.find(p => p.kind === 'me');
+    if (old) { old.kind = 'human'; old.sid = oldSid; }
+    g.me = g.players.findIndex(p => p.sid === mySid && (p.kind === 'human' || p.kind === 'bot'));
+    if (g.me < 0) return;
+    const me = g.players[g.me];
+    if (me.kind === 'bot') me.name = me.humanName || me.name;
+    me.kind = 'me'; me.name = Net.nick || me.name;
+    if (g.tour) g.tour.players.forEach(tp => { if (tp.kind === 'me') { tp.kind = 'human'; tp.sid = oldSid; } else if (tp.sid === mySid) tp.kind = 'me'; });
+    Object.assign(g, mine || {}, { mode: 'host', decisions: [], ended: null, pending: null, busy: false, pendKey: null, sentKey: null, turnStart: g.turnStart ? now : 0 });
+    g.log = (g.log || []).concat(`방장(${cleanName(b.nick) || '방장'})이 나가서 ${me.name}님이 방장을 이어받았어요. 게임은 그대로 계속돼요.`);
+    const guests = {};
+    Object.entries(b.guests || {}).forEach(([sid, x]) => { if (sid !== mySid) guests[sid] = x; });
+    if (oldSid) guests[oldSid] = { name: cleanName(b.nick) || '방장', lastN: 0, joined: 0 };
+    const epoch = Math.max(Net.epoch, b.epoch || 0) + 1;
+    resumeHost({ code: Net.code, nick: Net.nick, sid: mySid, epoch, guests, G: g, settings: b.settings, seats: b.seats, diff: b.diff, takeover: true });
   }
   function setupGuestConn(conn) {
     conn.on('data', msg => onGuestMsg(conn, msg));
@@ -2293,7 +2442,7 @@ body.locked { overflow: hidden; }
       const g = Net.guests[sid] || (Net.guests[sid] = { lastN: 0 });
       if (g.conn && g.conn !== conn) { try { g.conn.close(); } catch (e) {} }
       conn.sid = sid;
-      Object.assign(g, { conn, name: cleanName(msg.nick) || '친구', gone: false, goneSince: 0, lastSent: '', lastSeen: Date.now() });
+      Object.assign(g, { conn, name: cleanName(msg.nick) || '친구', gone: false, goneSince: 0, lastSent: '', lastBackup: '', lastSeen: Date.now(), joined: g.joined || Date.now() });
       if (typeof msg.n === 'number' && msg.n > g.lastN) g.lastN = msg.n;   // 새로고침 전에 처리한 선택은 다시 하지 않아요
       // 자리를 비운 사이 컴퓨터가 대신 치고 있었다면, 원래 주인에게 자리를 돌려줘요
       if (G.mode === 'host') {
@@ -2305,6 +2454,7 @@ body.locked { overflow: hidden; }
         }
       }
       guestsChanged();
+      send(conn, { t: 'chatlog', items: Net.chat.slice(-40) });
       return;
     }
     const g = Net.guests[conn.sid];
@@ -2313,6 +2463,12 @@ body.locked { overflow: hidden; }
     if (g.gone) { g.gone = false; g.goneSince = 0; g.lastSent = ''; guestsChanged(); }
     if (msg.t === 'pong') return;
     if (msg.t === 'nick') { g.name = cleanName(msg.nick) || g.name; guestsChanged(); return; }
+    if (msg.t === 'chat') {
+      const now = Date.now();
+      if (now - (g.lastChat || 0) < 600) return;   // 도배 막기
+      g.lastChat = now;
+      return hostSay(conn.sid, g.name, msg.text);
+    }
     if (msg.t === 'act' && typeof msg.n === 'number' && msg.n > g.lastN) { g.lastN = msg.n; handleRemote(conn.sid, msg); }
   }
   function guestsChanged() {
@@ -2401,7 +2557,9 @@ body.locked { overflow: hidden; }
     if (!G || G.mode !== 'host' || ended() || !G.turnStart) return;
     const p = G.players[G.toAct];
     if (!p || p.kind === 'bot' || !canAct(p)) return;
-    if (Date.now() - G.turnStart < TURN_MS) return;
+    const g = p.kind === 'human' && Net.guests[p.sid];
+    const away = p.kind === 'human' && (!g || g.gone);   // 연결이 끊긴 사람은 8초만 기다려요
+    if (Date.now() - G.turnStart < (away ? 8000 : TURN_MS)) return;
     G.turnStart = 0;
     if (G.toAct === G.me) { G.pending = null; G.busy = true; if (UI.open === 'raise') closeSheet(); }
     act(G.toAct, G.currentBet - p.bet > 0 ? 'fold' : 'check', 0, true);
@@ -2430,12 +2588,22 @@ body.locked { overflow: hidden; }
       if (now - (g.lastSeen || now) > 10000) { g.gone = true; g.goneSince = now; changed = true; try { g.conn.close(); } catch (e) {} }
     }
     if (changed) guestsChanged();
+    const gs = Object.values(Net.guests);
+    if (G.mode === 'host' && gs.length && gs.every(g => g.gone) && now - (Net.lastProbe || 0) > 8000) { Net.lastProbe = now; probeTakeover(); }
+  }, 2500);
+  setInterval(() => {
+    if (Net.role !== 'guest' || Net.hostConn || !Net.lostAt) return;
+    const k = Net.succ.indexOf(Net.sid);
+    if (k < 0 || !Net.backup) return;
+    const away = Date.now() - Net.lostAt;
+    if (away > MIG_MS + k * 12000) takeOver();   // 1순위 친구가 20초 뒤, 2순위 친구는 그 친구도 없으면 32초 뒤
+    else if (G.mode === 'guest') setStatus(`방장과 연결이 끊겼어요. ${Math.ceil((MIG_MS + k * 12000 - away) / 1000)}초 안에 안 돌아오면 내가 방장을 이어받아요.`);
   }, 2500);
   setInterval(() => {
     if (Net.role !== 'guest' || !Net.hostConn) return;
     if (Date.now() - (Net.lastHostMsg || Date.now()) > 10000) {
       const c = Net.hostConn;
-      Net.hostConn = null; Net.hostGone = true;
+      Net.hostConn = null; Net.hostGone = true; Net.lostAt = Net.lostAt || Date.now();
       try { c.close(); } catch (e) {}
       setStatus('방장과 연결이 끊겼어요. 다시 연결하는 중이에요…');
       if (G.mode === 'guest') render();
@@ -2450,6 +2618,7 @@ body.locked { overflow: hidden; }
       if (!peer || peer.destroyed) hostRoom(0, Net.code);
       else if (peer.disconnected) { try { peer.reconnect(); } catch (e) { hostRoom(0, Net.code); } }
       if (G.mode === 'host') { Object.values(Net.guests).forEach(g => { g.lastSent = ''; }); publish(); }
+      probeTakeover();
     } else {
       if (!peer || peer.destroyed) joinRoom(Net.code, true);
       else {
@@ -2484,6 +2653,10 @@ body.locked { overflow: hidden; }
       };
     }
     const lobby = lobbyInfo();
+    // 방장이 갑자기 사라질 때를 대비해 먼저 들어온 친구 2명에게 게임 전체를 몰래 맡겨 둬요 (이어받을 순서)
+    Net.succ = base ? Object.entries(Net.guests).filter(([sid, g]) => !g.gone && g.conn && g.conn.open && base.seats[sid] != null)
+      .sort((a, b) => (a[1].joined || 0) - (b[1].joined || 0)).slice(0, 2).map(([sid]) => sid) : [];
+    if (base) scheduleBackup();
     for (const [sid, g] of Object.entries(Net.guests)) {
       if (g.gone || !g.conn || !g.conn.open) continue;
       let state = null;
@@ -2491,7 +2664,7 @@ body.locked { overflow: hidden; }
         const seat = base.seats[sid];
         state = { ...base, mine: seat != null ? G.players[seat].hole : null };
       }
-      const msg = { t: 'sync', hostNick: Net.nick || '방장', lobby, state };
+      const msg = { t: 'sync', hostNick: Net.nick || '방장', lobby, state, epoch: Net.epoch, succ: Net.succ };
       const json = JSON.stringify(msg);
       if (json === g.lastSent) continue;
       g.lastSent = json;
@@ -2499,18 +2672,34 @@ body.locked { overflow: hidden; }
     }
   }
 
+  let backupTimer = null, backupAt = 0;
+  function scheduleBackup() {
+    if (backupTimer) return;
+    backupTimer = setTimeout(() => {
+      backupTimer = null; backupAt = Date.now();
+      if (Net.role !== 'host' || G.mode !== 'host') return;
+      const data = hostSnapshot(), json = JSON.stringify(data.G);
+      for (const sid of Net.succ) {
+        const g = Net.guests[sid];
+        if (!g || g.gone || g.lastBackup === json) continue;
+        g.lastBackup = json;
+        send(g.conn, { t: 'backup', data });
+      }
+    }, Math.max(300, 1500 - (Date.now() - backupAt)));
+  }
+
   // 친구 쪽
-  function joinRoom(code, resuming = false) {
+  function joinRoom(code, resuming = false, epoch = 0) {
     if (noPeerLib()) return;
     leaveRoom();
     // 자리 번호표: 탭을 닫았다 다시 들어와도 같은 자리에 앉게 기기에 남겨요
     let sid = ss.get('hd-sid-' + code) || ls.get('hd-sid-' + code);
     if (!/^s[a-z0-9]{6,12}$/.test(sid)) sid = 's' + randCode(8);
     ss.set('hd-sid-' + code, sid); ls.set('hd-sid-' + code, sid);
-    ls.set('hd-guest', JSON.stringify({ code, at: Date.now() }));
+    ls.set('hd-guest', JSON.stringify({ code, at: Date.now(), epoch }));
     ls.del('hd-host');
     if (!location.hash) { try { history.replaceState(null, '', location.pathname + location.search + '#hd-' + code); } catch (e) {} }
-    Object.assign(Net, { code, role: 'guest', sid, n: Number(ss.get('hd-n-' + code) || ls.get('hd-n-' + code)) || 0 });
+    Object.assign(Net, { code, role: 'guest', sid, epoch, n: Number(ss.get('hd-n-' + code) || ls.get('hd-n-' + code)) || 0 });
     const peer = new window.Peer(undefined, peerOpts());
     Net.peer = peer;
     showPanel(!resuming);
@@ -2527,12 +2716,17 @@ body.locked { overflow: hidden; }
     });
   }
   function connectHost(peer) {
-    if (Net.peer !== peer || peer.destroyed || (Net.hostConn && Net.hostConn.open)) return;
-    const conn = peer.connect('hdcoach-' + Net.code, { reliable: true });
+    if (Net.peer !== peer || peer.destroyed || (Net.hostConn && Net.hostConn.open) || Net.role !== 'guest') return;
+    // 방장이 안 보이면 이어받은 방(-1, -2)도 번갈아 찾아봐요
+    const e = Net.epoch + (Net.tryK % 3);
+    Net.tryK++;
+    const conn = peer.connect(hostId(Net.code, e), { reliable: true });
     conn.on('open', () => {
-      Net.hostConn = conn; Net.hostGone = false; Net.lastHostMsg = Date.now();
+      if (Net.hostConn && Net.hostConn.open) { try { conn.close(); } catch (x) {} return; }
+      Net.hostConn = conn; Net.hostGone = false; Net.lastHostMsg = Date.now(); Net.lostAt = 0; Net.tryK = 0;
+      if (e !== Net.epoch) { Net.epoch = e; Net.backup = null; }
       send(conn, { t: 'hello', sid: Net.sid, nick: Net.nick || '친구', n: Net.n });
-      ls.set('hd-guest', JSON.stringify({ code: Net.code, at: Date.now() }));
+      ls.set('hd-guest', JSON.stringify({ code: Net.code, at: Date.now(), epoch: Net.epoch }));
       keepAwake();
       setStatus('방에 들어왔어요. 방장이 시작하기를 기다리는 중이에요.');
       if (G.mode === 'guest') render();
@@ -2540,7 +2734,7 @@ body.locked { overflow: hidden; }
     conn.on('data', onHostMsg);
     const lost = () => {
       if (Net.hostConn !== conn) return;
-      Net.hostConn = null; Net.hostGone = true;
+      Net.hostConn = null; Net.hostGone = true; Net.lostAt = Net.lostAt || Date.now();
       setStatus('방장과 연결이 끊겼어요. 다시 연결하는 중이에요…');
       if (G.mode === 'guest') render();
       setTimeout(() => connectHost(peer), 3000);
@@ -2550,7 +2744,13 @@ body.locked { overflow: hidden; }
   function onHostMsg(msg) {
     Net.lastHostMsg = Date.now();
     if (msg && msg.t === 'ping') { send(Net.hostConn, { t: 'pong' }); return; }
+    if (msg && msg.t === 'chat') { addChat(msg.item); return; }
+    if (msg && msg.t === 'chatlog') { if (Array.isArray(msg.items)) { Net.chat = msg.items.filter(okChat).slice(-40); renderChat(); } return; }
+    if (msg && msg.t === 'backup') { if (msg.data && msg.data.code === Net.code && msg.data.G) Net.backup = msg.data; return; }
     if (!msg || msg.t !== 'sync') return;
+    if (typeof msg.epoch === 'number' && msg.epoch >= 0) Net.epoch = msg.epoch;
+    Net.succ = Array.isArray(msg.succ) ? msg.succ.filter(x => typeof x === 'string').slice(0, 3) : [];
+    if (!Net.succ.includes(Net.sid)) Net.backup = null;
     const lobby = msg.lobby || {};
     renderLobby({ ...lobby, host: msg.hostNick });
     const st = msg.state;
@@ -2577,6 +2777,8 @@ body.locked { overflow: hidden; }
     const myHole = Array.isArray(s.mine) && s.mine.length === 2 ? s.mine : null;
     if (G.mode !== 'guest' || G.gid !== s.gid) {
       G = baseState('guest'); G.gid = s.gid;
+      if (Net.carry && Net.carry.gid === s.gid) { Object.assign(G, { recId: Net.carry.recId, stats: Net.carry.stats, allDecs: Net.carry.allDecs || [] }); }
+      Net.carry = null;
       if (UI.open === 'session' || UI.open === 'pvp') closeSheet();   // 게임이 시작되면 초대 창은 알아서 닫혀요
       paintSetup();
     }
@@ -2634,6 +2836,7 @@ body.locked { overflow: hidden; }
     $('pubMode').checked = settings.pub;
     $('pvpBtn').setAttribute('aria-pressed', String(inRoom));
     $('pvpBtn').textContent = inRoom ? '친구 방' : '친구 초대';
+    $('chatBtn').hidden = !Net.role;
     const guest = G && G.mode === 'guest';
     document.querySelectorAll('[data-diff],[data-seats],[data-field],[data-rebuy],#pubMode,#newGameBtn').forEach(b => { b.disabled = guest; });
     const notes = {
@@ -3386,7 +3589,7 @@ body.locked { overflow: hidden; }
   }
 
   /* ---------- 팝업 (코치 피드백 · 기록실) ---------- */
-  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet', rebuy: 'rebuySheet', chart: 'chartSheet' };
+  const SHEETS = { fb: 'fbSheet', rec: 'recSheet', pvp: 'pvpSheet', session: 'sessionSheet', menu: 'menuSheet', raise: 'raiseSheet', tour: 'tourSheet', rebuy: 'rebuySheet', chart: 'chartSheet', chat: 'chatSheet' };
   function openSheet(which) {
     Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
     UI.open = which;
@@ -3396,11 +3599,12 @@ body.locked { overflow: hidden; }
     else if (which === 'tour') renderTour();
     else if (which === 'rebuy') paintRebuy();
     else if (which === 'chart') renderChart();
+    else if (which === 'chat') { UI.unread = 0; renderChat(); setTimeout(() => { const l = $('chatList'); l.scrollTop = l.scrollHeight; }, 0); }
     const el = $(SHEETS[which]);
     el.hidden = false;
     document.body.classList.add('locked');
     const c = el.querySelector('[data-close]');
-    if (c && which !== 'raise') c.focus();
+    if (c && which !== 'raise' && which !== 'chat') c.focus();
   }
   function closeSheet() {
     Object.values(SHEETS).forEach(id => { $(id).hidden = true; });
@@ -3444,6 +3648,12 @@ body.locked { overflow: hidden; }
   $('recordsBtn').addEventListener('click', () => openSheet('rec'));
   $('menuBtn').addEventListener('click', () => openSheet('menu'));
   $('tourBtn').addEventListener('click', () => openSheet('tour'));
+  $('chatBtn').addEventListener('click', () => openSheet('chat'));
+  $('chatToast').addEventListener('click', () => { $('chatToast').hidden = true; openSheet('chat'); });
+  const sendChatInput = () => { if (sayChat($('chatInput').value)) $('chatInput').value = ''; };
+  $('chatSend').addEventListener('click', sendChatInput);
+  $('chatInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.isComposing) { e.preventDefault(); sendChatInput(); } });
+  $('chatQuick').addEventListener('click', e => { const q = e.target.closest('[data-say]'); if (q) sayChat(q.dataset.say); });
   const answerRebuy = yes => {
     closeSheet();
     if (G.mode === 'guest') { Net.send({ type: 'rebuy', yes }); return; }
@@ -3703,7 +3913,7 @@ body.locked { overflow: hidden; }
   });
   $('nickSave').addEventListener('click', () => {
     Net.nick = cleanName($('nick').value); setPref('holdemNick', Net.nick);
-    if (Net.role === 'host') { if (G.mode === 'host') { G.players[0].name = Net.nick || '방장'; render(); } else publish(); }
+    if (Net.role === 'host') { if (G.mode === 'host') { G.players[G.me].name = Net.nick || '방장'; render(); } else publish(); }
     else if (Net.role === 'guest') sendNick();
     renderLobby();
     $('nickSave').textContent = '저장했어요';
@@ -3749,7 +3959,7 @@ body.locked { overflow: hidden; }
   if (/[?&]debug\b/.test(location.search)) window.__hd = { get G() { return G; }, bot: i => gtoBot(i), render: () => render() };   // 테스트용
   // 공개 주소(GitHub Pages)는 휴대폰이 예전 페이지를 기억해 둘 때가 있어요.
   // 열 때 새 버전이 있는지 확인하고, 있으면 한 번 새로 불러와요.
-  const BUILD = '2026-10-18b';
+  const BUILD = '2026-10-20a';
   if (/github\.io$/.test(location.hostname)) {
     fetch(location.href.split('#')[0], { cache: 'reload' }).then(r => r.text()).then(t => {
       const m = t.match(/name="holdem-build" content="([^"]+)"/);
