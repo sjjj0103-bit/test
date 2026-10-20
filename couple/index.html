@@ -5,6 +5,12 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>우리 둘 달력</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="우리 둘">
+<meta name="theme-color" content="#1C1E22">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500&family=Gowun+Batang:wght@400;700&family=Noto+Sans+KR:wght@400;500&display=swap">
@@ -270,6 +276,14 @@ img.broken { min-height: 80px; }
 .cat { font-size: 10px; color: var(--accent); border: 1px solid var(--line); padding: 0 6px; border-radius: 2px; letter-spacing: .04em; }
 .link-btn { border: 0; background: none; color: var(--accent); font-size: 12px; padding: 0; white-space: nowrap; }
 
+/* ---- 커플 코드 화면 ---- */
+.gate { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: flex; align-items: center; justify-content: center;
+  padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.gate-card { width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 16px; }
+.gate-card .eyebrow { font-size: 10px; letter-spacing: .32em; color: var(--accent); text-transform: uppercase; }
+.gate-card h2 { font-family: var(--display); font-weight: 700; font-size: 24px; margin: 0; }
+
 /* ---- 보고 싶어 알림 ---- */
 .miss-pop { position: fixed; inset: 0; z-index: 50; display: grid; place-items: center; background: rgba(10, 10, 12, .55); padding: 24px; }
 .miss-card { background: var(--hero); color: var(--hero-ink); border-radius: 8px; padding: 30px 22px 20px; text-align: center; width: min(320px, 100%); display: flex; flex-direction: column; gap: 10px; animation: up .25s ease-out; }
@@ -342,6 +356,12 @@ img.broken { min-height: 80px; }
     check: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>',
   };
 
+  // ---------- Supabase 연결 정보 (가입 없이 둘이 같이 쓰는 버전) ----------
+  // Supabase → Project Settings → API에서 복사한 두 값. 비어 있으면 이 기기에만 저장돼요.
+  // (이 키는 공개용이에요. 커플 코드를 모르면 데이터를 못 보도록 Supabase 쪽에서 잠가 둬요.)
+  const SUPABASE_URL = "";
+  const SUPABASE_KEY = "";
+
   // ---------- 상태 ----------
   const state = {
     settings: {}, events: {}, anniversaries: {}, status: {}, miss: {}, wishes: {}, logs: {}, chat: {}, reads: {}, members: {},
@@ -352,6 +372,26 @@ img.broken { min-height: 80px; }
   const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
   let me = lsGet("couple-me", null);          // "a" | "b" | null(아직 모름)
   let myId = null, assets = null;
+  let backend = "loading";                    // "claude" | "supabase" | "local"
+
+  // 사진 주소: claude.ai는 /_blob/<id>, Supabase는 1시간짜리 서명 주소를 받아 와요
+  let resolvePhotos = null;
+  const photoCache = {};
+  const freshUrl = id => { const c = photoCache[id]; return c && Date.now() - c.t < 50 * 60e3 ? c.url : ""; };
+  const photoTag = (id, cls = "") => {
+    const src = resolvePhotos ? freshUrl(id) : "/_blob/" + id;
+    return `<img${cls ? ` class="${cls}"` : ""} data-photo="${esc(id)}"${src ? ` src="${esc(src)}"` : ""} alt="" loading="lazy">`;
+  };
+  async function hydratePhotos(root) {
+    const imgs = [...root.querySelectorAll("img[data-photo]")];
+    imgs.forEach(img => img.addEventListener("error", () => img.classList.add("broken"), { once: true }));
+    if (!resolvePhotos) return;
+    const need = [...new Set(imgs.map(i => i.dataset.photo).filter(id => !freshUrl(id)))];
+    if (need.length) {
+      try { const got = await resolvePhotos(need); Object.entries(got).forEach(([id, url]) => { photoCache[id] = { url, t: Date.now() }; }); } catch {}
+    }
+    imgs.forEach(img => { const u = freshUrl(img.dataset.photo); if (u && img.getAttribute("src") !== u) img.src = u; });
+  }
   const other = () => (me === "b" ? "a" : "b");
 
   const S = () => state.settings;
@@ -398,11 +438,151 @@ img.broken { min-height: 80px; }
       remove(col, id) { return db.collection(col).doc(id).delete(); },
     };
   }
+  // Supabase: 기기마다 이름 없는 계정(익명 로그인)을 만들고, 커플 코드로 같은 공간에 들어가요
+  const appUrl = () => location.origin + location.pathname;
+  function loadScript(src) {
+    return new Promise((res, rej) => { const el = document.createElement("script"); el.src = src; el.onload = res; el.onerror = rej; document.head.appendChild(el); });
+  }
+  const GATE_ERR = {
+    code_too_short: "코드는 8글자 이상으로 정해 주세요.",
+    no_such_code: "그런 코드가 없어요. 상대가 정한 코드를 다시 확인해 주세요.",
+    code_taken: "이미 누가 쓰는 코드예요. 다른 코드를 정해 주세요.",
+    space_full: "이 코드로 연결된 기기가 너무 많아요 (최대 6대).",
+    not_signed_in: "연결이 잠깐 끊겼어요. 새로고침해 주세요.",
+  };
+  function codeGate(sb) {
+    return new Promise(resolve => {
+      let mode = "make";
+      const el = document.createElement("div");
+      el.className = "gate";
+      const draw = () => {
+        el.innerHTML = `<div class="gate-card">
+          <div class="eyebrow">Together</div>
+          <h2>우리 둘만의 코드</h2>
+          <p class="note" style="margin:0">둘이 같은 코드를 넣으면 같은 달력과 채팅을 써요. 코드를 모르는 사람은 들어올 수 없어요. 가입은 필요 없어요.</p>
+          <div class="seg" style="grid-template-columns:1fr 1fr"><button type="button" data-gm="make" aria-pressed="${mode === "make"}">처음 시작해요</button><button type="button" data-gm="join" aria-pressed="${mode === "join"}">코드를 받았어요</button></div>
+          <form class="form" id="gate-form">
+            <div class="field"><label for="gate-code">${mode === "make" ? "둘만 아는 코드를 정해요 (8글자 이상)" : "상대가 알려 준 코드"}</label>
+              <input id="gate-code" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="40" required placeholder="${mode === "make" ? "예: jisu-minjun-0730" : "코드 입력"}"></div>
+            <p class="note" id="gate-err" style="margin:0;color:var(--sun)" hidden></p>
+            <button class="btn" type="submit" id="gate-go">${mode === "make" ? "이 코드로 시작하기" : "들어가기"}</button>
+            ${mode === "make" ? `<p class="note" style="margin:0">정한 코드를 상대에게 카톡으로 알려 주세요. 대문자·소문자는 구분하지 않아요. 생일처럼 쉬운 숫자만 쓰지 말고 글자를 섞어 주세요.</p>` : ""}
+          </form></div>`;
+      };
+      draw();
+      el.addEventListener("click", e => { const b = e.target.closest("[data-gm]"); if (b) { mode = b.dataset.gm; draw(); el.querySelector("#gate-code").focus(); } });
+      el.addEventListener("submit", async e => {
+        e.preventDefault();
+        const code = el.querySelector("#gate-code").value.trim(), err = el.querySelector("#gate-err"), go = el.querySelector("#gate-go");
+        err.hidden = true;
+        if (code.length < 8) { err.textContent = GATE_ERR.code_too_short; err.hidden = false; return; }
+        go.disabled = true; go.textContent = "확인하는 중";
+        const { data, error } = await sb.rpc("join_couple", { code, make: mode === "make" });
+        if (error || !data) {
+          const key = Object.keys(GATE_ERR).find(k => (error && error.message || "").includes(k));
+          err.textContent = key ? GATE_ERR[key] : "연결하지 못했어요. 인터넷 연결을 확인하고 다시 해 주세요.";
+          err.hidden = false; go.disabled = false; go.textContent = mode === "make" ? "이 코드로 시작하기" : "들어가기";
+          return;
+        }
+        lsSet("couple-code", code);
+        el.remove(); resolve(data);
+      });
+      document.body.appendChild(el);
+    });
+  }
+  async function supaStore() {
+    if (!window.supabase) await loadScript("vendor/supabase-2.49.4.js");
+    const sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: true, autoRefreshToken: true, storageKey: "couple-auth" } });
+    let { data: { session } } = await sb.auth.getSession();
+    if (!session) {
+      const r = await sb.auth.signInAnonymously();
+      if (r.error) throw r.error;
+      session = r.data.session;
+    }
+    const uid = session.user.id;
+    const { data: mem, error: memErr } = await sb.from("members").select("space_id").eq("user_id", uid).limit(1);
+    if (memErr) throw memErr;
+    const space = mem && mem[0] ? mem[0].space_id : await codeGate(sb);
+
+    // 데이터는 한 표(items)에 col(종류)·id(이름)·data로 보관. 설정은 couple/settings
+    const cache = {}, subs = {};
+    const emit = col => (subs[col] || []).forEach(cb => cb({ ...(cache[col] || {}) }));
+    const fail = error => ({ code: error && error.code === "42501" ? "invalid_argument" : "unavailable", message: error && error.message });
+    async function loadAll() {
+      const next = {};
+      for (let from = 0; ; from += 1000) {
+        const { data, error } = await sb.from("items").select("col,id,data").eq("space_id", space).range(from, from + 999);
+        if (error) throw error;
+        data.forEach(r => { (next[r.col] = next[r.col] || {})[r.id] = r.data; });
+        if (data.length < 1000) break;
+      }
+      Object.keys(cache).forEach(k => delete cache[k]);
+      Object.assign(cache, next);
+      Object.keys(subs).forEach(emit);
+    }
+    await loadAll();
+    let joined = false;
+    sb.channel("couple-" + space)
+      .on("postgres_changes", { event: "*", schema: "public", table: "items", filter: `space_id=eq.${space}` }, p => {
+        if (p.eventType === "DELETE") {
+          const o = p.old || {};
+          if (o.space_id && o.space_id !== space) return;
+          if (cache[o.col] && o.id in cache[o.col]) { const c = { ...cache[o.col] }; delete c[o.id]; cache[o.col] = c; emit(o.col); }
+        } else {
+          const r = p.new;
+          if (!r || r.space_id !== space) return;
+          cache[r.col] = { ...(cache[r.col] || {}), [r.id]: r.data }; emit(r.col);
+        }
+      })
+      .subscribe(status => {
+        // 연결이 끊겼다 다시 붙으면 그 사이에 바뀐 것을 한 번 다시 받아요
+        if (status === "SUBSCRIBED") { if (joined) loadAll().catch(() => {}); joined = true; }
+      });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) loadAll().catch(() => {}); });
+
+    const up = async (col, id, data) => {
+      const { error } = await sb.from("items").upsert({ space_id: space, col, id, data, updated_at: new Date().toISOString() });
+      if (error) throw fail(error);
+    };
+    return {
+      mode: "live", uid,
+      onSettings(cb) { (subs.couple = subs.couple || []).push(v => cb(v.settings || {})); cb(cache.couple?.settings || {}); },
+      onCol(name, cb) {
+        (subs[name] = subs[name] || []).push(cb); cb({ ...(cache[name] || {}) });
+        return () => { subs[name] = subs[name].filter(x => x !== cb); };
+      },
+      async saveSettings(o) { cache.couple = { ...(cache.couple || {}), settings: o }; emit("couple"); await up("couple", "settings", o); },
+      async put(col, id, o) { cache[col] = { ...(cache[col] || {}), [id]: o }; emit(col); await up(col, id, o); },
+      async remove(col, id) {
+        if (cache[col]) { const c = { ...cache[col] }; delete c[id]; cache[col] = c; emit(col); }
+        const { error } = await sb.from("items").delete().eq("space_id", space).eq("col", col).eq("id", id);
+        if (error) throw fail(error);
+      },
+      photos: {
+        async upload(file, opts) {
+          const type = (opts && opts.type) || file.type || "image/jpeg";
+          const ext = type === "image/png" ? "png" : type === "image/webp" ? "webp" : type === "image/gif" ? "gif" : "jpg";
+          const path = `${space}/${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const { error } = await sb.storage.from("photos").upload(path, file, { contentType: type, upsert: false });
+          if (error) throw { code: /size|large/i.test(error.message) ? "too_large" : /quota|limit/i.test(error.message) ? "quota_or_state" : "upstream_error", message: error.message };
+          return { id: path };
+        },
+        async delete(id) { await sb.storage.from("photos").remove([id]); return { deleted: true }; },
+      },
+      async resolvePhotos(ids) {
+        const { data } = await sb.storage.from("photos").createSignedUrls(ids, 3600);
+        const out = {};
+        (data || []).forEach(d => { if (d.signedUrl && d.path) out[d.path] = d.signedUrl; });
+        return out;
+      },
+    };
+  }
+
   let store = null;
   async function write(p) {
     try { await p; return true; }
     catch (e) {
-      if (e && e.code === "invalid_argument") toast("이 링크에서는 보기만 할 수 있어요. 편집자로 초대받아야 적을 수 있어요.");
+      if (e && e.code === "invalid_argument") toast(backend === "supabase" ? "저장 권한이 없어요. 새로고침한 뒤 커플 코드로 다시 들어와 주세요." : "이 링크에서는 보기만 할 수 있어요. 편집자로 초대받아야 적을 수 있어요.");
       else if (e && e.code === "quota_exceeded") toast("저장 공간이 가득 찼어요. 지난 기록을 조금 지워 주세요.");
       else toast("저장하지 못했어요. 잠시 뒤 다시 해 주세요.");
       return false;
@@ -665,12 +845,11 @@ img.broken { min-height: 80px; }
     const seg = (k, l) => `<button data-seg="${k}" aria-pressed="${state.seg === k}">${l}</button>`;
     const body = { log: memLog, wish: memWish, ann: memAnn }[state.seg]();
     view.innerHTML = `<div class="seg">${seg("log", "데이트 기록")}${seg("wish", "가고 싶은 곳")}${seg("ann", "기념일")}</div>${body}`;
-    view.querySelectorAll("img[data-blob]").forEach(img => img.addEventListener("error", () => img.classList.add("broken"), { once: true }));
+    hydratePhotos(view);
   }
-  const blob = id => "/_blob/" + id;
   const logCard = l => {
     const ph = (l.photos || []).slice(0, 3);
-    const photos = ph.length ? `<div class="photos n${ph.length}">${ph.map(id => `<img data-blob src="${blob(esc(id))}" alt="" loading="lazy">`).join("")}</div>` : "";
+    const photos = ph.length ? `<div class="photos n${ph.length}">${ph.map(id => photoTag(id)).join("")}</div>` : "";
     const extra = (l.photos || []).length > 3 ? ` · 사진 ${(l.photos || []).length}장` : "";
     return `<button class="card log" data-log="${esc(l.id)}">${photos}<div class="body">
       <div class="meta"><i style="background:${person(l.by || "a").color}"></i>${fmtDot(l.date)} ${WD[parse(l.date).getDay()]}${extra}</div>
@@ -735,14 +914,18 @@ img.broken { min-height: 80px; }
     </section>
     <section class="card form">
       <h2 class="section-title">나는 누구예요?</h2>
-      <p class="note" style="margin:0">채팅, 보고 싶어, 오늘의 한마디가 이 이름으로 보내져요. ${myId ? "한 번 정하면 다른 기기에서도 기억해요." : "기기마다 한 번씩 정해요."}</p>
+      <p class="note" style="margin:0">채팅, 보고 싶어, 오늘의 한마디가 이 이름으로 보내져요. ${backend === "claude" ? "한 번 정하면 다른 기기에서도 기억해요." : "기기마다 한 번씩 정해요."}</p>
       <div class="chips">${["a", "b"].map(k => `<button class="chip" data-me="${k}" aria-pressed="${me === k}"><i style="background:${person(k).color}"></i>${esc(person(k).name)}</button>`).join("")}</div>
     </section>
     <section class="card">
       <h2 class="section-title">같이 쓰는 법</h2>
-      <p class="note" style="margin:0">${state.mode === "live"
+      ${backend === "supabase" ? `<p class="note" style="margin:0">상대에게 이 주소와 커플 코드를 알려 주세요. 상대는 가입 없이 주소를 열고 코드만 넣으면 돼요.</p>
+        <div class="field" style="margin-top:12px"><span class="lbl">주소</span><div style="overflow-wrap:anywhere;user-select:all">${esc(appUrl())}</div></div>
+        <div class="field" style="margin-top:10px"><span class="lbl">커플 코드</span><div style="user-select:all">${esc(lsGet("couple-code", "") || "이 기기에서 처음 넣은 코드")}</div></div>
+        <button class="btn ghost" type="button" id="copy-invite" style="margin-top:14px">주소와 코드 복사</button>`
+      : `<p class="note" style="margin:0">${backend === "claude"
         ? "오른쪽 위 공유 버튼에서 상대를 이메일로 <b>편집자</b>로 초대하면, 일정·채팅·사진이 둘에게 똑같이 보여요."
-        : "지금은 이 기기에만 저장돼요. 둘이 같이 쓰려면 claude.ai에 올린 이 앱 링크로 들어와 주세요."}</p>
+        : "아직 온라인 저장소가 연결되지 않아서 이 기기에만 저장돼요."}</p>`}
     </section>`;
   }
 
@@ -977,10 +1160,10 @@ img.broken { min-height: 80px; }
     const l = state.logs[id]; if (!l) return;
     openSheet(`<h3>${esc(l.title || "데이트 기록")} <button class="x" aria-label="닫기">×</button></h3>
       <div class="note" style="margin-top:-8px">${fmt(parse(l.date))} · ${esc(iga(person(l.by || "a").name))} 남김</div>
-      ${(l.photos || []).map(p => `<img class="photo-full" src="${blob(esc(p))}" alt="" loading="lazy">`).join("")}
+      ${(l.photos || []).map(p => photoTag(p, "photo-full")).join("")}
       ${l.text ? `<div style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(l.text)}</div>` : ""}
       <button class="btn ghost" data-edit-log="${esc(id)}">수정</button>`, sh => {
-      sh.querySelectorAll("img").forEach(img => img.addEventListener("error", () => img.classList.add("broken"), { once: true }));
+      hydratePhotos(sh);
     });
   }
   function logSheet(id, preset) {
@@ -1006,9 +1189,10 @@ img.broken { min-height: 80px; }
       const drawThumbs = () => {
         if (!thumbs) return;
         const total = kept.length + fresh.length;
-        thumbs.innerHTML = kept.map((p, i) => `<div class="thumb"><img src="${blob(esc(p))}" alt=""><button type="button" data-rm-kept="${i}" aria-label="사진 빼기">×</button></div>`).join("")
+        thumbs.innerHTML = kept.map((p, i) => `<div class="thumb">${photoTag(p)}<button type="button" data-rm-kept="${i}" aria-label="사진 빼기">×</button></div>`).join("")
           + fresh.map((f, i) => `<div class="thumb"><img src="${f.url}" alt=""><button type="button" data-rm-fresh="${i}" aria-label="사진 빼기">×</button></div>`).join("")
           + (total < MAX_PHOTOS ? `<label class="add-photo" style="position:relative">${ICON.camera}사진 추가<input type="file" id="log-files" accept="image/*" multiple></label>` : "");
+        hydratePhotos(thumbs);
         const input = thumbs.querySelector("#log-files");
         if (input) input.addEventListener("change", () => {
           const room = MAX_PHOTOS - kept.length - fresh.length;
@@ -1106,7 +1290,13 @@ img.broken { min-height: 80px; }
     else if (d.wishCat) { state.wishCat = d.wishCat; render(); }
     else if (d.newCat) { newWishCat = d.newCat; t.parentElement.querySelectorAll("[data-new-cat]").forEach(x => x.setAttribute("aria-pressed", x === t)); }
   });
-  view.addEventListener("click", e => {
+  view.addEventListener("click", async e => {
+    if (e.target.closest("#copy-invite")) {
+      const text = `우리 둘 달력\n${appUrl()}\n커플 코드: ${lsGet("couple-code", "")}`;
+      try { await navigator.clipboard.writeText(text); toast("복사했어요. 카톡에 붙여넣어 보내세요."); }
+      catch { toast("복사가 안 돼요. 주소와 코드를 길게 눌러 복사해 주세요."); }
+      return;
+    }
     const sw = e.target.closest(".sw"); if (!sw) return;
     sw.parentElement.querySelectorAll(".sw").forEach(x => x.setAttribute("aria-pressed", x === sw));
   });
@@ -1161,7 +1351,6 @@ img.broken { min-height: 80px; }
     render();
   }
   (async () => {
-    let db = null;
     if (window.claude && typeof window.claude.use === "function") {
       try {
         const [d, u, a] = await Promise.all([
@@ -1169,11 +1358,26 @@ img.broken { min-height: 80px; }
           window.claude.use("user").catch(() => null),
           window.claude.use("assets").catch(() => null),
         ]);
-        db = d; assets = d ? a : null;
-        if (u) myId = await u.id().catch(() => null);
+        if (d) {
+          assets = a;
+          if (u) myId = await u.id().catch(() => null);
+          backend = "claude";
+          return attach(dbStore(d));
+        }
       } catch {}
     }
-    attach(db ? dbStore(db) : localStore());
+    if (SUPABASE_URL && SUPABASE_KEY) {
+      try {
+        const s = await supaStore();
+        myId = s.uid; assets = s.photos; resolvePhotos = s.resolvePhotos; backend = "supabase";
+        return attach(s);
+      } catch (e) {
+        console.error(e);
+        toast("온라인 저장소에 연결하지 못했어요. 지금은 이 기기에만 저장돼요.");
+      }
+    }
+    backend = "local";
+    attach(localStore());
   })();
 })();
 </script>

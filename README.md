@@ -45,6 +45,7 @@
 | `avatar.js` | 아바타와 옷 모양 그리기, 사진 입히기, 코디 보드 |
 | `cutout.js` | AI 배경 지우기와 손으로 다듬기 |
 | `vendor/` | AI 엔진(ONNX Runtime Web)과 배경 지우기 모델 — 자세한 출처는 `vendor/README.md` |
+| `couple/` | 우리 둘 달력 (`supabase-setup.sql`: Supabase 설정, `vendor/`: Supabase 연결 라이브러리 v2.49.4, MIT) |
 | `manifest.json`, `icon.svg` | 홈 화면에 추가할 때 쓰는 앱 이름과 아이콘 |
 
 ---
@@ -94,8 +95,19 @@
   - **기념일**: 앞으로 2년 기념일과 우리만의 기념일.
 - **나는 누구예요?**: 처음 열 때 한 번 고르면, 채팅·보고 싶어·한마디가 그 이름으로 보내져요. claude.ai 링크에서는 다른 기기에서도 기억해요.
 
-## 둘이 같이 쓰려면
+## 둘이 같이 쓰려면 (가입 없는 버전)
 
-- 같이 쓰기(실시간 공유)는 **claude.ai에 올린 링크**에서만 돼요. 거기에 두 사람 데이터를 보관하는 저장 공간이 붙어 있어요.
-- 링크 주인이 오른쪽 위 **공유** 메뉴에서 상대를 이메일로 **편집자**로 초대하면 상대도 일정·채팅·사진을 쓸 수 있어요. 상대도 claude.ai에 로그인해야 해요. ("링크가 있는 누구나" 공개 공유를 켜면 상대가 쓰기 권한을 잃으니 켜지 마세요.)
-- GitHub Pages(`https://sjjj0103-bit.github.io/test/couple/`)에서 열면 **그 기기에만** 저장돼서 둘이 공유되지 않고, 사진도 올릴 수 없어요.
+데이터는 [Supabase](https://supabase.com)(무료 온라인 저장소)에 보관해요. 두 사람은 **주소를 열고 같은 커플 코드만 넣으면** 같이 쓸 수 있어요. 가입이나 로그인은 필요 없어요.
+
+1. supabase.com에 가입하고 새 프로젝트를 만들어요 (Region: Northeast Asia (Seoul), Free 요금제).
+2. **Authentication → Sign In / Providers**에서 **Allow anonymous sign-ins**를 켜요.
+3. **SQL Editor**에 `couple/supabase-setup.sql` 내용을 통째로 붙여넣고 **Run**을 눌러요.
+4. **Project Settings → API**의 **Project URL**과 **anon public**(또는 Publishable) 키를 `couple/index.html`의 `SUPABASE_URL`, `SUPABASE_KEY`에 넣어요. (service_role / secret 키는 절대 넣지 마세요.)
+5. GitHub Pages가 켜진 상태에서 `https://sjjj0103-bit.github.io/test/couple/`을 열어요.
+6. 한 사람이 **처음 시작해요**에서 8글자 이상 커플 코드를 정하고, 상대는 **코드를 받았어요**에 같은 코드를 넣어요.
+
+알아 두세요:
+- 커플 코드를 모르는 사람은 데이터와 사진을 읽을 수도, 쓸 수도 없어요 (Supabase의 행 단위 잠금, RLS). 한 코드에 기기는 최대 6대까지 들어올 수 있어요.
+- 새 폰이나 브라우저에서는 코드를 한 번 다시 넣어요.
+- Supabase 무료 프로젝트는 일주일 동안 아무도 안 쓰면 잠시 멈출 수 있어요. Supabase 화면에서 Restore를 누르면 다시 켜져요.
+- `SUPABASE_URL`이 비어 있으면 그 기기에만 저장돼요. claude.ai 아티팩트로 열면 claude.ai 저장소를 써요.
