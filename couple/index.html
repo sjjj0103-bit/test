@@ -40,6 +40,7 @@
   color-scheme: dark;
 }
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { margin: 0; }
 body {
   background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55; font-weight: 400;
@@ -333,6 +334,30 @@ img.broken { min-height: 80px; }
 .colors .chip { padding: 4px 11px; font-size: 12px; }
 .field select { border: 0; border-bottom: 1px solid var(--line); background: none; border-radius: 0; padding: 9px 2px; width: 100%; min-width: 0; }
 
+/* ---- 헤더 톱니바퀴 ---- */
+.top-right { display: flex; align-items: center; gap: 10px; }
+.gear { border: 0; background: none; color: var(--muted); width: 32px; height: 32px; padding: 6px; border-radius: 50%; }
+.gear svg { width: 20px; height: 20px; }
+
+/* ---- 경제 탭 ---- */
+.tick { display: flex; align-items: center; gap: 12px; padding: 11px 0; border-top: 1px solid var(--line); }
+.tick:first-child { border-top: 0; }
+.tick .main { flex: 1; min-width: 0; }
+.tick .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.tick .s { font-size: 11px; color: var(--muted); display: flex; gap: 6px; align-items: center; margin-top: 2px; }
+.tick .px { text-align: right; flex: none; font-variant-numeric: tabular-nums; }
+.tick .p { font-family: var(--serif); font-size: 18px; line-height: 1.2; font-variant-numeric: lining-nums tabular-nums; }
+.tick .c { font-size: 12px; color: var(--muted); }
+.tick .c.up { color: var(--sun); }
+.tick .c.down { color: var(--sat); }
+.danger-link { color: var(--sun); }
+.market-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--line); font-size: 11px; color: var(--muted); }
+.news { display: block; padding: 11px 0; border-top: 1px solid var(--line); color: inherit; text-decoration: none; }
+.news:first-child { border-top: 0; }
+.news .t { font-size: 14px; line-height: 1.45; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.news .s { font-size: 11px; color: var(--muted); margin-top: 3px; }
+.news:hover .t { text-decoration: underline; }
+
 /* ---- 커플 코드 화면 ---- */
 .gate { position: fixed; inset: 0; z-index: 60; background: var(--bg); overflow-y: auto; display: flex; align-items: center; justify-content: center;
   padding-block: calc(24px + env(safe-area-inset-top, 0px)) calc(24px + env(safe-area-inset-bottom, 0px));
@@ -357,7 +382,7 @@ img.broken { min-height: 80px; }
 <div class="wrap">
   <header class="top">
     <h1 id="app-title">우리 둘 달력</h1>
-    <span class="sync" id="sync"><i></i><span>불러오는 중</span></span>
+    <span class="top-right"><span class="sync" id="sync"><i></i><span>불러오는 중</span></span><button class="gear" data-go="set" aria-label="설정"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button></span>
   </header>
   <main id="view"></main>
 </div>
@@ -381,7 +406,7 @@ img.broken { min-height: 80px; }
     <button data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</button>
     <button data-tab="chat"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/></svg>채팅<span class="unread-n" id="unread" hidden></span></button>
     <button data-tab="mem"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="14" rx="2"/><path d="M8 6l1.5-2h5L16 6"/><circle cx="12" cy="13" r="3.5"/></svg>추억</button>
-    <button data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button>
+    <button data-tab="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M15 8h5v5"/></svg>경제</button>
   </div>
 </nav>
 
@@ -425,7 +450,7 @@ img.broken { min-height: 80px; }
 
   // ---------- 상태 ----------
   const state = {
-    settings: {}, events: {}, anniversaries: {}, moods: {}, miss: {}, wishes: {}, logs: {}, chat: {}, reads: {}, members: {},
+    settings: {}, events: {}, anniversaries: {}, moods: {}, watch: {}, miss: {}, wishes: {}, logs: {}, chat: {}, reads: {}, members: {},
     tab: "home", seg: "log", calMode: "ev", wishCat: "전체", chatShow: 200, viewY: 0, viewM: 0, mode: "loading",
   };
   { const t = today(); state.viewY = t.getFullYear(); state.viewM = t.getMonth(); }
@@ -434,6 +459,7 @@ img.broken { min-height: 80px; }
   let me = lsGet("couple-me", null);          // "a" | "b" | null(아직 모름)
   let myId = null, assets = null;
   let backend = "loading";                    // "claude" | "supabase" | "local"
+  let callFn = null;                          // Supabase Edge Function 부르기 (경제 탭)
 
   // 사진 주소: claude.ai는 /_blob/<id>, Supabase는 1시간짜리 서명 주소를 받아 와요
   let resolvePhotos = null;
@@ -630,6 +656,12 @@ img.broken { min-height: 80px; }
         },
         async delete(id) { await sb.storage.from("photos").remove([id]); return { deleted: true }; },
       },
+      // 경제 탭: Supabase Edge Function "market"이 시세와 뉴스를 대신 가져와요
+      async fn(name, body) {
+        const { data, error } = await sb.functions.invoke(name, { body });
+        if (error) throw error;
+        return data;
+      },
       async resolvePhotos(ids) {
         const { data } = await sb.storage.from("photos").createSignedUrls(ids, 3600);
         const out = {};
@@ -783,7 +815,8 @@ img.broken { min-height: 80px; }
     chatScreen.hidden = state.tab !== "chat";
     document.body.classList.toggle("chat-mode", state.tab === "chat");
     if (state.tab !== "chat") { emojiPanel.hidden = true; emojiToggle.setAttribute("aria-pressed", "false"); lastChatSig = ""; }
-    ({ home: renderHome, cal: renderCal, chat: renderChat, mem: renderMem, set: renderSet })[state.tab]();
+    ({ home: renderHome, cal: renderCal, chat: renderChat, mem: renderMem, money: renderMoney, set: renderSet })[state.tab]();
+    if (state.tab === "money") loadMarket();
     hydratePhotos(view);
   }
   // 무언가 적는 중에는 다시 그리지 않고, 다 적고 나면 그려요 (적던 글자가 지워지지 않게)
@@ -1105,6 +1138,107 @@ img.broken { min-height: 80px; }
         <div class="list">${custom.length ? custom.map(a => `<button class="row" data-edit-ann="${esc(a.id)}"><span class="ico">${ICON.custom}</span><div class="main"><div class="t">${esc(a.title)}</div><div class="s">${fmtDot(a.date)}${a.repeat ? " · 매년" : ""}</div></div><span class="s" style="color:var(--muted)">수정</span></button>`).join("") : `<div class="empty">아직 없어요.</div>`}</div>
       </section>
       <button class="btn" data-add-ann>+ 기념일 추가</button>`;
+  }
+
+  // ---------- 경제: 우리 관심 종목 + 오늘의 경제 뉴스 ----------
+  // kind: kr(국내 주식·지수, 6자리 코드 또는 KOSPI) / us(미국 티커) / fx(환율, 야후 기호) / coin(업비트 KRW-XXX)
+  const DEFAULT_WATCH = [
+    { kind: "kr", sym: "KOSPI", name: "코스피" }, { kind: "fx", sym: "KRW=X", name: "원/달러 환율" },
+    { kind: "kr", sym: "000660", name: "SK하이닉스" }, { kind: "kr", sym: "005930", name: "삼성전자" },
+    { kind: "us", sym: "^IXIC", name: "나스닥" }, { kind: "coin", sym: "KRW-BTC", name: "비트코인" }, { kind: "coin", sym: "KRW-ETH", name: "이더리움" },
+  ];
+  const KIND_LABEL = { kr: "국내", us: "미국", fx: "환율", coin: "코인" };
+  const market = { quotes: {}, news: [], at: 0, loading: false, error: "" };
+  try { Object.assign(market, JSON.parse(lsGet("couple-market", "{}")), { loading: false, error: "" }); } catch {}
+  let addKind = "kr", marketTimer = null;
+  const watchList = () => {
+    const docs = Object.entries(state.watch).map(([id, w]) => ({ id, ...w })).filter(w => w.sym);
+    return docs.length ? docs.sort((a, b) => (a.order || 0) - (b.order || 0)) : DEFAULT_WATCH.map((w, i) => ({ ...w, id: "", order: i }));
+  };
+  const qKey = w => `${w.kind}:${w.sym}`;
+  const fmtPrice = (q, w) => {
+    if (!q || q.error || typeof q.price !== "number") return "—";
+    const krw = q.currency === "KRW";
+    const isIndex = (w.kind === "kr" && /^[A-Z]/i.test(w.sym)) || w.sym.startsWith("^");
+    const digits = isIndex || w.kind === "fx" ? 2 : krw ? (q.price < 100 ? 2 : 0) : 2;
+    const v = q.price.toLocaleString("ko-KR", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+    return isIndex || w.kind === "fx" ? v : krw ? v + "원" : "$" + v;
+  };
+  async function loadMarket(force) {
+    if (!callFn || market.loading) return;
+    if (!force && Date.now() - market.at < 60e3) return;      // 1분 안에는 다시 안 불러요
+    market.loading = true;
+    try {
+      const data = await callFn("market", { items: watchList().map(w => ({ kind: w.kind, sym: w.sym })), news: true });
+      market.quotes = data.quotes || {}; market.news = (data.news || []).slice(0, 8); market.at = data.at || Date.now(); market.error = "";
+      lsSet("couple-market", JSON.stringify({ quotes: market.quotes, news: market.news, at: market.at }));
+    } catch (e) {
+      market.error = "시세를 불러오지 못했어요. 잠시 뒤 다시 눌러 주세요.";
+    }
+    market.loading = false;
+    if (state.tab === "money") renderMoney();
+  }
+  // 경제 탭을 보고 있는 동안만 1분마다 새로 고쳐요
+  setInterval(() => { if (state.tab === "money" && !document.hidden) loadMarket(); }, 60e3);
+  const ago2 = ts => { const m = Math.round((Date.now() - ts) / 60e3); return m < 1 ? "방금" : m < 60 ? `${m}분 전` : m < 1440 ? `${Math.round(m / 60)}시간 전` : `${Math.round(m / 1440)}일 전`; };
+  function renderMoney() {
+    if (backend !== "supabase") {
+      view.innerHTML = `<section class="card"><h2 class="section-title">경제</h2><p class="note" style="margin:0">시세와 뉴스는 가입 없는 버전(sjjj0103-bit.github.io/test/couple)에서 보여요.</p></section>`;
+      return;
+    }
+    const rows = watchList().map(w => {
+      const q = market.quotes[qKey(w)];
+      const up = q && !q.error && q.change > 0, down = q && !q.error && q.change < 0;
+      const chg = q && !q.error && typeof q.pct === "number" ? `${up ? "▲" : down ? "▼" : ""} ${Math.abs(q.pct).toFixed(2)}%` : "";
+      return `<div class="tick"><div class="main"><div class="t">${esc(w.name || q?.name || w.sym)}</div><div class="s"><span class="cat">${KIND_LABEL[w.kind] || ""}</span>${esc(w.sym)}</div></div>
+        <div class="px"><div class="p">${fmtPrice(q, w)}</div><div class="c ${up ? "up" : down ? "down" : ""}">${q && q.error ? "못 불러옴" : chg}</div></div>
+        ${state.watchEdit ? `<button class="link-btn danger-link" data-unwatch="${esc(qKey(w))}">빼기</button>` : ""}</div>`;
+    }).join("");
+    const news = market.news.length ? market.news.map(n => `<a class="news" href="${esc(n.link)}" target="_blank" rel="noopener noreferrer"><div class="t">${esc(n.title)}</div><div class="s">${esc(n.source)}${n.time ? " · " + ago2(n.time) : ""}</div></a>`).join("")
+      : `<div class="empty">${market.loading ? "뉴스를 불러오는 중이에요." : "뉴스를 아직 못 불러왔어요."}</div>`;
+    const kindChip = k => `<button type="button" class="chip" data-add-kind="${k}" aria-pressed="${addKind === k}">${{ kr: "국내 주식", us: "미국 주식", coin: "코인" }[k]}</button>`;
+    const hint = { kr: "종목코드 6자리 (예: 035420 네이버)", us: "티커 (예: AAPL, TSLA, NVDA)", coin: "코인 기호 (예: BTC, XRP, SOL)" }[addKind];
+    view.innerHTML = `<section class="card">
+        <h2 class="section-title">우리 관심 종목 <small><button data-watch-edit>${state.watchEdit ? "완료" : "편집"}</button></small></h2>
+        <div class="list">${rows}</div>
+        ${state.watchEdit ? `<form class="form" id="watch-form" style="margin-top:14px;gap:10px">
+          <div class="chips small">${kindChip("kr")}${kindChip("us")}${kindChip("coin")}</div>
+          <div class="wish-add"><input id="watch-input" placeholder="${hint}" maxlength="12" autocomplete="off" autocapitalize="characters"><button class="btn" type="submit">추가</button></div>
+        </form>` : ""}
+        <div class="market-foot"><span>${market.error ? esc(market.error) : market.at ? `${hm(market.at)} 기준 · 국내 장중엔 실시간에 가까워요` : market.loading ? "불러오는 중" : ""}</span><button class="link-btn" data-market-refresh>${market.loading ? "불러오는 중" : "새로고침"}</button></div>
+      </section>
+      <section class="card"><h2 class="section-title">오늘의 경제 뉴스 <small>구글 뉴스 경제 헤드라인</small></h2><div class="list">${news}</div></section>
+      <p class="note" style="margin:0;text-align:center">시세는 참고용이에요. 투자 판단은 증권사 앱에서 한 번 더 확인하세요.</p>`;
+  }
+  async function addWatch(raw) {
+    let sym = raw.trim().toUpperCase().replace(/\s/g, "");
+    if (!sym) return;
+    if (addKind === "kr" && !/^\d{6}$/.test(sym)) { toast("국내 주식은 종목코드 6자리로 넣어 주세요. 네이버 증권에서 종목을 찾으면 이름 옆에 있어요."); return; }
+    if (addKind === "coin") sym = sym.startsWith("KRW-") ? sym : "KRW-" + sym;
+    if (!/^[A-Z0-9.^=\-]{1,15}$/.test(sym)) { toast("영어·숫자로 넣어 주세요"); return; }
+    const list = watchList();
+    if (list.some(w => w.kind === addKind && w.sym === sym)) { toast("이미 있어요"); return; }
+    let name = "";
+    try {
+      const data = await callFn("market", { items: [{ kind: addKind, sym }] });
+      const q = data.quotes && data.quotes[`${addKind}:${sym}`];
+      if (!q || q.error) { toast("그 종목을 찾지 못했어요. 코드를 다시 확인해 주세요."); return; }
+      market.quotes[`${addKind}:${sym}`] = q; name = q.name || "";
+    } catch { toast("지금은 확인할 수 없어요. 잠시 뒤 다시 해 주세요."); return; }
+    // 처음 편집할 때는 기본 목록을 먼저 우리 목록으로 저장해요
+    if (!Object.keys(state.watch).length) for (const w of list) await write(store.put("watch", newId(), { kind: w.kind, sym: w.sym, name: w.name, order: w.order }));
+    await write(store.put("watch", newId(), { kind: addKind, sym, name, order: Date.now() }));
+    view.querySelector("#watch-input") && (view.querySelector("#watch-input").value = "");
+    toast(`${name || sym} 추가했어요`);
+  }
+  async function removeWatch(key) {
+    const list = watchList();
+    if (!Object.keys(state.watch).length) {
+      for (const w of list) if (qKey(w) !== key) await write(store.put("watch", newId(), { kind: w.kind, sym: w.sym, name: w.name, order: w.order }));
+      return;
+    }
+    const w = list.find(x => qKey(x) === key);
+    if (w && w.id) await write(store.remove("watch", w.id));
   }
 
   function renderSet() {
@@ -1572,7 +1706,7 @@ img.broken { min-height: 80px; }
     const b = e.target.closest("[data-tab]"); if (b) go(b.dataset.tab);
   });
   document.addEventListener("click", e => {
-    const t = e.target.closest("[data-go],[data-seg],[data-add-event],[data-edit],[data-day],[data-month],[data-add-ann],[data-edit-ann],[data-me],[data-mood],[data-mood-day],[data-cal-mode],#miss-btn,[data-more-chat],[data-new-log],[data-log],[data-edit-log],[data-wish-toggle],[data-wish-edit],[data-wish-log],[data-wish-cat],[data-new-cat]");
+    const t = e.target.closest("[data-go],[data-seg],[data-add-event],[data-edit],[data-day],[data-month],[data-add-ann],[data-edit-ann],[data-me],[data-watch-edit],[data-unwatch],[data-add-kind],[data-market-refresh],[data-mood],[data-mood-day],[data-cal-mode],#miss-btn,[data-more-chat],[data-new-log],[data-log],[data-edit-log],[data-wish-toggle],[data-wish-edit],[data-wish-log],[data-wish-cat],[data-new-cat]");
     if (!t) return;
     const d = t.dataset;
     if (d.go) go(d.go, d.seg);
@@ -1589,6 +1723,10 @@ img.broken { min-height: 80px; }
     else if (t.hasAttribute("data-add-ann")) annSheet(null);
     else if (d.editAnn) annSheet(d.editAnn);
     else if (d.me) setMe(d.me);
+    else if (t.hasAttribute("data-watch-edit")) { state.watchEdit = !state.watchEdit; render(); }
+    else if (d.unwatch) removeWatch(d.unwatch);
+    else if (d.addKind) { addKind = d.addKind; render(); }
+    else if (t.hasAttribute("data-market-refresh")) loadMarket(true);
     else if (d.mood) moodSheet(d.mood);
     else if (d.moodDay) moodDaySheet(d.moodDay);
     else if (d.calMode) { state.calMode = d.calMode; lsSet("couple-calmode", d.calMode); render(); }
@@ -1615,6 +1753,7 @@ img.broken { min-height: 80px; }
   });
   view.addEventListener("submit", async e => {
     e.preventDefault();
+    if (e.target.id === "watch-form") { addWatch(view.querySelector("#watch-input").value); return; }
     if (e.target.id === "wish-form") {
       const input = view.querySelector("#wish-input");
       if (await addWish(input.value)) { input.value = ""; toast("추가했어요"); }
@@ -1634,7 +1773,7 @@ img.broken { min-height: 80px; }
   // ---------- 시작 ----------
   {
     const saved = lsGet("couple-tab", "home");
-    state.tab = saved === "ann" ? "mem" : ["home", "cal", "chat", "mem", "set"].includes(saved) ? saved : "home";
+    state.tab = saved === "ann" ? "mem" : ["home", "cal", "chat", "mem", "money", "set"].includes(saved) ? saved : "home";
     state.calMode = lsGet("couple-calmode", "ev") === "mood" ? "mood" : "ev";
     state.seg = saved === "ann" ? "ann" : ["log", "wish", "ann"].includes(lsGet("couple-seg", "log")) ? lsGet("couple-seg", "log") : "log";
   }
@@ -1652,7 +1791,7 @@ img.broken { min-height: 80px; }
   function attach(s) {
     store = s; state.mode = s.mode;
     s.onSettings(v => { state.settings = v || {}; gotSettings = true; soft(); maybeAskMe(); });
-    ["events", "anniversaries", "moods", "wishes", "logs", "reads"].forEach(name => s.onCol(name, v => { state[name] = v || {}; soft(); }));
+    ["events", "anniversaries", "moods", "wishes", "logs", "reads", "watch"].forEach(name => s.onCol(name, v => { state[name] = v || {}; soft(); }));
     s.onCol("miss", v => { state.miss = v || {}; soft(); checkMiss(); });
     if (myId) s.onCol("members", v => {
       state.members = v || {}; gotMembers = true;
@@ -1683,7 +1822,7 @@ img.broken { min-height: 80px; }
     if (SUPABASE_URL && SUPABASE_KEY) {
       try {
         const s = await supaStore();
-        myId = s.uid; assets = s.photos; resolvePhotos = s.resolvePhotos; backend = "supabase";
+        myId = s.uid; assets = s.photos; resolvePhotos = s.resolvePhotos; callFn = s.fn; backend = "supabase";
         return attach(s);
       } catch (e) {
         console.error(e);
