@@ -1,0 +1,12 @@
+{
+  "name": "우리 둘 달력",
+  "short_name": "우리 둘",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F2F1EE",
+  "theme_color": "#1C1E22",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml" },
+    { "src": "icon-180.png", "sizes": "180x180", "type": "image/png" }
+  ]
+}
