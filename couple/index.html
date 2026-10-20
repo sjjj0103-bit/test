@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>우리 둘 달력</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Jua&family=Gowun+Dodum&display=swap">
+<style>
+/* 한 손으로 쓰는 폰 앱: 가운데 좁은 기둥 + 아래 고정 탭 4개 */
+:root {
+  --bg: #FBF6F7; --surface: #FFFFFF; --ink: #2B1A22; --muted: #86707A;
+  --line: #EEDFE4; --accent: #D63E66; --accent-soft: #FBE3EA;
+  --sun: #D64545; --sat: #3A6FD8; --shadow: 0 6px 24px rgba(120, 40, 70, .10);
+  --display: "Jua", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --body: "Gowun Dodum", "Apple SD Gothic Neo", "Malgun Gothic", system-ui, sans-serif;
+  --nav-h: 64px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17111A; --surface: #221A25; --ink: #F4E9EE; --muted: #A8949E;
+    --line: #3A2D3D; --accent: #FF6F93; --accent-soft: #3D2230;
+    --sun: #FF7A7A; --sat: #7EA6FF; --shadow: 0 6px 24px rgba(0, 0, 0, .35);
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17111A; --surface: #221A25; --ink: #F4E9EE; --muted: #A8949E;
+  --line: #3A2D3D; --accent: #FF6F93; --accent-soft: #3D2230;
+  --sun: #FF7A7A; --sat: #7EA6FF; --shadow: 0 6px 24px rgba(0, 0, 0, .35);
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body {
+  background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 24px);
+}
+button, input, textarea, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.wrap, #view { max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+#view { width: 100%; }
+
+header.top { display: flex; align-items: center; justify-content: space-between; padding-top: 14px; gap: 8px; }
+header.top h1 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; letter-spacing: .02em; }
+.sync { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.sync i { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); display: inline-block; }
+.sync.live i { background: #2DB37A; }
+
+.card { background: var(--surface); border-radius: 18px; padding: 16px; box-shadow: var(--shadow); }
+.section-title { font-family: var(--display); font-weight: 400; font-size: 17px; margin: 0 0 10px; display: flex; justify-content: space-between; align-items: baseline; }
+.section-title small { font-family: var(--body); font-size: 13px; color: var(--muted); }
+
+/* 홈: 디데이 */
+.hero { text-align: center; padding: 26px 16px 22px; background: var(--accent-soft); box-shadow: none; }
+.hero .names { font-size: 15px; color: var(--muted); display: flex; justify-content: center; align-items: center; gap: 8px; }
+.hero .names b { font-weight: 400; color: var(--ink); }
+.hero .heart { color: var(--accent); }
+.hero .count { font-family: var(--display); font-size: 64px; line-height: 1.1; color: var(--accent); margin: 6px 0 2px; font-variant-numeric: tabular-nums; }
+.hero .count span { font-size: 26px; margin-left: 2px; }
+.hero .since { font-size: 13px; color: var(--muted); }
+.hero .today-note { margin-top: 10px; font-family: var(--display); font-size: 16px; }
+
+.list { display: flex; flex-direction: column; }
+.row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); background: none; border-left: 0; border-right: 0; border-bottom: 0; width: 100%; text-align: left; }
+.row:first-child { border-top: 0; }
+.row .bar { width: 4px; align-self: stretch; border-radius: 4px; flex: none; }
+.row .main { flex: 1; min-width: 0; }
+.row .t { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.row .s { font-size: 12px; color: var(--muted); }
+.badge { font-family: var(--display); font-size: 14px; padding: 3px 10px; border-radius: 999px; background: var(--accent-soft); color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; flex: none; }
+.badge.today { background: var(--accent); color: var(--surface); }
+.empty { color: var(--muted); font-size: 14px; padding: 6px 0; }
+.ico { width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent); flex: none; font-size: 14px; }
+
+/* 캘린더 */
+.cal-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; }
+.cal-head h2 { font-family: var(--display); font-weight: 400; font-size: 22px; margin: 0; font-variant-numeric: tabular-nums; }
+.icon-btn { border: 0; background: var(--accent-soft); color: var(--accent); width: 36px; height: 36px; border-radius: 50%; font-size: 18px; line-height: 1; }
+.legend { display: flex; gap: 12px; flex-wrap: wrap; font-size: 12px; color: var(--muted); margin-bottom: 8px; }
+.legend span { display: inline-flex; align-items: center; gap: 5px; }
+.legend i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 2px; }
+.wd { text-align: center; font-size: 12px; color: var(--muted); padding: 4px 0; }
+.wd.sun, .day.sun .n { color: var(--sun); }
+.wd.sat, .day.sat .n { color: var(--sat); }
+.day { min-height: 62px; border: 0; background: none; border-radius: 10px; padding: 4px 2px; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; }
+.day.out { opacity: .32; }
+.day .n { font-size: 14px; width: 26px; height: 26px; display: grid; place-items: center; border-radius: 50%; font-variant-numeric: tabular-nums; }
+.day.is-today .n { background: var(--accent); color: var(--surface) !important; }
+.day:hover { background: var(--accent-soft); }
+.day .dots { display: flex; gap: 3px; flex-wrap: wrap; justify-content: center; }
+.day .dots i { width: 6px; height: 6px; border-radius: 50%; display: block; }
+.day .ann { font-size: 10px; color: var(--accent); line-height: 1; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* 버튼, 폼 */
+.btn { border: 0; border-radius: 14px; padding: 12px 16px; background: var(--accent); color: var(--surface); font-family: var(--display); font-size: 16px; width: 100%; }
+.btn.ghost { background: var(--accent-soft); color: var(--accent); }
+.btn.danger { background: none; color: var(--sun); border: 1px solid var(--line); }
+.btn.danger.armed { background: var(--sun); color: var(--surface); border-color: var(--sun); }
+.btn-row { display: flex; gap: 8px; }
+.field { display: flex; flex-direction: column; gap: 6px; }
+.field label, .field .lbl { font-size: 13px; color: var(--muted); }
+.field input, .field textarea { border: 1px solid var(--line); background: var(--bg); border-radius: 12px; padding: 11px 12px; width: 100%; min-width: 0; }
+.field textarea { resize: vertical; min-height: 64px; }
+.form { display: flex; flex-direction: column; gap: 14px; }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { border: 1.5px solid var(--line); background: var(--surface); border-radius: 999px; padding: 7px 14px; display: inline-flex; align-items: center; gap: 6px; }
+.chip i { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+.chip[aria-pressed="true"] { border-color: var(--ink); font-weight: 700; }
+.swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.sw { width: 30px; height: 30px; border-radius: 50%; border: 3px solid var(--surface); box-shadow: 0 0 0 1px var(--line); }
+.sw[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--ink); }
+.check { display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.check input { width: 18px; height: 18px; accent-color: var(--accent); }
+.person { border-top: 1px solid var(--line); padding-top: 14px; display: flex; flex-direction: column; gap: 10px; }
+.note { font-size: 13px; color: var(--muted); }
+
+/* 아래 탭 */
+nav.tabs {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--surface); border-top: 1px solid var(--line);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  padding-left: env(safe-area-inset-left, 0px); padding-right: env(safe-area-inset-right, 0px);
+}
+nav.tabs .in { max-width: 480px; margin: 0 auto; display: grid; grid-template-columns: repeat(4, 1fr); height: var(--nav-h); }
+nav.tabs button { border: 0; background: none; color: var(--muted); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; font-size: 12px; }
+nav.tabs button svg { width: 22px; height: 22px; }
+nav.tabs button[aria-current="page"] { color: var(--accent); }
+
+/* 아래에서 올라오는 창 */
+.scrim { position: fixed; inset: 0; background: rgba(20, 8, 14, .45); z-index: 30; display: flex; align-items: flex-end; justify-content: center; }
+.sheet {
+  background: var(--surface); width: 100%; max-width: 480px; max-height: 88vh; overflow-y: auto;
+  border-radius: 22px 22px 0 0; padding: 18px max(16px, env(safe-area-inset-right, 0px)) calc(20px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  display: flex; flex-direction: column; gap: 14px; animation: up .22s ease-out;
+}
+.sheet h3 { font-family: var(--display); font-weight: 400; font-size: 20px; margin: 0; display: flex; justify-content: space-between; align-items: center; }
+.sheet .x { border: 0; background: none; font-size: 22px; color: var(--muted); }
+@keyframes up { from { transform: translateY(30px); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .sheet { animation: none; } }
+
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px) + 14px); background: var(--ink); color: var(--bg); padding: 10px 16px; border-radius: 12px; font-size: 14px; z-index: 40; max-width: calc(100% - 32px); text-align: center; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <h1 id="app-title">우리 둘 달력</h1>
+    <span class="sync" id="sync"><i></i><span>불러오는 중</span></span>
+  </header>
+  <main id="view"></main>
+</div>
+
+<nav class="tabs" aria-label="메뉴">
+  <div class="in">
+    <button data-tab="home" aria-current="page"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.5-9.3-9A5.3 5.3 0 0 1 12 6.2 5.3 5.3 0 0 1 21.3 12C19 16.5 12 21 12 21z"/></svg>홈</button>
+    <button data-tab="cal"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="16" rx="3"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>캘린더</button>
+    <button data-tab="ann"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>기념일</button>
+    <button data-tab="set"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>설정</button>
+  </div>
+</nav>
+
+<script>
+(() => {
+  // ---------- 날짜 도우미 ----------
+  const pad = n => String(n).padStart(2, "0");
+  const ymd = d => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+  const parse = s => { const [y, m, d] = s.split("-").map(Number); return new Date(y, m - 1, d); };
+  const today = () => { const t = new Date(); return new Date(t.getFullYear(), t.getMonth(), t.getDate()); };
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const diff = (a, b) => Math.round((b - a) / 864e5);
+  const WD = ["일", "월", "화", "수", "목", "금", "토"];
+  const fmt = d => `${d.getMonth() + 1}월 ${d.getDate()}일 (${WD[d.getDay()]})`;
+  const fmtDot = s => s ? s.replace(/-/g, ".") : "";
+  const dLabel = d => { const n = diff(today(), d); return n === 0 ? "오늘" : n === 1 ? "내일" : `D-${n}`; };
+  const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const newId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  const COLORS = ["#E5486E", "#3B82F6", "#10B981", "#F59E0B", "#8B5CF6", "#06B6D4", "#EC4899", "#64748B"];
+
+  // ---------- 상태 ----------
+  const state = { settings: {}, events: {}, anniversaries: {}, tab: "home", viewY: 0, viewM: 0, mode: "loading" };
+  { const t = today(); state.viewY = t.getFullYear(); state.viewM = t.getMonth(); }
+  const lsGet = (k, f) => { try { const v = localStorage.getItem(k); return v == null ? f : v; } catch { return f; } };
+  const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+  let me = lsGet("couple-me", "a");
+
+  const S = () => state.settings;
+  const person = k => ({
+    name: (k === "a" ? S().nameA : S().nameB) || (k === "a" ? "나" : "상대"),
+    color: (k === "a" ? S().colorA : S().colorB) || (k === "a" ? COLORS[0] : COLORS[1]),
+    birthday: k === "a" ? S().birthA : S().birthB,
+  });
+  const whoColor = w => w === "both" ? "var(--ink)" : person(w).color;
+  const whoName = w => w === "both" ? "같이" : person(w).name;
+
+  // ---------- 저장소: claude.ai에서는 둘이 같이 쓰는 저장소, 그 밖에서는 이 기기에만 ----------
+  function localStore() {
+    const KEY = "couple-app-v1";
+    let data; try { data = JSON.parse(localStorage.getItem(KEY)); } catch {}
+    data = data || { settings: {}, events: {}, anniversaries: {} };
+    const subs = { settings: [], events: [], anniversaries: [] };
+    const emit = k => subs[k].forEach(cb => cb(data[k]));
+    const save = k => { try { localStorage.setItem(KEY, JSON.stringify(data)); } catch {} emit(k); };
+    return {
+      mode: "local",
+      onSettings(cb) { subs.settings.push(cb); cb(data.settings); },
+      onCol(name, cb) { subs[name].push(cb); cb(data[name]); },
+      async saveSettings(o) { data.settings = o; save("settings"); },
+      async put(col, id, o) { data[col] = { ...data[col], [id]: o }; save(col); },
+      async remove(col, id) { const c = { ...data[col] }; delete c[id]; data[col] = c; save(col); },
+    };
+  }
+  function dbStore(db) {
+    const onErr = () => toast("연결이 끊겼어요. 새로고침해 주세요.");
+    return {
+      mode: "live",
+      onSettings(cb) { db.doc("couple/settings").onSnapshot(s => cb(s.exists ? s.data() : {}), onErr); },
+      onCol(name, cb) { db.collection(name).onSnapshot(q => cb(Object.fromEntries(q.docs.map(d => [d.id, d.data()]))), onErr); },
+      saveSettings(o) { return db.doc("couple/settings").set(o); },
+      put(col, id, o) { return db.collection(col).doc(id).set(o); },
+      remove(col, id) { return db.collection(col).doc(id).delete(); },
+    };
+  }
+  let store = null;
+  async function write(p) {
+    try { await p; return true; }
+    catch (e) {
+      if (e && e.code === "invalid_argument") toast("이 링크에서는 보기만 할 수 있어요. 편집자로 초대받아야 적을 수 있어요.");
+      else if (e && e.code === "quota_exceeded") toast("저장 공간이 가득 찼어요. 지난 일정을 조금 지워 주세요.");
+      else toast("저장하지 못했어요. 잠시 뒤 다시 해 주세요.");
+      return false;
+    }
+  }
+
+  // ---------- 기념일 계산 ----------
+  // 사귄 첫날 = 1일 (한국식)
+  function milestonesBetween(from, to) {
+    const out = [];
+    const st = S().startDate ? parse(S().startDate) : null;
+    const yearly = (src, title, kind, minYear) => {
+      if (!src) return;
+      const [, m, d] = src.split("-").map(Number);
+      for (let y = from.getFullYear(); y <= to.getFullYear(); y++) {
+        if (minYear != null && y < minYear) continue;
+        const dt = new Date(y, m - 1, d);
+        if (dt >= from && dt <= to) out.push({ date: dt, title: typeof title === "function" ? title(y) : title, kind });
+      }
+    };
+    if (st) {
+      const startN = Math.max(100, Math.ceil((diff(st, from) + 1) / 100) * 100);
+      for (let k = startN; ; k += 100) {
+        const dt = addDays(st, k - 1);
+        if (dt > to) break;
+        out.push({ date: dt, title: `${k.toLocaleString()}일`, kind: "auto" });
+      }
+      yearly(S().startDate, y => `${y - st.getFullYear()}주년`, "auto", st.getFullYear() + 1);
+    }
+    ["a", "b"].forEach(k => { const p = person(k); yearly(p.birthday, `${p.name} 생일`, "birth"); });
+    Object.entries(state.anniversaries).forEach(([id, a]) => {
+      if (!a.date) return;
+      if (a.repeat) yearly(a.date, a.title, "custom");
+      else { const dt = parse(a.date); if (dt >= from && dt <= to) out.push({ date: dt, title: a.title, kind: "custom", id }); }
+    });
+    return out.sort((x, y) => x.date - y.date);
+  }
+  const eventsSorted = () => Object.entries(state.events)
+    .map(([id, e]) => ({ id, ...e }))
+    .filter(e => e.date)
+    .sort((x, y) => (x.date + (x.time || "99")).localeCompare(y.date + (y.time || "99")));
+
+  // ---------- 화면 ----------
+  const view = document.getElementById("view");
+  function render() {
+    document.querySelectorAll("nav.tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === state.tab ? "page" : "false"));
+    const sync = document.getElementById("sync");
+    sync.className = "sync" + (state.mode === "live" ? " live" : "");
+    sync.querySelector("span").textContent = state.mode === "live" ? "둘이 같이 보는 중" : state.mode === "local" ? "이 기기에만 저장" : "불러오는 중";
+    ({ home: renderHome, cal: renderCal, ann: renderAnn, set: renderSet })[state.tab]();
+  }
+
+  function renderHome() {
+    const t = today();
+    const st = S().startDate ? parse(S().startDate) : null;
+    const a = person("a"), b = person("b");
+    let hero;
+    if (st) {
+      const n = diff(st, t) + 1;
+      const todays = milestonesBetween(t, t);
+      hero = `<section class="card hero">
+        <div class="names"><b>${esc(a.name)}</b><span class="heart">♥</span><b>${esc(b.name)}</b></div>
+        <div class="count">${n > 0 ? n.toLocaleString() : "D" + (n - 1)}<span>${n > 0 ? "일째" : ""}</span></div>
+        <div class="since">${fmtDot(S().startDate)}부터</div>
+        ${todays.length ? `<div class="today-note">오늘은 ${todays.map(m => esc(m.title)).join(", ")}이에요 🎉</div>` : ""}
+      </section>`;
+    } else {
+      hero = `<section class="card hero">
+        <div class="count" style="font-size:40px">사귄 날을<br>알려 주세요</div>
+        <p class="since">처음 사귄 날을 넣으면 며칠째인지, 100일·1주년이 언제인지 자동으로 계산해요.</p>
+        <button class="btn" data-go="set">사귄 날 넣기</button>
+      </section>`;
+    }
+    const ms = milestonesBetween(t, addDays(t, 400)).slice(0, 4);
+    const evs = eventsSorted().filter(e => parse(e.date) >= t).slice(0, 5);
+    view.innerHTML = `${hero}
+      <section class="card">
+        <h2 class="section-title">다가오는 기념일 <small><button class="link" data-go="ann" style="border:0;background:none;color:var(--accent);padding:0">전체 보기</button></small></h2>
+        <div class="list">${ms.length ? ms.map(msRow).join("") : `<div class="empty">아직 기념일이 없어요. 사귄 날과 생일을 넣어 보세요.</div>`}</div>
+      </section>
+      <section class="card">
+        <h2 class="section-title">남은 일정 <small><button data-add-event style="border:0;background:none;color:var(--accent);padding:0">+ 추가</button></small></h2>
+        <div class="list">${evs.length ? evs.map(evRow).join("") : `<div class="empty">적어 둔 일정이 없어요. 캘린더에서 날짜를 눌러 추가해요.</div>`}</div>
+      </section>`;
+  }
+  const msRow = m => {
+    const icon = m.kind === "birth" ? "🎂" : m.kind === "custom" ? "★" : "♥";
+    const label = dLabel(m.date);
+    return `<div class="row"><span class="ico">${icon}</span><div class="main"><div class="t">${esc(m.title)}</div><div class="s">${fmt(m.date)}</div></div><span class="badge${label === "오늘" ? " today" : ""}">${label}</span></div>`;
+  };
+  const evRow = e => {
+    const d = parse(e.date); const label = dLabel(d);
+    return `<button class="row" data-edit="${esc(e.id)}"><span class="bar" style="background:${whoColor(e.who)}"></span><div class="main"><div class="t">${esc(e.title)}</div><div class="s">${fmt(d)}${e.time ? " · " + esc(e.time) : ""} · ${esc(whoName(e.who))}</div></div><span class="badge${label === "오늘" ? " today" : ""}">${label}</span></button>`;
+  };
+
+  function renderCal() {
+    const y = state.viewY, m = state.viewM;
+    const first = new Date(y, m, 1);
+    const gridStart = addDays(first, -first.getDay());
+    const gridEnd = addDays(gridStart, 41);
+    const t = ymd(today());
+    const byDay = {};
+    eventsSorted().forEach(e => (byDay[e.date] = byDay[e.date] || { ev: [], ms: [] }).ev.push(e));
+    milestonesBetween(gridStart, gridEnd).forEach(x => { const k = ymd(x.date); (byDay[k] = byDay[k] || { ev: [], ms: [] }).ms.push(x); });
+    let cells = WD.map((w, i) => `<div class="wd${i === 0 ? " sun" : i === 6 ? " sat" : ""}">${w}</div>`).join("");
+    for (let i = 0; i < 42; i++) {
+      const d = addDays(gridStart, i); const k = ymd(d); const info = byDay[k];
+      const cls = ["day", d.getMonth() !== m && "out", k === t && "is-today", d.getDay() === 0 && "sun", d.getDay() === 6 && "sat"].filter(Boolean).join(" ");
+      const dots = info ? info.ev.slice(0, 4).map(e => `<i style="background:${whoColor(e.who)}"></i>`).join("") : "";
+      const ann = info && info.ms.length ? `<span class="ann">♥ ${esc(info.ms[0].title)}</span>` : "";
+      cells += `<button class="${cls}" data-day="${k}" aria-label="${fmt(d)}${info ? `, 일정 ${info.ev.length}개` : ""}"><span class="n">${d.getDate()}</span>${ann}<span class="dots">${dots}</span></button>`;
+    }
+    const a = person("a"), b = person("b");
+    view.innerHTML = `<section class="card">
+      <div class="cal-head">
+        <button class="icon-btn" data-month="-1" aria-label="이전 달">‹</button>
+        <h2>${y}년 ${m + 1}월</h2>
+        <button class="icon-btn" data-month="1" aria-label="다음 달">›</button>
+      </div>
+      <div class="legend">
+        <span><i style="background:${a.color}"></i>${esc(a.name)}</span>
+        <span><i style="background:${b.color}"></i>${esc(b.name)}</span>
+        <span><i style="background:var(--ink)"></i>같이</span>
+        <span style="color:var(--accent)">♥ 기념일</span>
+      </div>
+      <div class="grid">${cells}</div>
+    </section>
+    <button class="btn" data-add-event>+ 일정 추가</button>
+    <button class="btn ghost" data-month="0">오늘로 가기</button>`;
+  }
+
+  function renderAnn() {
+    const t = today();
+    const ms = milestonesBetween(t, addDays(t, 730));
+    const custom = Object.entries(state.anniversaries).map(([id, a]) => ({ id, ...a })).sort((x, y) => (x.date || "").localeCompare(y.date || ""));
+    view.innerHTML = `
+      <section class="card">
+        <h2 class="section-title">앞으로 2년 <small>100일 단위·주년은 자동</small></h2>
+        <div class="list">${ms.length ? ms.map(msRow).join("") : `<div class="empty">설정에서 사귄 날과 생일을 넣으면 여기에 쭉 나와요.</div>`}</div>
+      </section>
+      <section class="card">
+        <h2 class="section-title">우리만의 기념일 <small>첫 여행, 첫 키스 같은 날</small></h2>
+        <div class="list">${custom.length ? custom.map(a => `<button class="row" data-edit-ann="${esc(a.id)}"><span class="ico">★</span><div class="main"><div class="t">${esc(a.title)}</div><div class="s">${fmtDot(a.date)}${a.repeat ? " · 매년" : ""}</div></div><span class="s" style="color:var(--muted)">수정</span></button>`).join("") : `<div class="empty">아직 없어요.</div>`}</div>
+      </section>
+      <button class="btn" data-add-ann>+ 기념일 추가</button>`;
+  }
+
+  function renderSet() {
+    const s = S();
+    const personForm = k => {
+      const p = person(k); const raw = k === "a" ? s.nameA : s.nameB;
+      return `<div class="person">
+        <div class="field"><label for="name-${k}">${k === "a" ? "한 사람" : "다른 한 사람"} 이름</label><input id="name-${k}" value="${esc(raw || "")}" placeholder="${k === "a" ? "예: 지수" : "예: 민준"}" maxlength="12"></div>
+        <div class="field"><span class="lbl">캘린더 색깔</span><div class="swatches" data-swatch="${k}">${COLORS.map(c => `<button type="button" class="sw" style="background:${c}" data-c="${c}" aria-label="색 ${c}" aria-pressed="${c === p.color}"></button>`).join("")}</div></div>
+        <div class="field"><label for="birth-${k}">생일</label><input type="date" id="birth-${k}" value="${esc(p.birthday || "")}"></div>
+      </div>`;
+    };
+    view.innerHTML = `<section class="card">
+      <form class="form" id="set-form">
+        <div class="field"><label for="start">처음 사귄 날 (이날이 1일)</label><input type="date" id="start" value="${esc(s.startDate || "")}"></div>
+        ${personForm("a")}${personForm("b")}
+        <button class="btn" type="submit">저장</button>
+      </form>
+    </section>
+    <section class="card form">
+      <h2 class="section-title">이 폰은 누구 거예요?</h2>
+      <p class="note" style="margin:0">일정을 추가할 때 이 사람 색깔이 먼저 골라져 있어요. 폰마다 따로 정해요.</p>
+      <div class="chips" id="me-chips">${["a", "b"].map(k => `<button class="chip" data-me="${k}" aria-pressed="${me === k}"><i style="background:${person(k).color}"></i>${esc(person(k).name)}</button>`).join("")}</div>
+    </section>
+    <section class="card">
+      <h2 class="section-title">같이 쓰는 법</h2>
+      <p class="note" style="margin:0">${state.mode === "live"
+        ? "지금 둘이 같은 달력을 보고 있어요. 오른쪽 위 공유 버튼에서 상대를 이메일로 <b>편집자</b>로 초대하면, 상대가 적은 일정도 바로 보여요."
+        : "지금은 이 기기에만 저장돼요. 둘이 같이 쓰려면 claude.ai에 올린 이 앱 링크로 들어와 주세요."}</p>
+    </section>`;
+  }
+
+  // ---------- 창 (아래에서 올라오는 시트) ----------
+  let sheetEl = null;
+  function openSheet(html, onMount) {
+    closeSheet();
+    sheetEl = document.createElement("div");
+    sheetEl.className = "scrim";
+    sheetEl.innerHTML = `<div class="sheet" role="dialog" aria-modal="true">${html}</div>`;
+    sheetEl.addEventListener("click", e => { if (e.target === sheetEl || e.target.closest(".x")) closeSheet(); });
+    document.body.appendChild(sheetEl);
+    onMount && onMount(sheetEl.querySelector(".sheet"));
+  }
+  function closeSheet() { if (sheetEl) { sheetEl.remove(); sheetEl = null; } }
+
+  function daySheet(k) {
+    const d = parse(k);
+    const evs = eventsSorted().filter(e => e.date === k);
+    const ms = milestonesBetween(d, d);
+    openSheet(`<h3>${fmt(d)} <button class="x" aria-label="닫기">×</button></h3>
+      <div class="list">${ms.map(msRow).join("")}${evs.map(evRow).join("")}${!ms.length && !evs.length ? `<div class="empty">이날은 아직 비어 있어요.</div>` : ""}</div>
+      <button class="btn" data-add-event="${k}">+ 이날 일정 추가</button>`);
+  }
+
+  function armDelete(btn, run) {
+    btn.addEventListener("click", () => {
+      if (btn.classList.contains("armed")) return run();
+      btn.classList.add("armed"); btn.textContent = "한 번 더 누르면 삭제";
+      setTimeout(() => { btn.classList.remove("armed"); btn.textContent = "삭제"; }, 3000);
+    });
+  }
+
+  function eventSheet(id, date) {
+    const e = id ? state.events[id] : { title: "", date: date || ymd(today()), time: "", who: me, memo: "" };
+    if (!e) return;
+    let who = e.who || me;
+    const chip = w => `<button type="button" class="chip" data-who="${w}" aria-pressed="${who === w}"><i style="background:${whoColor(w)}"></i>${esc(whoName(w))}</button>`;
+    openSheet(`<h3>${id ? "일정 수정" : "일정 추가"} <button class="x" aria-label="닫기">×</button></h3>
+      <form class="form" id="ev-form">
+        <div class="field"><label for="ev-title">무엇을 해요?</label><input id="ev-title" value="${esc(e.title)}" placeholder="예: 성수 데이트, 회식, 병원" maxlength="40" required></div>
+        <div class="two">
+          <div class="field"><label for="ev-date">날짜</label><input type="date" id="ev-date" value="${esc(e.date)}" required></div>
+          <div class="field"><label for="ev-time">시간 (선택)</label><input type="time" id="ev-time" value="${esc(e.time || "")}"></div>
+        </div>
+        <div class="field"><span class="lbl">누구 일정?</span><div class="chips" id="who-chips">${chip("a")}${chip("b")}${chip("both")}</div></div>
+        <div class="field"><label for="ev-memo">메모 (선택)</label><textarea id="ev-memo" maxlength="300" placeholder="장소, 준비물 등">${esc(e.memo || "")}</textarea></div>
+        <button class="btn" type="submit">저장</button>
+        ${id ? `<button class="btn danger" type="button" id="ev-del">삭제</button>` : ""}
+      </form>`, sh => {
+      sh.querySelector("#who-chips").addEventListener("click", ev => {
+        const b = ev.target.closest("[data-who]"); if (!b) return;
+        who = b.dataset.who;
+        sh.querySelectorAll("[data-who]").forEach(x => x.setAttribute("aria-pressed", x === b));
+      });
+      sh.querySelector("#ev-form").addEventListener("submit", async ev => {
+        ev.preventDefault();
+        const title = sh.querySelector("#ev-title").value.trim();
+        const dt = sh.querySelector("#ev-date").value;
+        if (!title || !dt) return;
+        const data = { title, date: dt, time: sh.querySelector("#ev-time").value, who, memo: sh.querySelector("#ev-memo").value.trim(), updatedAt: Date.now() };
+        if (await write(store.put("events", id || newId(), data))) { closeSheet(); toast(id ? "수정했어요" : "일정을 추가했어요"); }
+      });
+      const del = sh.querySelector("#ev-del");
+      if (del) armDelete(del, async () => { if (await write(store.remove("events", id))) { closeSheet(); toast("삭제했어요"); } });
+    });
+  }
+
+  function annSheet(id) {
+    const a = id ? state.anniversaries[id] : { title: "", date: ymd(today()), repeat: true };
+    if (!a) return;
+    openSheet(`<h3>${id ? "기념일 수정" : "기념일 추가"} <button class="x" aria-label="닫기">×</button></h3>
+      <form class="form" id="ann-form">
+        <div class="field"><label for="ann-title">이름</label><input id="ann-title" value="${esc(a.title)}" placeholder="예: 첫 여행, 처음 만난 날" maxlength="30" required></div>
+        <div class="field"><label for="ann-date">날짜</label><input type="date" id="ann-date" value="${esc(a.date)}" required></div>
+        <label class="check"><input type="checkbox" id="ann-repeat" ${a.repeat ? "checked" : ""}> 매년 챙기기</label>
+        <button class="btn" type="submit">저장</button>
+        ${id ? `<button class="btn danger" type="button" id="ann-del">삭제</button>` : ""}
+      </form>`, sh => {
+      sh.querySelector("#ann-form").addEventListener("submit", async ev => {
+        ev.preventDefault();
+        const title = sh.querySelector("#ann-title").value.trim(); const date = sh.querySelector("#ann-date").value;
+        if (!title || !date) return;
+        if (await write(store.put("anniversaries", id || newId(), { title, date, repeat: sh.querySelector("#ann-repeat").checked }))) { closeSheet(); toast("저장했어요"); }
+      });
+      const del = sh.querySelector("#ann-del");
+      if (del) armDelete(del, async () => { if (await write(store.remove("anniversaries", id))) { closeSheet(); toast("삭제했어요"); } });
+    });
+  }
+
+  let toastTimer;
+  function toast(msg) {
+    let el = document.querySelector(".toast");
+    if (!el) { el = document.createElement("div"); el.className = "toast"; el.setAttribute("role", "status"); document.body.appendChild(el); }
+    el.textContent = msg; el.hidden = false;
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { el.hidden = true; }, 2600);
+  }
+
+  // ---------- 클릭 처리 ----------
+  document.querySelector("nav.tabs").addEventListener("click", e => {
+    const b = e.target.closest("[data-tab]"); if (!b) return;
+    state.tab = b.dataset.tab; lsSet("couple-tab", state.tab); render(); window.scrollTo(0, 0);
+  });
+  document.addEventListener("click", e => {
+    const t = e.target.closest("[data-go],[data-add-event],[data-edit],[data-day],[data-month],[data-add-ann],[data-edit-ann],[data-me]");
+    if (!t) return;
+    if (t.dataset.go) { state.tab = t.dataset.go; closeSheet(); render(); window.scrollTo(0, 0); }
+    else if (t.hasAttribute("data-add-event")) eventSheet(null, t.dataset.addEvent || null);
+    else if (t.dataset.edit) eventSheet(t.dataset.edit);
+    else if (t.dataset.day) daySheet(t.dataset.day);
+    else if (t.dataset.month != null) {
+      const n = Number(t.dataset.month);
+      if (n === 0) { const d = today(); state.viewY = d.getFullYear(); state.viewM = d.getMonth(); }
+      else { const d = new Date(state.viewY, state.viewM + n, 1); state.viewY = d.getFullYear(); state.viewM = d.getMonth(); }
+      render();
+    }
+    else if (t.hasAttribute("data-add-ann")) annSheet(null);
+    else if (t.dataset.editAnn) annSheet(t.dataset.editAnn);
+    else if (t.dataset.me) { me = t.dataset.me; lsSet("couple-me", me); render(); }
+  });
+  view.addEventListener("click", e => {
+    const sw = e.target.closest(".sw"); if (!sw) return;
+    sw.parentElement.querySelectorAll(".sw").forEach(x => x.setAttribute("aria-pressed", x === sw));
+  });
+  view.addEventListener("submit", async e => {
+    if (e.target.id !== "set-form") return;
+    e.preventDefault();
+    const q = s => view.querySelector(s);
+    const pick = k => q(`[data-swatch="${k}"] [aria-pressed="true"]`)?.dataset.c || person(k).color;
+    const next = {
+      ...S(),
+      startDate: q("#start").value, nameA: q("#name-a").value.trim(), nameB: q("#name-b").value.trim(),
+      colorA: pick("a"), colorB: pick("b"), birthA: q("#birth-a").value, birthB: q("#birth-b").value,
+    };
+    if (await write(store.saveSettings(next))) toast("저장했어요");
+  });
+
+  // ---------- 시작 ----------
+  state.tab = ["home", "cal", "ann", "set"].includes(lsGet("couple-tab", "home")) ? lsGet("couple-tab", "home") : "home";
+  render();
+  function attach(s) {
+    store = s; state.mode = s.mode;
+    // 설정을 고치는 중에는 화면을 다시 그리지 않아요 (적던 글자가 지워지지 않게)
+    const soft = () => { if (!document.activeElement?.closest("#set-form")) render(); };
+    s.onSettings(v => { state.settings = v || {}; soft(); });
+    s.onCol("events", v => { state.events = v || {}; soft(); });
+    s.onCol("anniversaries", v => { state.anniversaries = v || {}; soft(); });
+    render();
+  }
+  (async () => {
+    let db = null;
+    if (window.claude && typeof window.claude.use === "function") {
+      try { db = await window.claude.use("db"); } catch {}
+    }
+    attach(db ? dbStore(db) : localStore());
+  })();
+})();
+</script>
+</body>
+</html>
