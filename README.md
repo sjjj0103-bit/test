@@ -46,6 +46,7 @@
 | `cutout.js` | AI 배경 지우기와 손으로 다듬기 |
 | `vendor/` | AI 엔진(ONNX Runtime Web)과 배경 지우기 모델 — 자세한 출처는 `vendor/README.md` |
 | `couple/` | 우리 둘 달력 (`supabase-setup.sql`: Supabase 설정, `vendor/`: Supabase 연결 라이브러리 v2.49.4, MIT) |
+| `english/` | 매일 영어 노트 — 쓰기·말하기·듣기·읽기 연습과 AI 피드백, 실수 패턴 분석 (AI 피드백은 Claude 앱에서 열 때만 동작) |
 | `manifest.json`, `icon.svg` | 홈 화면에 추가할 때 쓰는 앱 이름과 아이콘 |
 
 ---

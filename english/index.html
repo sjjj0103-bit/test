@@ -1,0 +1,631 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
+<title>매일 영어 노트</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=IBM+Plex+Sans+KR:wght@400;500;600&family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&display=swap">
+<style>
+/* Layout: one notebook column; sticky tab strip; corrections drawn like a teacher's red pen */
+:root{
+  --paper:#F4F6F9; --card:#FFFFFF; --ink:#1C2540; --muted:#5D6680; --line:#DCE1EA;
+  --accent:#2F4BB8; --accent-ink:#FFFFFF; --pen:#C4372A; --ok:#1E8655; --hl:#F5D547;
+  --f-display:"Bricolage Grotesque","IBM Plex Sans KR",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans KR",system-ui,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;
+  --f-read:"Source Serif 4",Georgia,"Times New Roman",serif;
+  --r:12px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --paper:#11141D; --card:#191E2B; --ink:#E6E9F2; --muted:#9AA3BA; --line:#2C3347;
+  --accent:#8FA5FF; --accent-ink:#0F1426; --pen:#FF7D6E; --ok:#55C893; --hl:#D9B93A; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --paper:#11141D; --card:#191E2B; --ink:#E6E9F2; --muted:#9AA3BA; --line:#2C3347;
+  --accent:#8FA5FF; --accent-ink:#0F1426; --pen:#FF7D6E; --ok:#55C893; --hl:#D9B93A; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--paper);color:var(--ink);font-family:var(--f-body);font-size:15px;line-height:1.6;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--paper)}
+.wrap{max-width:720px;margin:0 auto}
+header.top{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;padding-top:20px;flex-wrap:wrap}
+h1{font-family:var(--f-display);font-size:28px;line-height:1.1;margin:0;letter-spacing:-.01em}
+h1 small{display:block;font-family:var(--f-body);font-size:13px;font-weight:500;color:var(--muted);letter-spacing:0;margin-bottom:4px}
+h2{font-family:var(--f-display);font-size:20px;margin:0;text-wrap:balance}
+h3{font-size:15px;margin:0;font-weight:600}
+.status{display:flex;gap:6px;flex-wrap:wrap}
+.pill{font-size:12px;padding:3px 9px;border-radius:99px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.pill.on{border-color:color-mix(in srgb,var(--ok) 50%,transparent);color:var(--ok)}
+
+nav.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--paper);display:flex;gap:4px;overflow-x:auto;
+  padding:12px 0 10px;margin-top:8px;border-bottom:1px solid var(--line);scrollbar-width:none}
+nav.tabs button{flex:0 0 auto;border:0;background:none;color:var(--muted);font:600 14px var(--f-body);padding:8px 12px;border-radius:99px;cursor:pointer}
+nav.tabs button[aria-selected="true"]{background:var(--ink);color:var(--paper)}
+nav.tabs button:focus-visible,button:focus-visible,textarea:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{display:grid;gap:16px;padding-top:18px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:18px;display:grid;gap:12px;min-width:0}
+.quiet{padding:4px 0;display:grid;gap:10px}
+.card p,.quiet p,.card ol{margin:0}
+.eyebrow{font-size:12px;font-weight:600;letter-spacing:.06em;color:var(--muted);text-transform:uppercase}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.between{justify-content:space-between}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+
+button.btn{border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 14px var(--f-body);padding:9px 14px;border-radius:10px;cursor:pointer}
+button.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.btn:disabled{opacity:.5;cursor:default}
+button.link{border:0;background:none;color:var(--accent);font:600 14px var(--f-body);padding:0;cursor:pointer}
+textarea,input[type=text],select{width:100%;font:15px/1.6 var(--f-body);color:var(--ink);background:var(--paper);border:1px solid var(--line);border-radius:10px;padding:10px 12px}
+textarea{min-height:130px;resize:vertical}
+textarea.en,input.en{font-family:var(--f-read);font-size:16px}
+select{width:auto}
+
+.prompt{font-family:var(--f-read);font-size:19px;line-height:1.45}
+.prompt .ko{display:block;font-family:var(--f-body);font-size:13px;color:var(--muted);margin-top:4px}
+.passage{font-family:var(--f-read);font-size:17px;line-height:1.75}
+.passage p{margin:0 0 .8em}
+mark{background:color-mix(in srgb,var(--hl) 45%,transparent);color:inherit;padding:0 2px;border-radius:2px}
+
+.fix{display:grid;gap:4px;padding:10px 0;border-top:1px dashed var(--line)}
+.fix:first-child{border-top:0}
+.fix .pair{font-family:var(--f-read);font-size:16px}
+.wrong{color:var(--pen);text-decoration:line-through;text-decoration-thickness:1.5px}
+.right{color:var(--ok);font-weight:600}
+.chip{display:inline-block;font-size:11.5px;font-weight:600;padding:1px 8px;border-radius:99px;background:color-mix(in srgb,var(--accent) 12%,transparent);color:var(--accent);vertical-align:2px}
+.score{font-family:var(--f-display);font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
+.score small{font-size:14px;color:var(--muted);font-family:var(--f-body)}
+.model{font-family:var(--f-read);font-size:16px;background:var(--paper);border-radius:10px;padding:12px}
+
+.tasks{display:grid;gap:2px}
+.task{display:flex;align-items:center;gap:12px;padding:10px 4px;border-top:1px solid var(--line);cursor:pointer;background:none;border-left:0;border-right:0;border-bottom:0;font:inherit;color:inherit;text-align:left;width:100%}
+.task:first-child{border-top:0}
+.box{flex:0 0 22px;height:22px;border:2px solid var(--line);border-radius:6px;display:grid;place-items:center;font-size:14px;color:var(--accent-ink)}
+.task.done .box{background:var(--ok);border-color:var(--ok)}
+.task.done .t{color:var(--muted);text-decoration:line-through}
+.task .m{margin-left:auto;font-size:12px;color:var(--muted);white-space:nowrap}
+
+.streak{display:flex;gap:4px}
+.streak span{width:14px;height:14px;border-radius:4px;background:var(--line)}
+.streak span.on{background:var(--ok)}
+
+.bars{display:grid;gap:8px}
+.bar{display:grid;grid-template-columns:110px 1fr 28px;gap:10px;align-items:center;font-size:13px}
+.bar .track{height:10px;background:var(--paper);border-radius:99px;overflow:hidden}
+.bar .fill{height:100%;background:var(--accent);border-radius:99px}
+.bar .n{text-align:right;font-variant-numeric:tabular-nums;color:var(--muted)}
+
+.opt{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.opt input{margin-top:5px}
+.opt.correct{border-color:var(--ok);background:color-mix(in srgb,var(--ok) 10%,transparent)}
+.opt.incorrect{border-color:var(--pen);background:color-mix(in srgb,var(--pen) 8%,transparent)}
+.word-ok{color:var(--ok)} .word-miss{color:var(--pen);text-decoration:underline wavy}
+.notice{font-size:13px;padding:10px 12px;border-radius:10px;background:color-mix(in srgb,var(--hl) 22%,transparent)}
+.err{color:var(--pen);font-size:14px}
+.thinking{color:var(--muted);font-size:14px}
+.thinking::after{content:"";display:inline-block;width:1em;animation:dots 1.2s steps(4) infinite;text-align:left}
+@keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
+@media (prefers-reduced-motion:reduce){.thinking::after{animation:none;content:"..."}}
+details summary{cursor:pointer;font-weight:600;color:var(--accent)}
+@media (max-width:420px){h1{font-size:24px}.bar{grid-template-columns:86px 1fr 24px}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <h1><small>하루 15분, 내 실수에서 시작하는</small>매일 영어 노트</h1>
+    <div class="status" id="status"></div>
+  </header>
+  <nav class="tabs" id="tabs" role="tablist"></nav>
+  <main id="view"></main>
+</div>
+
+<script>
+(function(){
+"use strict";
+/* ---------- built-in content (used when Claude is not available, and as day-one examples) ---------- */
+const WRITE_PROMPTS=[
+  {en:"Describe your last weekend in 5–6 sentences.",ko:"지난 주말을 5~6문장으로 써 보세요."},
+  {en:"Write a short message to a parent about their child's progress this month.",ko:"학부모에게 이번 달 아이의 성장에 대해 짧은 메시지를 써 보세요."},
+  {en:"What is one thing you want to get better at next year, and why?",ko:"내년에 더 잘하고 싶은 한 가지와 그 이유는?"},
+  {en:"Explain your favorite Korean food to a friend who has never tried it.",ko:"좋아하는 한국 음식을 처음 먹어 보는 친구에게 설명해 보세요."},
+  {en:"Write a polite email asking a coworker to switch lunch duty with you.",ko:"동료에게 급식 지도 당번을 바꿔 달라는 정중한 이메일을 써 보세요."},
+  {en:"How do you usually spend your money? Describe one smart habit and one bad habit.",ko:"평소 돈 쓰는 습관 중 좋은 습관 하나, 고치고 싶은 습관 하나를 써 보세요."},
+  {en:"Tell me about a time a student surprised you.",ko:"학생 때문에 놀랐던(감동한) 경험을 써 보세요."}
+];
+const SPEAK_QS=[
+  {en:"What did you do after work yesterday?",ko:"어제 퇴근 후에 뭐 했어요?"},
+  {en:"What's the best part of being a teacher?",ko:"교사로서 가장 좋은 점은?"},
+  {en:"If you had a free day tomorrow, how would you spend it?",ko:"내일 하루가 통째로 비면 뭘 하고 싶어요?"},
+  {en:"Tell me about an app or tool you use every day.",ko:"매일 쓰는 앱이나 도구를 소개해 주세요."},
+  {en:"What's something you're saving money for?",ko:"요즘 돈을 모으고 있는 목표가 있나요?"},
+  {en:"Describe your neighborhood to someone visiting for the first time.",ko:"처음 오는 사람에게 우리 동네를 소개해 주세요."},
+  {en:"What is a skill you learned recently?",ko:"최근에 배운 기술이나 습관이 있나요?"}
+];
+const SAMPLE_LISTEN={title:"A Busy Monday",sample:true,
+  text:"Every Monday, Mina wakes up at six thirty. She drinks a glass of water and checks the weather before she leaves. Her school is only fifteen minutes away, so she usually walks. On the way, she listens to a short English podcast. This Monday, it started to rain halfway there. She didn't have an umbrella, so she stopped at a convenience store and bought one. She arrived at school a little late, but her students were already reading quietly. She was proud of them.",
+  dictation:"She didn't have an umbrella, so she stopped at a convenience store and bought one.",
+  questions:[
+    {q:"How does Mina usually get to school?",options:["By bus","She walks","She drives","By bike"],answer:1,why_ko:"\"so she usually walks\" — 보통 걸어서 가요."},
+    {q:"What happened on the way this Monday?",options:["She lost her phone","It started to rain","She met a student","The store was closed"],answer:1,why_ko:"\"it started to rain halfway there\" — 가는 도중에 비가 왔어요."},
+    {q:"How did Mina feel at the end?",options:["Angry","Tired","Proud","Worried"],answer:2,why_ko:"\"She was proud of them\" — 학생들이 자랑스러웠어요."}
+  ]};
+const SAMPLE_READ={title:"The 1% Rule",sample:true,
+  text:"Many people try to change their lives all at once. They plan to wake up early, exercise every day, and study for two hours. After a week, most of them give up.\n\nThe \"1% rule\" suggests a different approach. Instead of making a big change, you improve one small thing by about one percent each day. For example, you might read one page of an English book, or save the price of one coffee.\n\nThese changes feel too small to matter. However, small actions repeated for a long time can add up. The key is not intensity but consistency. If a habit is easy enough to do on a bad day, you are more likely to keep it.",
+  vocab:[{word:"approach",ko:"접근 방식"},{word:"add up",ko:"쌓이다, 합쳐지다"},{word:"intensity",ko:"강도, 세기"},{word:"consistency",ko:"꾸준함, 일관성"}],
+  questions:[
+    {q:"Why do many people give up after a week?",options:["They try to change too much at once","They don't have money","They are too busy at work","They don't like books"],answer:0,why_ko:"한꺼번에 너무 많이 바꾸려다 포기한다고 해요."},
+    {q:"Which is an example of the 1% rule?",options:["Studying for two hours","Reading one page a day","Exercising every day","Waking up at 5 a.m."],answer:1,why_ko:"\"read one page of an English book\"가 예시예요."},
+    {q:"According to the text, what matters most?",options:["Intensity","Speed","Consistency","Talent"],answer:2,why_ko:"\"The key is not intensity but consistency.\""}
+  ]};
+const ERROR_TYPES=["시제","관사(a/the)","전치사","단어 선택","어순","주어-동사 일치","단수/복수","직역·콩글리시","문장 연결","자연스러움","철자·구두점"];
+
+/* ---------- state ---------- */
+const LS_KEY="daily-english-notebook-v1";
+function blank(){return{v:1,level:"B1",streak:{last:"",count:0},days:{},errors:[],history:[],focus:null,drillDone:{}}}
+let S=blank();
+let tab="today", sample=null, aiChecked=false, docRef=null, store="device";
+const scratch={}; // per-session view state (current listening/reading set, answers, feedback)
+
+function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
+function dayIndex(){return Math.floor(Date.now()/864e5)}
+function addDays(s,n){const [y,m,d]=s.split("-").map(Number);const t=new Date(y,m-1,d+n);return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")}
+function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function merge(d){const b=blank();if(!d||typeof d!=="object")return b;return Object.assign(b,JSON.parse(JSON.stringify(d)))}
+
+try{const raw=localStorage.getItem(LS_KEY);if(raw)S=merge(JSON.parse(raw))}catch(e){}
+
+let saveTimer=null, saving=false, saveAgain=false;
+function save(){
+  S.errors=S.errors.slice(-150);S.history=S.history.slice(-40);
+  const keys=Object.keys(S.days).sort();if(keys.length>60)for(const k of keys.slice(0,keys.length-60))delete S.days[k];
+  try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}
+  if(!docRef)return;
+  clearTimeout(saveTimer);saveTimer=setTimeout(flush,700);
+}
+async function flush(){
+  if(saving){saveAgain=true;return}
+  saving=true;
+  try{await docRef.set(JSON.parse(JSON.stringify(S)))}catch(e){console.warn("save failed",e)}
+  saving=false;if(saveAgain){saveAgain=false;flush()}
+}
+
+function markDone(key){
+  const t=today();S.days[t]=S.days[t]||{};
+  if(!S.days[t][key]){S.days[t][key]=true}
+  if(S.streak.last!==t){S.streak.count=(S.streak.last===addDays(t,-1))?S.streak.count+1:1;S.streak.last=t}
+  save();
+}
+function logErrors(list,skill){
+  const t=today();scratch.rvPick=null;
+  for(const e of (list||[])){
+    if(!e||!e.wrong||!e.right)continue;
+    S.errors.push({d:t,skill,type:ERROR_TYPES.includes(e.type)?e.type:"자연스러움",wrong:String(e.wrong).slice(0,200),right:String(e.right).slice(0,200),why:String(e.why||"").slice(0,240)});
+  }
+}
+function logHistory(skill,text,score){S.history.push({d:today(),skill,text:String(text).slice(0,300),score:typeof score==="number"?score:null})}
+
+/* ---------- Claude ---------- */
+function weakSpots(){
+  const recent=S.errors.slice(-60);const c={};for(const e of recent)c[e.type]=(c[e.type]||0)+1;
+  const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
+  const habits=(S.focus?.habits||[]).map(h=>h.title_ko).filter(Boolean);
+  return [...habits,...top].slice(0,5).join(", ")||"(아직 기록 없음)";
+}
+function learner(){return `The learner is a 29-year-old Korean elementary school teacher whose English has gotten rusty. Target level: CEFR ${S.level}. Their recurring weak points so far: ${weakSpots()}. Write every explanation in short, plain Korean (no jargon; if you must use a grammar term, add a simple Korean gloss in parentheses).`}
+async function askJSON(prompt,tier){
+  if(!sample)throw{code:"no_ai"};
+  return sample.json(prompt,{modelTier:tier||"default"});
+}
+function errText(e){
+  switch(e&&e.code){
+    case "no_ai":return "AI 피드백은 Claude 앱(또는 claude.ai)에서 이 페이지를 열었을 때만 동작해요. 지금은 예시 문제와 스스로 채점만 쓸 수 있어요.";
+    case "not_granted":return "Claude 사용을 허락하지 않아서 피드백을 받을 수 없어요. 페이지를 새로 열면 다시 물어봐요.";
+    case "rate_limited":return "잠깐 사이에 요청이 많았어요. 1분쯤 뒤에 다시 눌러 주세요.";
+    case "invalid_json":return "답을 정리하지 못했어요. 버튼을 한 번 더 눌러 주세요.";
+    case "cancelled":return "요청을 멈췄어요.";
+    default:return "피드백을 받지 못했어요. 잠시 후 다시 눌러 주세요."+(e&&e.code?` (${e.code})`:"");
+  }
+}
+
+/* ---------- speech ---------- */
+let voice=null;
+function pickVoice(){try{const vs=speechSynthesis.getVoices();voice=vs.find(v=>/en[-_]US/i.test(v.lang)&&/Samantha|Google|Jenny|Aria/i.test(v.name))||vs.find(v=>/en[-_]US/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}catch(e){}}
+try{pickVoice();speechSynthesis.onvoiceschanged=pickVoice}catch(e){}
+function speak(text,rate){
+  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="en-US";if(voice)u.voice=voice;u.rate=rate||1;speechSynthesis.speak(u);return true}catch(e){return false}
+}
+function stopSpeak(){try{speechSynthesis.cancel()}catch(e){}}
+const Rec=window.SpeechRecognition||window.webkitSpeechRecognition;
+let rec=null;
+function startDictation(onText,onState){
+  if(!Rec){onState("unsupported");return}
+  try{
+    rec=new Rec();rec.lang="en-US";rec.interimResults=true;rec.continuous=true;
+    const base=scratch.sText?scratch.sText.trim()+" ":"";
+    rec.onresult=ev=>{let s="";for(const r of ev.results)s+=r[0].transcript;onText(base+s)};
+    rec.onerror=ev=>onState(ev.error==="not-allowed"||ev.error==="service-not-allowed"?"blocked":"error");
+    rec.onend=()=>onState("stopped");
+    rec.start();onState("listening");
+  }catch(e){onState("blocked")}
+}
+function stopDictation(){try{rec&&rec.stop()}catch(e){}}
+
+/* ---------- views ---------- */
+const TABS=[["today","오늘"],["writing","쓰기"],["speaking","말하기"],["listening","듣기"],["reading","읽기"],["patterns","내 패턴"]];
+const TASKS=[["writing","쓰기 한 편","5분"],["speaking","말하기 한 번","3분"],["listening","듣기 한 세트","3분"],["reading","읽기 한 편","4분"],["review","오답 복습 3개","2분"]];
+
+function renderStatus(){
+  const ai=sample?'<span class="pill on">AI 피드백 켜짐</span>':(aiChecked?'<span class="pill">AI 피드백 꺼짐</span>':'<span class="pill">AI 연결 중</span>');
+  const st=store==="cloud"?'<span class="pill on">내 계정에 저장</span>':'<span class="pill">이 기기에 저장</span>';
+  document.getElementById("status").innerHTML=ai+st+`<span class="pill">레벨 ${esc(S.level)}</span>`;
+}
+function renderTabs(){
+  document.getElementById("tabs").innerHTML=TABS.map(([k,l])=>`<button role="tab" data-tab="${k}" aria-selected="${k===tab}">${l}</button>`).join("");
+}
+function render(){
+  renderStatus();renderTabs();
+  const v=document.getElementById("view");
+  v.innerHTML=({today:vToday,writing:vWriting,speaking:vSpeaking,listening:vListening,reading:vReading,patterns:vPatterns}[tab])();
+}
+function go(t){tab=t;stopSpeak();stopDictation();render();window.scrollTo({top:0})}
+
+function noAiNotice(){return (aiChecked&&!sample)?`<p class="notice">${esc(errText({code:"no_ai"}))}</p>`:""}
+function fbBlock(key){
+  const f=scratch[key];if(!f)return"";
+  if(f.loading)return `<p class="thinking">선생님이 빨간 펜으로 보는 중</p>`;
+  if(f.error)return `<p class="err">${esc(f.error)}</p>`;
+  return f.html||"";
+}
+
+/* today */
+function vToday(){
+  const t=today(),done=S.days[t]||{};
+  const n=TASKS.filter(([k])=>done[k]).length;
+  const last7=[...Array(7)].map((_,i)=>addDays(t,i-6)).map(d=>`<span class="${S.days[d]&&Object.keys(S.days[d]).length?"on":""}" title="${d}"></span>`).join("");
+  const habit=S.focus?.habits?.length?S.focus.habits[dayIndex()%S.focus.habits.length]:null;
+  let focusHtml;
+  if(habit){
+    const drill=(habit.mini_drill||[])[0];
+    const dk=t+"|"+habit.title_ko;
+    focusHtml=`<div class="card">
+      <div class="eyebrow">오늘의 교정 포인트</div>
+      <h2>${esc(habit.title_ko)}</h2>
+      <p>${esc(habit.rule_ko)}</p>
+      <p class="pair" style="font-family:var(--f-read);font-size:16px"><span class="wrong">${esc(habit.wrong_example)}</span> → <span class="right">${esc(habit.right_example)}</span></p>
+      ${drill?`<div class="quiet"><label class="small muted" for="drill-in">연습: ${esc(drill.prompt_ko)}</label>
+        <input type="text" class="en" id="drill-in" placeholder="영어로 써 보세요" value="${esc(scratch.drill||"")}">
+        <div class="row"><button class="btn" data-act="drill-check" data-dk="${esc(dk)}">정답 보기</button></div>
+        ${scratch.drillShown?`<p>정답 예시: <span class="right" style="font-family:var(--f-read)">${esc(drill.answer_en)}</span></p>`:""}</div>`:""}
+    </div>`;
+  }else{
+    focusHtml=`<div class="card"><div class="eyebrow">오늘의 교정 포인트</div>
+      <p>쓰기·말하기를 몇 번 하면 자주 틀리는 부분이 쌓여요. 5개 이상 모이면 <b>내 패턴</b> 탭에서 AI가 내 말버릇을 분석하고, 매일 여기에 고칠 점 하나와 짧은 연습 문제를 띄워 줘요.</p>
+      <p class="small muted">예시) "시제가 자주 섞여요 — 어제 일은 동사에 -ed: I go → I went"</p></div>`;
+  }
+  const rv=reviewCards();
+  return `
+  <section class="quiet">
+    <div class="row between"><h2>오늘 할 일 ${n}/${TASKS.length}</h2>
+      <div class="row small muted"><span>연속 ${S.streak.last===t||S.streak.last===addDays(t,-1)?S.streak.count:0}일</span><div class="streak" aria-label="최근 7일 공부 기록">${last7}</div></div></div>
+    <p class="small muted">하루 약 15분이면 끝나요. 누르면 바로 그 연습으로 가요.</p>
+  </section>
+  <div class="card tasks">${TASKS.map(([k,l,m])=>`<button class="task ${done[k]?"done":""}" data-go="${k==="review"?"today-review":k}"><span class="box">${done[k]?"✓":""}</span><span class="t">${l}</span><span class="m">${m}</span></button>`).join("")}</div>
+  ${focusHtml}
+  <div class="card" id="review">
+    <div class="eyebrow">오답 복습</div>
+    ${rv.length?rv.map((e,i)=>{const r=scratch["rv"+i];return `<div class="fix">
+      <div class="small muted">${esc(e.d)} · ${esc(skillKo(e.skill))} <span class="chip">${esc(e.type)}</span></div>
+      <div class="pair"><span class="wrong">${esc(e.wrong)}</span></div>
+      <input type="text" class="en" id="rv-in-${i}" placeholder="바르게 고쳐 써 보세요" value="${esc(r?.val||"")}">
+      <div class="row"><button class="btn" data-act="rv-check" data-i="${i}">확인</button></div>
+      ${r?.shown?`<p>${r.match?'<b class="right">맞았어요!</b> ':""}정답: <span class="right" style="font-family:var(--f-read)">${esc(e.right)}</span><br><span class="small muted">${esc(e.why)}</span></p>`:""}
+    </div>`}).join(""):`<p class="muted">아직 오답이 없어요. 쓰기나 말하기 피드백을 받으면 틀린 문장이 여기에 모여서, 하루 3개씩 다시 풀게 돼요.</p>`}
+  </div>
+  <div class="card">
+    <div class="row between"><h3>내 레벨</h3>
+      <select id="level" aria-label="레벨 선택">${[["A2","A2 · 기초 회복"],["B1","B1 · 일상 대화"],["B2","B2 · 자연스럽게"],["C1","C1 · 원어민처럼"]].map(([v,l])=>`<option value="${v}" ${S.level===v?"selected":""}>${l}</option>`).join("")}</select></div>
+    <p class="small muted">유럽 공통 기준(CEFR) 레벨이에요. 문제 난이도와 지문 길이가 이 레벨에 맞춰져요. 너무 쉬우면 한 칸 올리세요.</p>
+    <p class="small muted">${store==="cloud"?"기록이 내 Claude 계정에 저장돼서 폰과 컴퓨터 어디서 열어도 이어져요. 나만 볼 수 있어요.":"기록이 이 기기 브라우저에만 저장돼요."}</p>
+  </div>`;
+}
+function skillKo(s){return({writing:"쓰기",speaking:"말하기",reading:"읽기 요약",listening:"듣기"})[s]||s}
+function reviewCards(){
+  if(!scratch.rvPick){
+    const seen=new Set(),pool=[];
+    for(const e of [...S.errors].reverse()){if(seen.has(e.wrong))continue;seen.add(e.wrong);pool.push(e)}
+    // oldest-first among the latest 30 so older mistakes come back before fresh ones
+    const recent=pool.slice(0,30);const start=recent.length?dayIndex()%Math.max(1,recent.length):0;
+    scratch.rvPick=[0,1,2].map(i=>recent[(start+i)%recent.length]).filter((e,i,a)=>e&&a.indexOf(e)===i);
+  }
+  return scratch.rvPick;
+}
+
+/* writing */
+function vWriting(){
+  const p=scratch.wPrompt||WRITE_PROMPTS[dayIndex()%WRITE_PROMPTS.length];scratch.wPrompt=p;
+  return `${noAiNotice()}
+  <div class="card">
+    <div class="row between"><div class="eyebrow">오늘의 쓰기 주제</div><button class="link" data-act="w-next">다른 주제</button></div>
+    <p class="prompt">${esc(p.en)}<span class="ko">${esc(p.ko)}</span></p>
+    <textarea class="en" id="w-text" placeholder="틀려도 괜찮아요. 생각나는 대로 영어로 써 보세요. 모르는 단어는 한글로 써도 돼요.">${esc(scratch.wText||"")}</textarea>
+    <div class="row between"><span class="small muted" id="w-count">${wc(scratch.wText||"")}단어</span>
+      <button class="btn primary" data-act="w-submit" ${sample?"":"disabled"}>빨간 펜 피드백 받기</button></div>
+  </div>
+  ${fbBlock("w")}`;
+}
+function wc(s){return (s.trim().match(/\S+/g)||[]).length}
+async function feedback(key,skill,task,text){
+  scratch[key]={loading:true};render();
+  const spoken=skill==="speaking";
+  const prompt=`${learner()}
+
+You are a warm but precise English tutor. ${spoken?"The learner SPOKE this answer out loud (it may be a speech-to-text transcript, so ignore capitalization and punctuation; focus on grammar, word choice, natural spoken phrasing, filler words and overly long or choppy sentences).":"The learner WROTE this text."}
+Task given to the learner: ${task}
+Learner's answer:
+<<<
+${text.slice(0,4000)}
+>>>
+Korean words inside the answer mean the learner did not know the English word: give the English for them as errors of type "단어 선택".
+
+Reply with only JSON in this shape:
+{"score": 0-100 integer (how clear and correct for level ${S.level}),
+ "good_ko": "one Korean sentence on what they did well",
+ "errors": [{"wrong":"exact phrase copied from the answer","right":"corrected phrase","type":"one of ${ERROR_TYPES.join(" | ")}","why":"one short Korean sentence"}],
+ "corrected": "their answer with only the mistakes fixed",
+ "natural": "how a native speaker would ${spoken?"say":"write"} the same idea, at about level ${S.level}",
+ "expressions": [{"en":"useful phrase from natural version","ko":"Korean meaning","example":"short example sentence"}],
+ "tip_ko": "one concrete thing to try next time, in Korean"}
+List at most 8 errors, most important first. 2-3 expressions.`;
+  try{
+    const r=await askJSON(prompt,"default");
+    const errs=Array.isArray(r.errors)?r.errors:[];
+    logErrors(errs,skill);logHistory(skill,text,r.score);markDone(skill==="reading"?"reading":skill);
+    scratch[key]={html:fbHtml(r,spoken)};
+  }catch(e){scratch[key]={error:errText(e)}}
+  render();
+}
+function fbHtml(r,spoken){
+  const errs=Array.isArray(r.errors)?r.errors:[];
+  const ex=Array.isArray(r.expressions)?r.expressions:[];
+  return `<div class="card">
+    <div class="row between"><div><div class="eyebrow">피드백</div><p style="margin:4px 0 0">${esc(r.good_ko)}</p></div>
+      <div class="score">${esc(r.score??"–")}<small>/100</small></div></div>
+  </div>
+  <div class="card"><h3>고칠 곳 ${errs.length}개</h3>
+    ${errs.length?errs.map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div>
+      <div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}</div></div>`).join(""):`<p class="muted">틀린 곳이 없어요. 아래 자연스러운 표현을 익혀 보세요.</p>`}
+    <p class="small muted">틀린 문장은 오답 노트에 저장돼서 '오늘' 탭에서 다시 풀게 돼요.</p>
+  </div>
+  <div class="card"><h3>고친 문장</h3><div class="model">${esc(r.corrected)}</div>
+    <div class="row between"><h3>원어민이라면</h3><button class="btn" data-speak="${esc(r.natural)}">▶ 듣기</button></div>
+    <div class="model">${esc(r.natural)}</div>
+    ${spoken?`<p class="small muted">따라 말하기(쉐도잉): 듣기를 누르고, 한 문장씩 멈춰 가며 똑같은 억양으로 따라 해 보세요.</p>`:""}
+  </div>
+  ${ex.length?`<div class="card"><h3>오늘 챙겨 갈 표현</h3>${ex.map(x=>`<div class="fix"><div><mark>${esc(x.en)}</mark> <span class="muted small">${esc(x.ko)}</span></div><div class="small" style="font-family:var(--f-read)">${esc(x.example)}</div></div>`).join("")}</div>`:""}
+  ${r.tip_ko?`<p class="notice">다음엔 이렇게: ${esc(r.tip_ko)}</p>`:""}`;
+}
+
+/* speaking */
+function vSpeaking(){
+  const q=scratch.sQ||SPEAK_QS[dayIndex()%SPEAK_QS.length];scratch.sQ=q;
+  const ms=scratch.micState;
+  return `${noAiNotice()}
+  <div class="card">
+    <div class="row between"><div class="eyebrow">질문에 소리 내어 답하기</div><button class="link" data-act="s-next">다른 질문</button></div>
+    <p class="prompt">${esc(q.en)}<span class="ko">${esc(q.ko)}</span></p>
+    <div class="row"><button class="btn" data-speak="${esc(q.en)}">▶ 질문 듣기</button></div>
+    <ol class="small muted" style="margin:0;padding-left:18px">
+      <li>30초~1분 동안 영어로 말해 보세요. 멈춰도, 틀려도 괜찮아요.</li>
+      <li>말한 내용을 글자로 옮겨요: <b>🎤 말하기 시작</b>을 누르거나, 휴대폰 키보드의 마이크 버튼(음성 입력)을 영어로 바꿔서 말하면 돼요.</li>
+      <li>피드백을 받으면 원어민 버전을 듣고 따라 말해요.</li>
+    </ol>
+    <textarea class="en" id="s-text" placeholder="여기에 내가 말한 내용이 글자로 들어가요.">${esc(scratch.sText||"")}</textarea>
+    <div class="row between">
+      <div class="row">${ms==="listening"?`<button class="btn" data-act="mic-stop">■ 그만 말하기</button><span class="small" style="color:var(--pen)">듣는 중…</span>`:`<button class="btn" data-act="mic-start">🎤 말하기 시작</button>`}</div>
+      <button class="btn primary" data-act="s-submit" ${sample?"":"disabled"}>말하기 피드백 받기</button>
+    </div>
+    ${ms==="blocked"||ms==="unsupported"?`<p class="notice">이 화면에서는 브라우저 마이크를 쓸 수 없어요. 글자 칸을 누른 뒤 <b>휴대폰 키보드의 마이크 버튼</b>으로 말해 주세요(키보드 언어를 영어로 바꾸면 영어로 받아 적어요).</p>`:""}
+  </div>
+  ${fbBlock("s")}`;
+}
+
+/* listening */
+function vListening(){
+  const L=scratch.listen||SAMPLE_LISTEN;scratch.listen=L;
+  const a=scratch.lAns||{};const sub=scratch.lSub;
+  return `${noAiNotice()}
+  <div class="card">
+    <div class="row between"><div class="eyebrow">듣기 · ${esc(L.title)}${L.sample?" (예시)":""}</div>
+      <button class="link" data-act="l-new" ${sample?"":"disabled"}>${scratch.lLoading?"만드는 중…":"새 듣기 만들기"}</button></div>
+    ${scratch.lErr?`<p class="err">${esc(scratch.lErr)}</p>`:""}
+    <p class="small muted">글을 보지 말고 먼저 들어 보세요. 처음엔 느리게, 두 번째엔 보통 속도로.</p>
+    <div class="row">
+      <button class="btn primary" data-speak-text="listen" data-rate="0.8">▶ 느리게</button>
+      <button class="btn" data-speak-text="listen" data-rate="1">▶ 보통</button>
+      <button class="btn" data-act="stop">■ 멈춤</button>
+    </div>
+  </div>
+  <div class="card"><h3>내용 문제</h3>
+    ${L.questions.map((q,i)=>qHtml("l",q,i,a[i],sub)).join("")}
+  </div>
+  <div class="card"><h3>받아쓰기</h3>
+    <div class="row"><button class="btn" data-speak="${esc(L.dictation)}" data-rate="0.8">▶ 이 문장만 듣기</button></div>
+    <input type="text" class="en" id="l-dict" placeholder="들리는 대로 적어 보세요" value="${esc(scratch.lDict||"")}">
+    ${sub?dictHtml(scratch.lDict||"",L.dictation):""}
+  </div>
+  <div class="row">${sub?`<button class="btn" data-act="l-reset">다시 풀기</button>`:`<button class="btn primary" data-act="l-submit">채점하기</button>`}</div>
+  ${sub?`<details class="card"><summary>대본 보기</summary><div class="passage"><p>${esc(L.text)}</p></div></details>`:""}`;
+}
+function qHtml(px,q,i,ans,sub){
+  return `<div class="quiet"><p style="margin:0"><b>${i+1}.</b> ${esc(q.q)}</p>
+    ${q.options.map((o,j)=>{const cls=sub?(j===q.answer?"correct":(ans===j?"incorrect":"")):"";
+      return `<label class="opt ${cls}"><input type="radio" name="${px}q${i}" data-q="${px}" data-i="${i}" value="${j}" ${ans===j?"checked":""} ${sub?"disabled":""}><span>${esc(o)}</span></label>`}).join("")}
+    ${sub?`<p class="small muted" style="margin:0">${ans===q.answer?'<b class="right">정답</b> · ':""}${esc(q.why_ko)}</p>`:""}</div>`;
+}
+function norm(s){return s.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean)}
+function dictHtml(user,target){
+  const t=norm(target),u=norm(user);const bag={};for(const w of u)bag[w]=(bag[w]||0)+1;
+  let hit=0;const out=target.split(/\s+/).map(raw=>{const w=norm(raw)[0];if(w&&bag[w]){bag[w]--;hit++;return `<span class="word-ok">${esc(raw)}</span>`}return `<span class="word-miss">${esc(raw)}</span>`});
+  return `<p style="font-family:var(--f-read);font-size:16px;margin:0">${out.join(" ")}</p><p class="small muted" style="margin:0">${t.length}단어 중 ${hit}단어를 맞게 들었어요. 물결 밑줄이 놓친 단어예요.</p>`;
+}
+async function newSet(kind){
+  const isL=kind==="listen";
+  scratch[isL?"lLoading":"rLoading"]=true;scratch[isL?"lErr":"rErr"]="";render();
+  const topics=["school life","money and saving","travel","food","health habits","technology and AI","weekend plans","friendship","work-life balance","learning a skill"];
+  const topic=topics[(dayIndex()+Math.floor(Math.random()*topics.length))%topics.length];
+  const prompt=isL?`${learner()}
+Create one short listening exercise about "${topic}". The script will be read aloud by text-to-speech, so use plain sentences, no headings or lists, ${S.level==="A2"?"60-80":S.level==="B1"?"80-110":"110-140"} words, everyday spoken English at level ${S.level}. Where it fits naturally, reuse grammar the learner struggles with (correctly) so they hear it modeled.
+Reply with only JSON: {"title":"short English title","text":"the script","dictation":"one sentence copied exactly from the script, 10-16 words","questions":[{"q":"English question","options":["4 short English options"],"answer":index 0-3,"why_ko":"Korean explanation quoting the key phrase"}]} with exactly 3 questions.`
+  :`${learner()}
+Write one short reading passage about "${topic}" at level ${S.level}, ${S.level==="A2"?"100-130":S.level==="B1"?"150-190":"200-240"} words, 2-3 paragraphs separated by a blank line (\\n\\n). Interesting to an adult, practical. Where it fits naturally, use (correctly) the grammar the learner struggles with.
+Reply with only JSON: {"title":"English title","text":"the passage","vocab":[{"word":"word or phrase from the passage","ko":"Korean meaning"}] (4-5 items),"questions":[{"q":"English question","options":["4 options"],"answer":index 0-3,"why_ko":"Korean explanation"}]} with exactly 3 questions.`;
+  try{
+    const r=await askJSON(prompt,"default");
+    if(!r||!r.text||!Array.isArray(r.questions)||!r.questions.length)throw{code:"invalid_json"};
+    r.questions=r.questions.filter(q=>Array.isArray(q.options)&&q.options.length>=2).map(q=>({...q,answer:Math.max(0,Math.min(q.options.length-1,parseInt(q.answer,10)||0))}));
+    if(isL){scratch.listen=r;scratch.lAns={};scratch.lSub=false;scratch.lDict=""}
+    else{scratch.read=r;scratch.rAns={};scratch.rSub=false;scratch.rSum="";delete scratch.r}
+  }catch(e){scratch[isL?"lErr":"rErr"]=errText(e)}
+  scratch[isL?"lLoading":"rLoading"]=false;render();
+}
+
+/* reading */
+function vReading(){
+  const R=scratch.read||SAMPLE_READ;scratch.read=R;
+  const a=scratch.rAns||{};const sub=scratch.rSub;
+  let text=esc(R.text);
+  for(const v of (R.vocab||[])){if(!v.word)continue;const re=new RegExp("\\b("+v.word.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+")","i");text=text.replace(re,"<mark>$1</mark>")}
+  return `${noAiNotice()}
+  <div class="card">
+    <div class="row between"><div class="eyebrow">읽기${R.sample?" (예시)":""}</div>
+      <button class="link" data-act="r-new" ${sample?"":"disabled"}>${scratch.rLoading?"만드는 중…":"새 글 만들기"}</button></div>
+    ${scratch.rErr?`<p class="err">${esc(scratch.rErr)}</p>`:""}
+    <h2 style="font-family:var(--f-read)">${esc(R.title)}</h2>
+    <div class="passage">${text.split(/\n\s*\n/).map(p=>`<p>${p}</p>`).join("")}</div>
+    <div class="row"><button class="btn" data-speak-text="read" data-rate="0.9">▶ 읽어 주기</button><button class="btn" data-act="stop">■ 멈춤</button></div>
+  </div>
+  ${(R.vocab||[]).length?`<div class="card"><h3>형광펜 단어</h3><div class="grid2">${R.vocab.map(v=>`<div><mark>${esc(v.word)}</mark> <span class="small muted">${esc(v.ko)}</span></div>`).join("")}</div></div>`:""}
+  <div class="card"><h3>내용 문제</h3>${R.questions.map((q,i)=>qHtml("r",q,i,a[i],sub)).join("")}
+    <div class="row">${sub?`<button class="btn" data-act="r-reset">다시 풀기</button>`:`<button class="btn primary" data-act="r-submit">채점하기</button>`}</div></div>
+  <div class="card"><h3>한 문장으로 요약하기</h3>
+    <p class="small muted">글의 핵심을 영어 한두 문장으로 써 보세요. 읽기 + 쓰기를 한 번에 연습하는 방법이에요.</p>
+    <textarea class="en" id="r-sum" style="min-height:80px" placeholder="This text is about...">${esc(scratch.rSum||"")}</textarea>
+    <div class="row"><button class="btn primary" data-act="r-sum-submit" ${sample?"":"disabled"}>요약 피드백 받기</button></div>
+  </div>
+  ${fbBlock("r")}`;
+}
+
+/* patterns */
+function vPatterns(){
+  const since=addDays(today(),-30);const recent=S.errors.filter(e=>e.d>=since);
+  const c={};for(const e of recent)c[e.type]=(c[e.type]||0)+1;
+  const rows=Object.entries(c).sort((a,b)=>b[1]-a[1]);const max=rows.length?rows[0][1]:1;
+  const F=S.focus;
+  const p=scratch.pat;
+  return `
+  <section class="quiet"><h2>내 말버릇 분석</h2>
+    <p class="small muted">쓰기·말하기·요약에서 틀린 곳을 종류별로 모아요. 막대가 긴 것부터 고치면 가장 빨리 늘어요.</p></section>
+  <div class="card"><div class="row between"><h3>최근 30일 실수 종류</h3><span class="small muted">총 ${recent.length}개</span></div>
+    ${rows.length?`<div class="bars">${rows.map(([k,n])=>`<div class="bar"><span>${esc(k)}</span><div class="track"><div class="fill" style="width:${Math.max(6,n/max*100)}%"></div></div><span class="n">${n}</span></div>`).join("")}</div>`
+      :`<p class="muted">아직 모인 실수가 없어요. 쓰기나 말하기 피드백을 한 번 받아 보세요.</p>`}
+  </div>
+  <div class="card">
+    <div class="row between"><h3>AI 패턴 분석</h3>
+      <button class="btn primary" data-act="analyze" ${sample&&S.errors.length>=5&&!p?.loading?"":"disabled"}>${F?"다시 분석하기":"분석하기"}</button></div>
+    <p class="small muted">${S.errors.length<5?`실수가 5개 이상 모이면 분석할 수 있어요 (지금 ${S.errors.length}개).`:"모인 실수 전체를 보고, 반복되는 습관 3가지와 1주일 공부 계획을 짜 줘요."}${F?` 마지막 분석: ${esc(F.updated)}`:""}</p>
+    ${p?.loading?`<p class="thinking">내 문장들을 훑어보는 중</p>`:""}${p?.error?`<p class="err">${esc(p.error)}</p>`:""}
+  </div>
+  ${F?`<div class="card"><div class="eyebrow">한 줄 진단</div><p style="margin:0">${esc(F.summary_ko)}</p></div>
+  ${(F.habits||[]).map((h,i)=>`<div class="card"><div class="eyebrow">고칠 습관 ${i+1}</div><h2>${esc(h.title_ko)}</h2>
+    <p class="small">${esc(h.why_ko)}</p><p>${esc(h.rule_ko)}</p>
+    <p style="font-family:var(--f-read);font-size:16px;margin:0"><span class="wrong">${esc(h.wrong_example)}</span> → <span class="right">${esc(h.right_example)}</span></p>
+    ${(h.mini_drill||[]).length?`<details><summary>연습 문제 ${h.mini_drill.length}개</summary>${h.mini_drill.map(d=>`<p class="small">${esc(d.prompt_ko)}<br><span class="right" style="font-family:var(--f-read)">${esc(d.answer_en)}</span></p>`).join("")}</details>`:""}
+  </div>`).join("")}
+  ${(F.plan_ko||[]).length?`<div class="card"><h3>이번 주 하루 15분 계획</h3><div class="tasks">${F.plan_ko.map((d,i)=>`<div class="task" style="cursor:default"><span class="chip">${i+1}일</span><span>${esc(d)}</span></div>`).join("")}</div></div>`:""}`:""}
+  ${S.errors.length?`<div class="card"><h3>최근 오답</h3>${S.errors.slice(-10).reverse().map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div><div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}</div></div>`).join("")}</div>`:""}`;
+}
+async function analyze(){
+  scratch.pat={loading:true};render();
+  const list=S.errors.slice(-80).map(e=>`[${e.type}] ${e.wrong} -> ${e.right}`).join("\n");
+  const prompt=`${learner()}
+Here are the learner's recent English mistakes (wrong -> right), from writing and speaking practice:
+${list}
+
+Find the 3 habits that, if fixed, would improve their English the most. Look for the Korean-speaker root cause (e.g. Korean has no articles, so "a/the" get dropped). Then make a 7-day plan, each day doable in about 15 minutes with this app's tools (쓰기, 말하기, 듣기, 읽기, 오답 복습).
+Reply with only JSON:
+{"summary_ko":"one or two Korean sentences diagnosing their overall pattern, kind and direct",
+ "habits":[{"title_ko":"short Korean name of the habit","why_ko":"why a Korean speaker does this, with a real-life comparison","rule_ko":"the simple rule to remember","wrong_example":"a sentence from their own mistakes","right_example":"the corrected sentence","mini_drill":[{"prompt_ko":"Korean sentence to translate or a fill-in task","answer_en":"model answer"}]}],
+ "plan_ko":["7 short Korean lines, one per day, e.g. '쓰기: 어제 한 일 5문장 — 과거형 동사에 밑줄 치며 쓰기'"]}
+Exactly 3 habits, each with 3 mini_drill items.`;
+  try{
+    const r=await askJSON(prompt,"complex");
+    if(!r||!Array.isArray(r.habits))throw{code:"invalid_json"};
+    S.focus={summary_ko:r.summary_ko,habits:r.habits.slice(0,3),plan_ko:(r.plan_ko||[]).slice(0,7),updated:today()};
+    save();scratch.pat=null;
+  }catch(e){scratch.pat={error:errText(e)}}
+  render();
+}
+
+/* ---------- events ---------- */
+document.addEventListener("input",ev=>{
+  const t=ev.target;
+  if(t.id==="w-text"){scratch.wText=t.value;const c=document.getElementById("w-count");if(c)c.textContent=wc(t.value)+"단어"}
+  else if(t.id==="s-text")scratch.sText=t.value;
+  else if(t.id==="l-dict")scratch.lDict=t.value;
+  else if(t.id==="r-sum")scratch.rSum=t.value;
+  else if(t.id==="drill-in")scratch.drill=t.value;
+  else if(t.id&&t.id.startsWith("rv-in-")){const i=t.id.slice(6);scratch["rv"+i]={...(scratch["rv"+i]||{}),val:t.value}}
+});
+document.addEventListener("change",ev=>{
+  const t=ev.target;
+  if(t.id==="level"){S.level=t.value;save();renderStatus()}
+  if(t.dataset&&t.dataset.q){const k=t.dataset.q==="l"?"lAns":"rAns";scratch[k]=scratch[k]||{};scratch[k][t.dataset.i]=Number(t.value)}
+});
+document.addEventListener("click",ev=>{
+  const b=ev.target.closest("button,[data-go]");if(!b)return;
+  if(b.dataset.tab)return go(b.dataset.tab);
+  if(b.dataset.go){if(b.dataset.go==="today-review"){document.getElementById("review")?.scrollIntoView({behavior:"smooth"});return}return go(b.dataset.go)}
+  if(b.dataset.speak!==undefined){speak(b.dataset.speak,Number(b.dataset.rate)||0.95);return}
+  if(b.dataset.speakText){const src=b.dataset.speakText==="listen"?scratch.listen:scratch.read;speak(src.text.replace(/\n+/g," "),Number(b.dataset.rate)||1);return}
+  const a=b.dataset.act;if(!a)return;
+  switch(a){
+    case "stop":stopSpeak();break;
+    case "w-next":scratch.wPrompt=WRITE_PROMPTS[(WRITE_PROMPTS.indexOf(scratch.wPrompt)+1)%WRITE_PROMPTS.length];delete scratch.w;render();break;
+    case "s-next":scratch.sQ=SPEAK_QS[(SPEAK_QS.indexOf(scratch.sQ)+1)%SPEAK_QS.length];delete scratch.s;render();break;
+    case "w-submit":{const tx=(scratch.wText||"").trim();if(wc(tx)<3){scratch.w={error:"세 단어 이상 써 주세요."};render();break}feedback("w","writing",scratch.wPrompt.en,tx);break}
+    case "s-submit":{stopDictation();const tx=(scratch.sText||"").trim();if(wc(tx)<3){scratch.s={error:"말한 내용을 세 단어 이상 넣어 주세요."};render();break}feedback("s","speaking","Answer this question out loud: "+scratch.sQ.en,tx);break}
+    case "r-sum-submit":{const tx=(scratch.rSum||"").trim();if(wc(tx)<3){scratch.r={error:"세 단어 이상 써 주세요."};render();break}feedback("r","reading",`Summarize this passage in 1-2 sentences. Also judge whether the summary captures the main idea and mention it in good_ko/tip_ko.\nPassage: ${scratch.read.text}`,tx);break}
+    case "mic-start":startDictation(t=>{scratch.sText=t;const ta=document.getElementById("s-text");if(ta)ta.value=t},st=>{scratch.micState=st;if(tab==="speaking")render()});break;
+    case "mic-stop":stopDictation();break;
+    case "l-new":newSet("listen");break;
+    case "r-new":newSet("read");break;
+    case "l-submit":scratch.lSub=true;markDone("listening");logHistory("listening",scratch.listen.title,score(scratch.listen,scratch.lAns));render();break;
+    case "r-submit":scratch.rSub=true;markDone("reading");logHistory("reading",scratch.read.title,score(scratch.read,scratch.rAns));render();break;
+    case "l-reset":scratch.lSub=false;scratch.lAns={};scratch.lDict="";render();break;
+    case "r-reset":scratch.rSub=false;scratch.rAns={};render();break;
+    case "analyze":analyze();break;
+    case "drill-check":scratch.drillShown=true;S.drillDone[b.dataset.dk]=true;save();render();break;
+    case "rv-check":{const i=b.dataset.i;const e=reviewCards()[i];const r=scratch["rv"+i]||{};const match=norm(r.val||"").join(" ")===norm(e.right).join(" ");scratch["rv"+i]={...r,shown:true,match};
+      const shownAll=reviewCards().every((_,k)=>scratch["rv"+k]?.shown);if(shownAll)markDone("review");render();break}
+  }
+});
+function score(set,ans){const n=set.questions.length;let c=0;set.questions.forEach((q,i)=>{if((ans||{})[i]===q.answer)c++});return Math.round(c/n*100)}
+
+/* ---------- boot ---------- */
+render();
+if(window.claude&&typeof window.claude.use==="function"){
+  window.claude.use("sample").then(s=>{sample=s;aiChecked=true;render()}).catch(()=>{aiChecked=true;render()});
+  (async()=>{
+    const [db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
+    if(!db||!user)return;
+    const id=await user.id();if(!id)return;
+    const ref=db.collection("data/users/"+id).doc("progress");
+    const snap=await ref.get();
+    docRef=ref;store="cloud";
+    if(snap.exists){S=merge(snap.data());try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}}
+    else if(S.errors.length||Object.keys(S.days).length)flush();
+    scratch.rvPick=null;render();
+  })().catch(e=>console.warn("cloud storage unavailable",e));
+}else{aiChecked=true;render()}
+})();
+</script>
+</body></html>
