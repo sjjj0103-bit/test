@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>학교폭력 업무 인수인계</title>
+<meta name="description" content="초등학교 학교폭력 업무 담당자를 위한 1년 업무, 계획서, 연수, 사안 처리 절차, 학부모 통화 멘트 정리">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* Layout: 왼쪽 목차(고정) + 오른쪽 본문. 폰에서는 목차가 위쪽 가로 줄로 바뀌어요. */
+:root {
+  --bg: #f6f5f1;
+  --paper: #ffffff;
+  --ink: #1f2328;
+  --ink-2: #555b63;
+  --line: #e2e0d8;
+  --accent: #2f5d8a;
+  --accent-soft: #e6eef6;
+  --star: #b4372f;
+  --star-soft: #fbeceb;
+  --todo: #fff6d6;
+  --todo-line: #e6c84f;
+  --ok: #2e7d4f;
+  --law-soft: #eef3ee;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #15171a; --paper: #1e2125; --ink: #e8e6e1; --ink-2: #a7abb1; --line: #33373d;
+    --accent: #8db7e0; --accent-soft: #23303d; --star: #f08a80; --star-soft: #3a2422;
+    --todo: #3a3320; --todo-line: #8a7530; --ok: #7cc79a; --law-soft: #1f2a22;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #15171a; --paper: #1e2125; --ink: #e8e6e1; --ink-2: #a7abb1; --line: #33373d;
+  --accent: #8db7e0; --accent-soft: #23303d; --star: #f08a80; --star-soft: #3a2422;
+  --todo: #3a3320; --todo-line: #8a7530; --ok: #7cc79a; --law-soft: #1f2a22;
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 16px; }
+body {
+  margin: 0; background: var(--bg); color: var(--ink);
+  font-family: "Noto Sans KR", system-ui, sans-serif; font-size: 16px; line-height: 1.7;
+  word-break: keep-all; overflow-wrap: anywhere;
+}
+a { color: var(--accent); }
+.wrap { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
+nav.toc {
+  position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 16px 28px 20px;
+  border-right: 1px solid var(--line);
+}
+nav.toc .brand { font-weight: 700; font-size: 15px; margin-bottom: 14px; }
+nav.toc a {
+  display: block; text-decoration: none; color: var(--ink-2); padding: 6px 10px; border-radius: 8px; font-size: 14.5px;
+}
+nav.toc a:hover, nav.toc a.on { background: var(--accent-soft); color: var(--ink); }
+nav.toc a.star { color: var(--star); font-weight: 700; }
+nav.toc .search { width: 100%; margin: 4px 0 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; }
+main { padding: 32px 40px 80px; min-width: 0; }
+header.top h1 { font-size: 28px; margin: 0 0 6px; line-height: 1.35; }
+header.top .meta { color: var(--ink-2); font-size: 14px; }
+section { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 26px 28px; margin: 22px 0; }
+section.star { border-color: var(--star); box-shadow: 0 0 0 3px var(--star-soft); }
+section > h2 { margin: 0 0 4px; font-size: 22px; line-height: 1.4; }
+section > .lead { color: var(--ink-2); margin: 0 0 16px; }
+h3 { font-size: 17.5px; margin: 26px 0 8px; }
+h4 { font-size: 16px; margin: 18px 0 6px; }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; vertical-align: 3px; margin-left: 6px; }
+.badge.star { background: var(--star-soft); color: var(--star); }
+table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0; }
+th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
+th { background: var(--accent-soft); font-weight: 700; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+ul, ol { padding-left: 22px; margin: 6px 0; }
+li { margin: 3px 0; }
+
+/* 아직 채우지 않은 우리 학교 내용 */
+.todo { background: var(--todo); border: 1.5px dashed var(--todo-line); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
+.todo::before { content: "✏️ 채울 내용"; display: block; font-weight: 700; font-size: 13px; margin-bottom: 2px; }
+.todo p { margin: 2px 0; }
+/* 법·지침 기본 내용 */
+.law { background: var(--law-soft); border-left: 4px solid var(--ok); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
+.law::before { content: "📘 법·지침 기본 (매년 새 가이드북으로 확인)"; display: block; font-weight: 700; font-size: 13px; color: var(--ok); }
+.warn { background: var(--star-soft); border-left: 4px solid var(--star); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
+.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 14px; }
+.legend span { padding: 4px 10px; border-radius: 8px; }
+
+/* 1년 달력 */
+.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.month { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
+.month b { display: block; color: var(--accent); margin-bottom: 4px; }
+.month ul { font-size: 14.5px; padding-left: 18px; }
+
+/* 카드 */
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
+.card h3 { margin-top: 0; }
+
+/* 다운로드 목록 */
+.files { margin: 10px 0; }
+.file { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; margin: 6px 0; }
+.file .name { flex: 1; min-width: 0; }
+.file .name small { display: block; color: var(--ink-2); font-size: 13px; }
+.file a.dl { text-decoration: none; background: var(--accent); color: var(--paper); padding: 5px 12px; border-radius: 8px; font-size: 14px; white-space: nowrap; }
+.file .wait { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
+
+/* 사안 처리 단계 */
+.steps { counter-reset: s; list-style: none; padding: 0; }
+.steps > li { position: relative; padding: 14px 16px 14px 62px; border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; }
+.steps > li::before {
+  counter-increment: s; content: counter(s); position: absolute; left: 16px; top: 14px;
+  width: 32px; height: 32px; border-radius: 50%; background: var(--star); color: #fff; font-weight: 700;
+  display: grid; place-items: center;
+}
+.steps > li > b:first-child { font-size: 16.5px; }
+.steps .when { display: inline-block; font-size: 13px; color: var(--star); font-weight: 700; margin-left: 6px; }
+.branch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.branch > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+
+/* 체크리스트 */
+.check label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.check input { margin-top: 6px; width: 18px; height: 18px; flex: none; }
+.check input:checked + span { color: var(--ink-2); text-decoration: line-through; }
+button { font: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 8px; padding: 5px 12px; font-size: 14px; }
+
+/* 통화 멘트 */
+.script { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+.script .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.script .head b { font-size: 16px; }
+.script blockquote { margin: 8px 0 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 8px; white-space: pre-line; font-size: 15.5px; }
+.dont td:first-child { color: var(--star); }
+
+.hidden-by-search { display: none; }
+mark { background: #ffe58a; color: #1f2328; }
+footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top: 30px; }
+
+@media (max-width: 860px) {
+  .wrap { display: block; }
+  nav.toc {
+    position: sticky; top: 0; z-index: 5; height: auto; display: flex; gap: 4px; overflow-x: auto; flex-wrap: nowrap;
+    padding: 8px 16px; border-right: 0; border-bottom: 1px solid var(--line); background: var(--bg);
+  }
+  nav.toc .brand { display: none; }
+  nav.toc a { white-space: nowrap; flex: none; font-size: 14px; }
+  nav.toc .search { flex: none; width: 140px; margin: 0; }
+  main { padding: 18px 16px 60px; }
+  section { padding: 18px 16px; }
+  header.top h1 { font-size: 23px; }
+  .branch { grid-template-columns: 1fr; }
+  .steps > li { padding-left: 56px; }
+}
+@media print {
+  nav.toc, .btn, .search { display: none !important; }
+  .wrap { display: block; }
+  section { break-inside: avoid-page; box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<nav class="toc" id="toc">
+  <div class="brand">📁 학교폭력 업무</div>
+  <input class="search" id="search" type="search" placeholder="🔍 검색 (예: 분리, 동의서)">
+  <a href="#start">처음 보는 분께</a>
+  <a href="#year">1년 업무 달력</a>
+  <a href="#plans">계획서 (연간·학기)</a>
+  <a href="#training">예방교육(연수)</a>
+  <a href="#culture">학교문화 책임규약</a>
+  <a href="#language">언어문화 개선 주간</a>
+  <a href="#case" class="star">★ 사안 처리 절차</a>
+  <a href="#call" class="star">★ 학부모 통화 멘트</a>
+  <a href="#files">자료실 (전체 파일)</a>
+  <a href="#contacts">연락처·사이트</a>
+  <a href="#memo">인수인계 메모·FAQ</a>
+</nav>
+
+<main>
+<header class="top">
+  <h1>초등학교 학교폭력 업무 인수인계</h1>
+  <div class="meta">최종 수정 <b data-fill="updated">2026. 11.</b> · 작성 <b data-fill="author">(담당자 이름)</b> · 학교 <b data-fill="school">(학교명)</b></div>
+</header>
+
+<!-- ============ 0. 처음 보는 분께 ============ -->
+<section id="start">
+  <h2>처음 보는 분께</h2>
+  <p class="lead">이 업무를 처음 맡았다면 아래 순서대로 보세요. 급한 사안이 생겼다면 바로 <a href="#case"><b>★ 사안 처리 절차</b></a>로 가세요.</p>
+  <ol>
+    <li><a href="#year">1년 업무 달력</a>으로 언제 무엇을 해야 하는지 큰 그림 보기</li>
+    <li><a href="#plans">계획서</a>: 작년 기안문을 내려받아 날짜·이름만 바꿔 기안하기</li>
+    <li><a href="#training">예방교육(연수)</a>: 학생·교사·학부모 <b>학기마다 1번씩</b> 꼭 하고, 증빙 남기기</li>
+    <li><a href="#case">사안 처리 절차</a>와 <a href="#call">통화 멘트</a>는 사안이 생기기 <b>전에</b> 한 번 꼭 읽어 두기</li>
+  </ol>
+  <div class="legend">
+    <span style="background:var(--todo);border:1.5px dashed var(--todo-line)">✏️ 노란 칸 = 우리 학교 실제 방법 (담당자가 채울 내용)</span>
+    <span style="background:var(--law-soft);border-left:4px solid var(--ok)">📘 초록 칸 = 법·교육부 지침 기본 내용</span>
+  </div>
+  <div class="warn"><b>⚠️ 개인정보 주의</b> — 이 페이지와 자료실에는 <b>학생 이름, 실제 사안 내용, 연락처가 들어간 파일을 절대 올리지 마세요.</b> 인터넷 주소만 알면 누구나 볼 수 있어요. 양식은 이름 칸을 비운 "빈 양식"으로만 올립니다.</div>
+</section>
+
+<!-- ============ 1. 1년 업무 달력 ============ -->
+<section id="year">
+  <h2>1년 업무 달력</h2>
+  <p class="lead">교육청 공문이 오는 시기에 따라 조금씩 달라요. 우리 학교에서 실제로 한 달로 고쳐 두세요.</p>
+  <div class="months">
+    <div class="month"><b>2월 (새 학년 준비)</b><ul>
+      <li>학교폭력 <b>연간 계획서</b> 작성</li>
+      <li>전담기구 구성 (교감·책임교사·보건·상담교사·학부모)</li>
+      <li>작년 담당자에게 인수인계 받기 (이 페이지!)</li>
+    </ul></div>
+    <div class="month"><b>3월</b><ul>
+      <li><b>연간 계획서 기안</b></li>
+      <li><b>1학기 계획서 기안</b> (학교폭력 예방주간 포함)</li>
+      <li>1학기 학교폭력 예방주간 운영</li>
+      <li>학부모총회 때 학부모 연수 연계</li>
+      <li>교직원 연수 (1학기)</li>
+    </ul></div>
+    <div class="month"><b>4~5월</b><ul>
+      <li>학교폭력 <b>실태조사 (1차, 전수)</b> 안내·참여 독려 (교육청 공문)</li>
+      <li>학생 예방교육 (1학기)</li>
+    </ul></div>
+    <div class="month"><b>6~7월</b><ul>
+      <li>1학기 학생·교사·학부모 연수 <b>실적 정리</b></li>
+      <li>교육청 실적 보고 (공문 오면)</li>
+    </ul></div>
+    <div class="month"><b>8~9월</b><ul>
+      <li><b>2학기 계획서 기안</b> (학교폭력 예방주간 포함)</li>
+      <li>2학기 학교폭력 예방주간 운영</li>
+      <li>실태조사 (2차, 표본) 안내</li>
+    </ul></div>
+    <div class="month"><b>10월</b><ul>
+      <li><b>언어문화 개선 교육주간</b> (한글날 무렵에 하는 학교가 많음)</li>
+      <li>2학기 학생 예방교육</li>
+    </ul></div>
+    <div class="month"><b>11~12월</b><ul>
+      <li>2학기 교사·학부모 연수</li>
+      <li>2학기 실적 정리·보고</li>
+    </ul></div>
+    <div class="month"><b>1~2월</b><ul>
+      <li>올해 운영 평가, 내년 계획 준비</li>
+      <li>후임자 인수인계 (이 페이지 최신으로 고치기)</li>
+    </ul></div>
+  </div>
+  <div class="todo"><p>우리 학교에서 실제로 한 시기로 고치기. 예: "언어문화 개선 주간은 10월 2주에 했음", "실태조사 공문은 4월 말에 옴"</p></div>
+</section>
+
+<!-- ============ 2. 계획서 ============ -->
+<section id="plans">
+  <h2>계획서 (연간 · 1학기 · 2학기)</h2>
+  <p class="lead">계획서는 <b>3개</b>를 따로 기안해요. 작년 기안문을 내려받아 날짜·이름·일정만 바꾸면 됩니다.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>① 연간 계획서</h3>
+      <p><b>언제:</b> 연초 (2~3월)<br><b>무엇:</b> 1년 전체 학교폭력 예방·대응 계획</p>
+      <h4>꼭 들어갈 내용</h4>
+      <ul>
+        <li>목적·근거 (학교폭력예방법 등)</li>
+        <li>전담기구 구성</li>
+        <li>학생·교직원·학부모 예방교육 계획 (학기별 1회 이상)</li>
+        <li>학교폭력 예방주간·언어문화 개선 주간</li>
+        <li>사안 처리 절차, 실태조사, 예산</li>
+      </ul>
+      <div class="files" data-cat="연간계획"></div>
+    </div>
+    <div class="card">
+      <h3>② 1학기 계획서</h3>
+      <p><b>언제:</b> 3월 초<br><b>무엇:</b> 1학기 세부 운영 계획</p>
+      <h4>꼭 들어갈 내용</h4>
+      <ul>
+        <li><b>1학기 학교폭력 예방주간</b> 일정·활동</li>
+        <li>1학기 학생·교사·학부모 연수 일정</li>
+      </ul>
+      <div class="files" data-cat="1학기계획"></div>
+    </div>
+    <div class="card">
+      <h3>③ 2학기 계획서</h3>
+      <p><b>언제:</b> 8월 말~9월 초<br><b>무엇:</b> 2학기 세부 운영 계획</p>
+      <h4>꼭 들어갈 내용</h4>
+      <ul>
+        <li><b>2학기 학교폭력 예방주간</b> 일정·활동</li>
+        <li>2학기 학생·교사·학부모 연수 일정</li>
+      </ul>
+      <div class="files" data-cat="2학기계획"></div>
+    </div>
+  </div>
+  <h3>학교폭력 예방주간 운영</h3>
+  <div class="todo">
+    <p>· 예방주간에 실제로 한 활동 (예: 아침 캠페인, 학급별 예방교육, 표어·포스터, 서약서 등)</p>
+    <p>· 준비물, 누구에게 무엇을 부탁했는지, 사진은 어떻게 모았는지</p>
+    <p>· 해 보니 좋았던 점 / 다음엔 바꾸고 싶은 점</p>
+  </div>
+  <h3>기안할 때 팁</h3>
+  <div class="todo"><p>결재 라인, 기안 제목 예시, 자주 지적받은 부분 등</p></div>
+</section>
+
+<!-- ============ 3. 예방교육 ============ -->
+<section id="training">
+  <h2>학교폭력 예방교육 (연수)</h2>
+  <p class="lead">학생 · 교직원 · 학부모 모두 <b>학기마다 1번 이상</b> 해야 해요. 1년이면 대상마다 최소 2번, 총 6번입니다.</p>
+  <div class="law">학교폭력예방법 제15조, 시행령 제17조: 학교장은 학생·교직원·학부모 대상 학교폭력 예방교육을 <b>학기별 1회 이상</b> 실시해야 해요.</div>
+  <div class="tablewrap"><table>
+    <tr><th>대상</th><th>1학기</th><th>2학기</th><th>흔히 하는 방법</th><th>남길 증빙</th></tr>
+    <tr><td><b>학생</b></td><td data-fill="s1">(시기)</td><td data-fill="s2">(시기)</td><td>담임 학급 수업(어울림 프로그램 등), 외부 강사, 학교전담경찰관 교육</td><td>학급별 실시 결과, 사진</td></tr>
+    <tr><td><b>교직원</b></td><td data-fill="t1">(시기)</td><td data-fill="t2">(시기)</td><td>교직원 회의 때 연수, 연수 자료 공람</td><td>연수 자료, 참석 서명부</td></tr>
+    <tr><td><b>학부모</b></td><td data-fill="p1">(시기)</td><td data-fill="p2">(시기)</td><td>학부모총회 연계, 가정통신문 + 연수 영상 링크</td><td>가정통신문, 참여 확인(회신서·설문)</td></tr>
+  </table></div>
+  <h3>학생 연수 — 우리 학교 방법</h3>
+  <div class="todo"><p>무엇을, 누가, 몇 시간, 결과를 어떻게 걷었는지</p></div>
+  <div class="files" data-cat="학생연수"></div>
+  <h3>교직원 연수 — 우리 학교 방법</h3>
+  <div class="todo"><p>연수 자료는 어디서 구했는지, 서명부 걷는 방법</p></div>
+  <div class="files" data-cat="교사연수"></div>
+  <h3>학부모 연수 — 우리 학교 방법</h3>
+  <div class="todo"><p>가정통신문 문구, 영상 링크, 참여 확인 방법</p></div>
+  <div class="files" data-cat="학부모연수"></div>
+</section>
+
+<!-- ============ 4. 학교문화 책임규약 ============ -->
+<section id="culture">
+  <h2>학교문화 책임규약</h2>
+  <p class="lead">학생 · 학부모 · 교원이 각자 지킬 약속을 함께 정하는 규약이에요.</p>
+  <div class="law">교육부가 2024년부터 도입했어요. 학교 구성원(학생·학부모·교원)이 함께 의견을 모아 각자의 권리와 책임을 정하고, 학교 안내·학교생활규정 등과 연계해 운영해요. 세부 방법은 교육청 공문·안내자료를 따릅니다.</div>
+  <h3>우리 학교 진행 과정</h3>
+  <ol class="steps">
+    <li><b>계획·안내</b><div class="todo"><p>언제, 누구에게 어떻게 알렸는지 (공문 받은 시기 포함)</p></div></li>
+    <li><b>의견 수렴</b><div class="todo"><p>학생·학부모·교원 의견을 어떻게 모았는지 (설문, 학급회의, 학부모회 등)</p></div></li>
+    <li><b>규약안 만들기</b><div class="todo"><p>누가 초안을 썼는지, 검토는 어디서 했는지 (학교운영위원회 등)</p></div></li>
+    <li><b>확정·안내</b><div class="todo"><p>확정 후 홈페이지 게시, 가정통신문 발송 등</p></div></li>
+    <li><b>실천·점검</b><div class="todo"><p>학기 중 어떻게 실천했고 점검했는지</p></div></li>
+  </ol>
+  <div class="files" data-cat="책임규약"></div>
+</section>
+
+<!-- ============ 5. 언어문화 개선 ============ -->
+<section id="language">
+  <h2>언어문화 개선 교육주간</h2>
+  <p class="lead">바른 말·고운 말 쓰기, 욕설·비속어 줄이기를 위한 주간 행사예요.</p>
+  <div class="tablewrap"><table>
+    <tr><th>항목</th><th>우리 학교</th></tr>
+    <tr><td>운영 기간</td><td data-fill="lang-date">(예: 10월 둘째 주)</td></tr>
+    <tr><td>대상</td><td data-fill="lang-who">(예: 전교생)</td></tr>
+    <tr><td>주요 활동</td><td data-fill="lang-act">(예: 고운 말 캠페인, 학급별 언어순화 활동지, 칭찬 릴레이, 표어 공모)</td></tr>
+    <tr><td>필요한 준비</td><td data-fill="lang-prep">(예: 활동지 인쇄, 상품 구입, 방송 안내)</td></tr>
+    <tr><td>결과 정리</td><td data-fill="lang-result">(예: 사진, 학급별 결과, 결과보고 기안)</td></tr>
+  </table></div>
+  <div class="todo"><p>해 보니 좋았던 활동 / 반응이 별로였던 활동 / 다음 담당자에게 추천</p></div>
+  <div class="files" data-cat="언어문화"></div>
+</section>
+
+<!-- ============ 6. 사안 처리 절차 ============ -->
+<section id="case" class="star">
+  <h2>★ 학교폭력 사안 처리 절차 <span class="badge star">가장 중요</span></h2>
+  <p class="lead">사안이 접수되면 아래 순서대로 진행해요. <b>"빠르게, 기록은 꼼꼼히, 판단은 하지 않기"</b>가 핵심이에요.</p>
+  <div class="warn">
+    <b>🚨 바로 신고해야 하는 경우</b><br>
+    · <b>성 관련 사안</b>: 알게 된 즉시 수사기관(112) 신고 — 교원은 신고 의무자예요.<br>
+    · <b>아동학대 의심</b>(보호자에 의한 학대 등): 112 신고.<br>
+    · 다친 학생이 있으면 <b>응급조치·보건실·병원</b>이 먼저입니다.
+  </div>
+
+  <ol class="steps">
+    <li><b>신고 접수·사안 인지</b><span class="when">당일</span>
+      <ul>
+        <li>학생, 보호자, 교사, 누구든 신고할 수 있어요. 말, 전화, 문자, 117 신고 모두 접수.</li>
+        <li><b>학교폭력 신고 접수 대장</b>에 기록. 신고한 사람의 비밀을 지켜요.</li>
+        <li>교감·교장에게 바로 보고, 담임에게 알리기.</li>
+      </ul>
+    </li>
+    <li><b>보호자에게 알리기</b><span class="when">당일</span>
+      <ul>
+        <li>피해·가해 관련 학생 <b>양쪽 보호자</b>에게 사안 접수 사실을 알려요. → <a href="#call">통화 멘트</a></li>
+        <li>통화 일시와 내용을 기록해 두기.</li>
+      </ul>
+    </li>
+    <li><b>가해·피해학생 즉시 분리</b><span class="when">인지 즉시</span>
+      <div class="law">피해학생이 반대하지 않으면 학교장은 가해 관련 학생과 피해학생을 지체 없이 분리해요 (최대 7일). 피해학생 의사 확인 후 진행합니다.</div>
+    </li>
+    <li><b>교육지원청 보고</b><span class="when">48시간 이내</span>
+      <div class="law">사안을 알게 된 뒤 48시간 이내에 교육(지원)청에 보고해요.</div>
+      <div class="todo"><p>우리 교육지원청 보고 방법 (시스템 이름, 양식, 담당 장학사)</p></div>
+    </li>
+    <li><b>사안 조사</b>
+      <ul>
+        <li>관련 학생 <b>확인서</b> 받기 (육하원칙으로, 학생이 직접 쓰게).</li>
+        <li>목격 학생 확인서, 증거자료(사진, 메시지 캡처 등) 모으기.</li>
+      </ul>
+      <div class="law">2024년 3월부터 교육지원청 소속 <b>학교폭력 전담조사관</b>이 학교에 와서 사안을 조사해요. 학교는 조사 일정을 잡고 장소를 마련하며 협조합니다.</div>
+      <div class="todo"><p>전담조사관 요청·일정 조율은 어떻게 했는지, 조사 때 학교가 준비한 것</p></div>
+    </li>
+    <li><b>전담기구 심의 (사례회의)</b>
+      <p>조사 결과를 보고 <b>학교장 자체해결</b>이 가능한지 판단해요.</p>
+      <div class="law"><b>학교장 자체해결 요건</b> — 아래 4가지를 모두 충족하고, <b>피해학생과 보호자가 심의위원회 개최를 원하지 않을 때</b>(서면 확인)<br>
+        ① 2주 이상의 신체적·정신적 치료를 요하는 진단서를 발급받지 않은 경우<br>
+        ② 재산상 피해가 없거나 즉각 복구된 경우<br>
+        ③ 학교폭력이 지속적이지 않은 경우<br>
+        ④ 신고·진술·자료 제공 등에 대한 보복행위가 아닌 경우</div>
+      <div class="branch">
+        <div><b>✅ 자체해결</b><br>피해측 동의서 받기 → 학교장 자체해결 → 교육지원청 보고 → 필요하면 <b>관계회복 프로그램</b></div>
+        <div><b>➡️ 심의위원회 요청</b><br>요건 미충족 또는 피해측이 원할 때 → 교육지원청에 <b>학교폭력대책심의위원회</b> 개최 요청</div>
+      </div>
+    </li>
+    <li><b>심의위원회 (교육지원청)</b>
+      <ul>
+        <li>교육지원청이 열고, 학교는 자료 제출·출석 등 협조.</li>
+        <li>결정된 조치(피해학생 보호조치, 가해학생 1~9호 조치)를 통보받아 <b>이행</b>하고, 학교생활기록부 기재 지침에 따라 처리.</li>
+      </ul>
+    </li>
+    <li><b>사후 관리</b>
+      <ul>
+        <li>피해학생 상담·보호, 가해학생 조치 이행 확인, 재발 여부 살피기.</li>
+        <li>관련 서류는 정해진 대로 보관 (개인정보이므로 공유 폴더·메신저에 두지 않기).</li>
+      </ul>
+    </li>
+  </ol>
+
+  <div class="todo">
+    <p>· 우리 학교에서 실제로 쓴 절차 흐름도/정리 파일 내용으로 바꾸기</p>
+    <p>· 실제로 해 보니 헷갈렸던 부분, 꼭 기억할 점</p>
+  </div>
+  <div class="files" data-cat="사안처리"></div>
+
+  <h3>사안 처리 체크리스트</h3>
+  <p style="color:var(--ink-2);font-size:14px;margin:0">사안이 생겼을 때 하나씩 체크하며 쓰세요. 체크한 내용은 지금 보고 있는 기기에만 저장돼요.</p>
+  <div class="check" id="caseCheck">
+    <label><input type="checkbox"><span>다친 학생 응급조치 / 성·아동학대 사안이면 112 신고</span></label>
+    <label><input type="checkbox"><span>교감·교장 보고, 담임에게 알림</span></label>
+    <label><input type="checkbox"><span>신고 접수 대장 기록</span></label>
+    <label><input type="checkbox"><span>피해·가해 관련 학생 양쪽 보호자 연락 (통화 기록)</span></label>
+    <label><input type="checkbox"><span>피해학생 의사 확인 후 즉시 분리</span></label>
+    <label><input type="checkbox"><span>교육지원청 보고 (48시간 이내)</span></label>
+    <label><input type="checkbox"><span>관련·목격 학생 확인서, 증거자료 수집</span></label>
+    <label><input type="checkbox"><span>전담조사관 조사 일정 조율·협조</span></label>
+    <label><input type="checkbox"><span>전담기구 사례회의 개최, 회의록 작성</span></label>
+    <label><input type="checkbox"><span>자체해결이면 피해측 서면 동의 / 아니면 심의위원회 개최 요청</span></label>
+    <label><input type="checkbox"><span>결과 통보, 조치 이행, 사후 관리</span></label>
+  </div>
+  <p><button class="btn" id="resetCheck">체크 모두 지우기</button></p>
+</section>
+
+<!-- ============ 7. 학부모 통화 멘트 ============ -->
+<section id="call" class="star">
+  <h2>★ 학부모 통화 멘트 <span class="badge star">가장 중요</span></h2>
+  <p class="lead">전화하기 전에 한 번 읽고, 통화 후에는 <b>일시·통화한 사람·주요 내용</b>을 바로 적어 두세요. "복사" 버튼을 누르면 멘트가 복사돼요.</p>
+  <div class="todo"><p>아래는 기본 예시예요. 정리해 둔 내 멘트 파일 내용으로 바꿀 예정.</p></div>
+
+  <div class="script">
+    <div class="head"><b>① 피해 관련 학생 보호자 — 첫 연락</b><button class="btn copy">복사</button></div>
+    <blockquote>안녕하세요, ○○초등학교 학교폭력 업무를 맡고 있는 교사 ○○○입니다. 지금 통화 괜찮으실까요?
+오늘 ○○(학생)와 관련해서 학교폭력 신고가 접수되어 알려 드리려고 연락드렸습니다.
+현재 학생은 ○○ 상태이고, 학교에서 안전하게 보호하고 있습니다.
+학교는 정해진 절차에 따라 사실을 확인할 예정이고, 진행되는 상황은 계속 안내해 드리겠습니다.
+혹시 가정에서 아이가 한 이야기나 알고 계신 내용이 있으시면 말씀해 주세요.</blockquote>
+  </div>
+
+  <div class="script">
+    <div class="head"><b>② 가해 관련 학생 보호자 — 첫 연락</b><button class="btn copy">복사</button></div>
+    <blockquote>안녕하세요, ○○초등학교 학교폭력 업무를 맡고 있는 교사 ○○○입니다. 지금 통화 괜찮으실까요?
+오늘 ○○(학생)가 관련된 학교폭력 신고가 접수되어 알려 드리려고 연락드렸습니다.
+아직 사실관계를 확인하는 단계이고, 학교는 정해진 절차에 따라 양쪽 이야기를 모두 듣고 공정하게 진행할 예정입니다.
+가정에서도 아이와 이야기 나눠 주시고, 진행 상황은 다시 안내해 드리겠습니다.</blockquote>
+  </div>
+
+  <div class="script">
+    <div class="head"><b>③ 화가 많이 나신 보호자</b><button class="btn copy">복사</button></div>
+    <blockquote>많이 놀라시고 속상하셨을 것 같습니다. 충분히 그러실 수 있습니다.
+말씀해 주신 내용은 빠짐없이 기록해서 절차에 반영하겠습니다.
+결과는 제가 지금 단정해서 말씀드리기 어렵고, 조사와 심의를 거쳐 결정됩니다. 진행 상황은 꼭 안내해 드리겠습니다.</blockquote>
+  </div>
+
+  <div class="script">
+    <div class="head"><b>④ 절차 안내 (자체해결 / 심의위원회)</b><button class="btn copy">복사</button></div>
+    <blockquote>조사가 끝나면 학교 전담기구에서 회의를 합니다.
+일정한 요건에 해당하고 피해 학생과 보호자께서 원하지 않으시면 학교장 자체해결로 마무리할 수 있고,
+원하시면 교육지원청 학교폭력대책심의위원회를 열어 조치를 결정하게 됩니다. 어느 쪽을 원하시는지 서면으로 확인받을 예정입니다.</blockquote>
+  </div>
+
+  <h3>하면 안 되는 말</h3>
+  <div class="tablewrap"><table class="dont">
+    <tr><th>❌ 이렇게 말하지 않기</th><th>⭕ 이렇게</th></tr>
+    <tr><td>"가해자가 ~했어요"</td><td>"관련 학생", "상대 학생"이라고 부르기</td></tr>
+    <tr><td>"별일 아닌 것 같아요" / "애들끼리 그럴 수 있죠"</td><td>판단하지 않고 사실만 전달</td></tr>
+    <tr><td>"꼭 처벌받게 할게요" / "이건 몇 호 나와요"</td><td>"결과는 심의를 거쳐 결정됩니다"</td></tr>
+    <tr><td>상대 학생의 이름·연락처·가정 사정 알려주기</td><td>개인정보는 말하지 않기</td></tr>
+    <tr><td>"그냥 좋게 화해하시죠" (자체해결 강요)</td><td>선택은 보호자가 하도록 절차만 안내</td></tr>
+  </table></div>
+  <div class="todo"><p>실제 통화하며 익힌 노하우, 자주 받은 질문과 답</p></div>
+  <div class="files" data-cat="통화멘트"></div>
+</section>
+
+<!-- ============ 8. 자료실 ============ -->
+<section id="files">
+  <h2>자료실 (전체 파일)</h2>
+  <p class="lead">페이지에 있는 모든 첨부 파일을 한곳에 모았어요. 누르면 내려받아져요.</p>
+  <div class="files" data-cat="*"></div>
+</section>
+
+<!-- ============ 9. 연락처 ============ -->
+<section id="contacts">
+  <h2>연락처 · 참고 사이트</h2>
+  <div class="tablewrap"><table>
+    <tr><th>어디</th><th>연락처 / 주소</th><th>언제</th></tr>
+    <tr><td>학교폭력 신고센터</td><td>☎ 117 (문자 #0117)</td><td>신고·상담, 24시간</td></tr>
+    <tr><td>경찰</td><td>☎ 112</td><td>성 관련 사안, 아동학대 의심, 긴급 상황</td></tr>
+    <tr><td>교육지원청 학교폭력 담당</td><td data-fill="c-office">(부서·전화번호)</td><td>사안 보고, 심의위원회, 전담조사관</td></tr>
+    <tr><td>학교전담경찰관(SPO)</td><td data-fill="c-spo">(이름·전화번호)</td><td>예방교육 요청, 사안 상담</td></tr>
+    <tr><td>Wee센터</td><td data-fill="c-wee">(전화번호)</td><td>학생 상담 연계</td></tr>
+    <tr><td>도란도란 (학교폭력 예방 포털)</td><td><a href="https://doran.edunet.net" target="_blank" rel="noopener">doran.edunet.net</a></td><td>예방교육 자료, 어울림 프로그램</td></tr>
+  </table></div>
+  <div class="law">사안 처리는 매년 나오는 교육부 <b>「학교폭력 사안처리 가이드북」</b> 최신판을 기준으로 해요. 법이 자주 바뀌니 새 학년마다 꼭 새 가이드북을 받아 두세요.</div>
+  <div class="files" data-cat="참고"></div>
+</section>
+
+<!-- ============ 10. 메모 ============ -->
+<section id="memo">
+  <h2>인수인계 메모 · 자주 묻는 질문</h2>
+  <h3>후임자에게 꼭 하고 싶은 말</h3>
+  <div class="todo"><p>제일 바빴던 시기, 미리 해 두면 편한 일, 도움 받을 수 있는 사람</p></div>
+  <h3>자주 묻는 질문</h3>
+  <div class="todo">
+    <p>Q. (예) 학부모 연수 참여율이 낮으면 어떻게 하나요?</p>
+    <p>A. </p>
+  </div>
+  <h3>진행 중인 일 (인수인계 시점 기준)</h3>
+  <div class="todo"><p>학생 이름 없이: "○월 접수 사안 1건, 조치 이행 확인 남음" 정도로만 적기</p></div>
+</section>
+
+<footer>학교폭력 업무 인수인계 · 법·지침 내용은 참고용이며, 실제 처리는 최신 교육부 가이드북과 교육청 공문을 따릅니다.</footer>
+</main>
+</div>
+
+<script>
+/* =====================================================================
+   첨부 파일 목록
+   - 파일은 hakpok/files/ 폴더에 넣고, 아래 목록에 한 줄씩 적어요.
+   - file 칸이 비어 있으면 "파일 준비 중"으로 보여요.
+   - cat(분류): 연간계획, 1학기계획, 2학기계획, 학생연수, 교사연수, 학부모연수,
+                책임규약, 언어문화, 사안처리, 통화멘트, 참고
+   ===================================================================== */
+const FILES = [
+  { cat: "연간계획",   name: "학교폭력 예방 연간 계획서 (기안문)", file: "", note: "연초 기안" },
+  { cat: "1학기계획",  name: "1학기 학교폭력 예방 계획서 (예방주간 포함)", file: "", note: "3월 기안" },
+  { cat: "2학기계획",  name: "2학기 학교폭력 예방 계획서 (예방주간 포함)", file: "", note: "8~9월 기안" },
+  { cat: "학생연수",   name: "학생 예방교육 자료 / 결과 보고", file: "", note: "" },
+  { cat: "교사연수",   name: "교직원 연수 자료 / 서명부 양식", file: "", note: "" },
+  { cat: "학부모연수", name: "학부모 연수 가정통신문", file: "", note: "" },
+  { cat: "책임규약",   name: "학교문화 책임규약 (최종본 / 의견 수렴 설문)", file: "", note: "" },
+  { cat: "언어문화",   name: "언어문화 개선 교육주간 계획 / 결과", file: "", note: "" },
+  { cat: "사안처리",   name: "사안 처리 절차 정리", file: "", note: "" },
+  { cat: "사안처리",   name: "확인서·동의서 등 빈 양식", file: "", note: "학생 이름 없는 빈 양식만" },
+  { cat: "통화멘트",   name: "학부모 통화 멘트 정리", file: "", note: "" },
+];
+
+const TAG = { "연간계획":"계획서", "1학기계획":"계획서", "2학기계획":"계획서", "학생연수":"연수", "교사연수":"연수", "학부모연수":"연수",
+  "책임규약":"책임규약", "언어문화":"언어문화", "사안처리":"사안처리", "통화멘트":"통화멘트", "참고":"참고" };
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c])); }
+
+document.querySelectorAll(".files[data-cat]").forEach(box => {
+  const cat = box.dataset.cat;
+  const list = FILES.filter(f => cat === "*" || f.cat === cat);
+  if (!list.length) return;
+  box.innerHTML = (cat === "*" ? "" : '<h4 style="margin:12px 0 4px">📎 첨부 파일</h4>') + list.map(f => {
+    const sub = [cat === "*" ? TAG[f.cat] : "", f.note].filter(Boolean).join(" · ");
+    const right = f.file
+      ? `<a class="dl" href="files/${encodeURI(f.file)}" download>내려받기</a>`
+      : `<span class="wait">파일 준비 중</span>`;
+    return `<div class="file"><div class="name">${esc(f.name)}${sub ? `<small>${esc(sub)}</small>` : ""}</div>${right}</div>`;
+  }).join("");
+});
+
+/* 체크리스트: 이 기기에만 저장 */
+const KEY = "hakpok-case-check";
+const boxes = [...document.querySelectorAll("#caseCheck input")];
+let saved = [];
+try { saved = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
+boxes.forEach((b, i) => {
+  b.checked = !!saved[i];
+  b.addEventListener("change", () => { try { localStorage.setItem(KEY, JSON.stringify(boxes.map(x => x.checked))); } catch (e) {} });
+});
+document.getElementById("resetCheck").addEventListener("click", () => {
+  boxes.forEach(b => b.checked = false);
+  try { localStorage.removeItem(KEY); } catch (e) {}
+});
+
+/* 멘트 복사 */
+document.querySelectorAll(".script .copy").forEach(btn => {
+  btn.addEventListener("click", async () => {
+    const text = btn.closest(".script").querySelector("blockquote").innerText;
+    try { await navigator.clipboard.writeText(text); btn.textContent = "복사됨 ✓"; }
+    catch (e) { btn.textContent = "복사 실패"; }
+    setTimeout(() => btn.textContent = "복사", 1500);
+  });
+});
+
+/* 목차: 지금 보고 있는 칸 표시 */
+const links = [...document.querySelectorAll("nav.toc a")];
+const io = new IntersectionObserver(entries => {
+  entries.forEach(en => {
+    if (en.isIntersecting) links.forEach(a => a.classList.toggle("on", a.getAttribute("href") === "#" + en.target.id));
+  });
+}, { rootMargin: "-20% 0px -70% 0px" });
+document.querySelectorAll("main section").forEach(s => io.observe(s));
+
+/* 검색: 단어가 들어간 칸만 보여 주기 */
+const sections = [...document.querySelectorAll("main section")];
+document.getElementById("search").addEventListener("input", e => {
+  const q = e.target.value.trim();
+  sections.forEach(s => s.classList.toggle("hidden-by-search", !!q && !s.innerText.includes(q)));
+});
+</script>
+</body>
+</html>
