@@ -132,6 +132,28 @@ button { font: inherit; cursor: pointer; }
 .script blockquote { margin: 8px 0 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 8px; white-space: pre-line; font-size: 15.5px; }
 .dont td:first-child { color: var(--star); }
 
+/* 사안 처리: 흐름 칩 + 접는 단계 카드 */
+.flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 4px 0 14px; }
+.flow a { text-decoration: none; color: var(--ink); background: var(--star-soft); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 14px; font-weight: 700; line-height: 1.35; }
+.flow a b { display: block; font-size: 18px; color: var(--star); }
+.flow a small { display: block; font-weight: 400; color: var(--ink-2); font-size: 12px; }
+details.step { border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; padding: 0 16px; }
+details.step > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 13px 0; }
+details.step > summary::-webkit-details-marker { display: none; }
+details.step > summary::after { content: "▾"; margin-left: auto; color: var(--ink-2); }
+details.step[open] > summary::after { content: "▴"; }
+details.step .num { flex: none; width: 30px; height: 30px; border-radius: 50%; background: var(--star); color: #fff; font-weight: 700; display: grid; place-items: center; }
+details.step .t { font-weight: 700; font-size: 16.5px; }
+details.step .t em { font-style: normal; font-size: 13px; color: var(--star); margin-left: 8px; }
+details.step[open] { padding-bottom: 12px; }
+ul.do { margin: 0 0 4px; }
+ul.do li { margin: 5px 0; }
+details.more { margin: 8px 0; font-size: 15px; }
+details.more > summary { cursor: pointer; color: var(--accent); font-size: 14.5px; }
+.ref { margin-top: 8px; font-size: 14.5px; background: var(--accent-soft); border-radius: 8px; padding: 7px 12px; }
+.ref span { color: var(--ink-2); }
+@media (max-width: 860px) { .flow { grid-template-columns: repeat(3, 1fr); } }
+
 .hidden-by-search { display: none; }
 mark { background: #ffe58a; color: #1f2328; }
 footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top: 30px; }
@@ -316,7 +338,7 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
 <section id="culture">
   <h2>학교문화 책임규약</h2>
   <p class="lead">학생 · 학부모 · 교원이 각자 지킬 약속을 함께 정하는 규약이에요.</p>
-  <div class="law">교육부가 2024년부터 도입했어요. 학교 구성원(학생·학부모·교원)이 함께 의견을 모아 각자의 권리와 책임을 정하고, 학교 안내·학교생활규정 등과 연계해 운영해요. 세부 방법은 교육청 공문·안내자료를 따릅니다.</div>
+  <div class="law">학교 구성원(학생·학부모·교원)이 함께 의견을 모아 각자의 권리와 책임을 정하고, 학교 안내·학교생활규정 등과 연계해 운영해요. 세부 방법은 교육청 공문·안내자료를 따릅니다.</div>
   <h3>우리 학교 진행 과정</h3>
   <ol class="steps">
     <li><b>계획·안내</b><div class="todo"><p>언제, 누구에게 어떻게 알렸는지 (공문 받은 시기 포함)</p></div></li>
@@ -345,140 +367,149 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
 <!-- ============ 6. 사안 처리 절차 ============ -->
 <section id="case" class="star">
   <h2>★ 학교폭력 사안 처리 절차 <span class="badge star">가장 중요</span></h2>
-  <p class="lead">사안이 접수되면 아래 순서대로 진행해요. <b>"빠르게, 기록은 꼼꼼히, 결과는 단정하지 않기"</b>가 핵심이에요.</p>
-  <div class="warn">
-    <b>🚨 바로 신고해야 하는 경우</b><br>
-    · <b>성 관련 사안</b>: 알게 된 즉시 수사기관(112) 신고 — 교원은 신고 의무자예요.<br>
-    · <b>아동학대 의심</b>(보호자에 의한 학대 등): 112 신고.<br>
-    · 다친 학생이 있으면 <b>응급조치·보건실·병원</b>이 먼저입니다.
+  <p class="lead">한눈에 흐름을 보고, 지금 하는 단계를 눌러서 자세히 보세요.</p>
+
+  <div class="flow">
+    <a href="#c1"><b>1</b>접수·연락<small>당일</small></a>
+    <a href="#c2"><b>2</b>확인서 받기<small>당일~</small></a>
+    <a href="#c3"><b>3</b>분리 내부기안<small>24시간</small></a>
+    <a href="#c4"><b>4</b>사안접수 보고<small>48시간</small></a>
+    <a href="#c5"><b>5</b>조사<small>전담조사관</small></a>
+    <a href="#c6"><b>6</b>전담기구<small>자체해결/심의</small></a>
   </div>
 
-  <h3>접수 · 초기 대응 (실제로 한 순서)</h3>
-  <ol class="steps">
-    <li><b>관리자 보고 · 신고대장 기록</b><span class="when">당일</span>
-      <ul>
-        <li>교감·교장에게 안내하고, <b>학교폭력 신고 접수 대장</b>에 기록해요.</li>
-        <li><b>사안번호</b>(예: ○○초등학교-2026-1호)를 정하고, 이후 <b>모든 서류에 같은 번호</b>를 써요.</li>
-        <li>접수할 때 관련 학생·보호자에게 <b>관계회복 프로그램과 화해중재</b>도 있다고 안내해요.</li>
-        <li>피해·가해 관련 학생의 <b>몸과 마음 상태</b>부터 확인해요.</li>
-      </ul>
-    </li>
-    <li><b>교육청 생활인권전문상담사에게 구두 보고</b><span class="when">당일</span>
-      <p>사안이 생겼다는 사실을 전화로 먼저 알려요. 정식 서류는 뒤에 보내요.</p>
-    </li>
-    <li><b>양쪽 보호자에게 연락</b><span class="when">당일</span>
-      <ul>
-        <li><b>피해 추정 측</b>: 신고 접수 안내 → 대표 연락처 통일 → 즉시분리 원하는지 확인 → 낼 서류 안내 (학생 확인서는 학교에서 작성 예정, 보호자 확인서 제출)</li>
-        <li><b>가해 추정 측</b>: 신고 접수 안내 → 대표 연락처 통일 → 즉시분리·긴급조치 2호 안내 → 확인서 안내</li>
-        <li>전화가 끝나면 <b>반드시 문자로 한 번 더</b> 보내서 확인받아요. → <a href="#call">통화 멘트·문자</a></li>
-      </ul>
-    </li>
-    <li><b>최초 학생 작성 확인서 받기</b>
-      <p>학생이 <b>직접</b>, 무엇을 신고하는지 분명하게 쓰도록 해요.</p>
-    </li>
-    <li><b>사안접수 보고서 작성</b><span class="when">48시간 이내</span>
-      <ul>
-        <li>보고서에 <b>전담조사관 배정 요청 여부</b>를 적어요. 필요하면 요청 사항도 적을 수 있어요. (예: 여성 조사관, 상담 전문가, 저학년 사안이라 퇴직교원 조사관, 화해중재 가능한 조사관)</li>
-        <li><b>성폭력 등 중대 사안</b>은 서류와 별도로 <b>전화로 먼저</b> 보고해요.</li>
-        <li>최초 학생 작성 확인서와 사안접수 보고서는 <b>되도록 빨리 생활인권전문상담사에게 메신저로</b> 보내고, 나중에 <b>공문으로</b> 다시 보내요.</li>
-      </ul>
-    </li>
-    <li><b>즉시분리</b><span class="when">분리 방법은 24시간 이내 결정</span>
-      <ul>
-        <li>피해 관련 학생에게 <b>분리 의사 확인서</b>를 받아요.</li>
-        <li>전담기구 위원 중 <b>교원 위원</b>을 모아서 가해 관련 학생을 <b>어떻게, 며칠 동안(7일 이내)</b> 분리할지 정하고 <b>내부 결재</b>해요.</li>
-        <li>가정에서 분리하면 <b>출석인정결석</b>으로 처리하고, 학습자료를 보내고 학생 상황을 계속 확인해요.</li>
-        <li>보호자가 <b>체험학습</b>을 신청해도 즉시분리로 인정돼요.</li>
-        <li><b>기간 계산</b>: 분리 시작한 날도 하루로 세고, <b>토요일·공휴일도 포함</b>해서 세요. (예: 금요일 시작 4일 = 금·토·일·월)</li>
-        <li>두 학생이 <b>서로 피해를 주장하며 둘 다 분리를 원하면 양쪽 모두 분리</b>해요.</li>
-        <li>분리하기 전에 학생들에게 <b>제도의 취지, 기간, 출결, 이후 절차</b>를 충분히 설명해요.</li>
-        <li>피해 학생이 분리를 원하지 않아 <b>분리하지 않는 경우에도 2호 조치 내부결재는 해요.</b></li>
-        <li>같은 반 외에 따로 수업할 공간이 없으면 가정 분리로 진행해요.</li>
-      </ul>
-    </li>
-    <li><b>긴급조치</b>
-      <ul>
-        <li><b>가해 관련 학생에게 2호(접촉·협박·보복 금지)를 반드시 긴급조치로 내려요.</b> 직접 만나는 것뿐 아니라 <b>전화, 문자, SNS 등 모든 접촉 금지</b>라고 학생과 보호자에게 안내해요.</li>
-        <li>👉 이 내용은 <b>분리 의사 확인서 내부 결재할 때 같이 써 두기!</b></li>
-        <li>학교장이 필요하다고 보면 1호, 3호, 5호, 6호, 7호 긴급조치도 내릴 수 있고, 여러 개를 함께 내릴 수도 있어요. → <b>긴급조치 보고서를 교육청에 공문으로</b> 보내요.</li>
-        <li>피해 관련 학생·보호자가 요청하면 6호·7호를 내릴 수 있어요. 단, 이때는 <b>전담기구 심의가 필요</b>하고, 긴급조치 보고서를 공문으로 보내요.</li>
-        <li>가해 관련 학생이 긴급조치를 지키지 않으면 <b>생활교육위원회 징계</b>가 가능해요.</li>
-      </ul>
-    </li>
-  </ol>
+  <div class="warn"><b>🚨 먼저!</b> 다친 학생은 응급조치·보건실이 먼저 · <b>성 관련 사안이나 아동학대 의심</b>이면 바로 112 신고 (교원은 신고 의무자)</div>
 
-  <h3>조사부터 마무리까지</h3>
-  <ol class="steps" start="8" style="counter-reset: s 7">
-    <li><b>전담조사관 조사</b>
-      <ul>
-        <li>교육지원청(학교폭력 제로센터) <b>전담조사관</b>이 와서 조사해요. 학교는 면담 일정과 장소를 잡아요.</li>
-        <li>보호자 확인서, 추가 서류는 전담기구 전까지 받아 둬요.</li>
-      </ul>
-    </li>
-    <li><b>전담기구 전에 피해 측 의견 미리 묻기</b>
-      <p>① 학교장 자체해결 ② 심의위원회 ③ 관계회복(화해중재) 프로그램 중 어떤 것을 원하는지 <b>살짝 여쭤보고, 통화 후 문자로 확인</b>받아요.</p>
-    </li>
-    <li><b>전담기구 심의</b>
-      <p>조사 결과를 보고 <b>학교장 자체해결</b>이 가능한지 판단해요. 구성원 <b>과반수 출석으로 열고, 출석 인원 과반수 찬성으로 의결</b>해요. 매뉴얼 부록의 <b>전담기구 시나리오(예시)</b>를 그대로 읽으면서 진행하면 편해요.</p>
-      <div class="law"><b>학교장 자체해결 요건</b> — 아래 4가지를 모두 충족하고, <b>피해 학생과 보호자가 동의할 때</b>(서면 확인)<br>
-        ① 2주 이상의 신체적·정신적 치료가 필요한 진단서를 발급받지 않은 경우<br>
-        ② 재산상 피해가 없거나 즉각 복구되거나 복구 약속이 있는 경우<br>
-        ③ 학교폭력이 지속적이지 않은 경우<br>
-        ④ 신고·진술·자료 제공 등에 대한 보복행위가 아닌 경우</div>
-      <div class="branch">
-        <div><b>✅ 학교장 자체해결</b><br>피해 측 서면 동의 → 학교 안에서 지도·교육으로 마무리. <b>징계는 없어요.</b> 필요하면 관계회복 프로그램.</div>
-        <div><b>➡️ 심의위원회 이관</b><br>요건이 안 되거나 피해 측이 동의하지 않으면 교육지원청 <b>학교폭력대책심의위원회</b>로 넘어가요. 보통 <b>3개월 이상</b> 걸려요.</div>
-      </div>
-    </li>
-    <li><b>심의위원회 (교육지원청)</b>
-      <ul>
-        <li>학교는 자료 제출·출석 등 협조해요.</li>
-        <li>결정된 조치(가해 학생 1~9호: 서면사과, 접촉 금지, 학교 봉사, 사회 봉사, 특별교육, 출석정지, 학급교체, 전학, 퇴학)를 통보받아 <b>이행</b>하고, 학교생활기록부 기재 지침대로 처리해요.</li>
-      </ul>
-    </li>
-    <li><b>사후 관리</b>
-      <ul>
-        <li>피해 학생 상담·보호, 조치 이행 확인, 분리 기간 끝난 뒤에도 같은 반 접촉 금지가 지켜지는지 살펴요.</li>
-        <li>관련 서류는 개인정보이니 공유 폴더·메신저에 두지 않아요.</li>
-        <li>조치에 이의가 있으면 보호자는 <b>행정심판</b>(안 날부터 90일, 처분일부터 180일 이내)이나 <b>행정소송</b>(안 날부터 90일, 처분일부터 1년 이내)을 할 수 있어요. 학교는 안내만 하고, 진행은 교육지원청이 해요.</li>
-        <li>가해 학생이 조치를 <b>3개월 안에 이행하지 않으면</b> 미이행 현황을 교육지원청에 보고해요.</li>
-      </ul>
-    </li>
-  </ol>
+  <details class="step" id="c1" open>
+    <summary><span class="num">1</span><span class="t">접수 · 보호자 연락<em>당일</em></span></summary>
+    <ul class="do">
+      <li>교감·교장에게 보고</li>
+      <li><b>신고 접수 대장</b>에 기록하고 <b>사안번호</b> 정하기 (예: ○○초등학교-2026-1호) → 이후 모든 서류에 같은 번호</li>
+      <li>학생들 몸과 마음 상태 확인</li>
+      <li>양쪽 보호자에게 전화 → 끝나면 <b>문자로 한 번 더</b> (<a href="#call">통화 멘트</a>)</li>
+    </ul>
+  </details>
 
-  <h3>단계별로 필요한 서류</h3>
-  <p style="color:var(--ink-2);font-size:14.5px;margin:0 0 6px">「2026 학교폭력 사안처리 가이드북」과 교육청 매뉴얼의 <b>부록 양식</b>에 다 들어 있어요. 양식 파일은 <a href="#files">자료 위치 안내</a>에 적힌 곳에서 찾으세요.</p>
-  <div class="tablewrap"><table>
-    <tr><th>단계</th><th>서류</th></tr>
-    <tr><td>신고·접수</td><td>학교폭력 신고 접수 대장 · 가해자와 피해학생 분리 의사 확인서 · [내부결재] 분리 계획 · 학교폭력 사안접수 보고서 · [학교→지원청] 사안접수 보고 공문</td></tr>
-    <tr><td>사실 확인</td><td>학생 작성 확인서 (피해·가해·목격) · 보호자 확인서 · 전담조사관 자료 관리 대장 · 학교폭력 사안조사 보고서</td></tr>
-    <tr><td>긴급조치</td><td>[내부결재] 긴급조치 · (피해학생 / 가해학생) 긴급조치 보고서</td></tr>
-    <tr><td>화해중재</td><td>화해중재 대화모임 신청서 · 화해중재 참여 동의서 (학생·보호자용 / 교사용)</td></tr>
-    <tr><td>전담기구</td><td>[내부결재] 전담기구 심의 개최 계획 · 전담기구 시나리오 · 전담기구 심의결과 보고서 · [내부결재] 심의 결과 보고</td></tr>
-    <tr><td>자체해결</td><td>학교장 자체해결 동의서 · [내부결재] 자체해결 보고 · 학교장 자체해결 결과 보고서 · [학교→지원청] 결과 제출 공문</td></tr>
-    <tr><td>학교폭력 아님</td><td>학교폭력 아닌 사안의 종결 보고서 · [학교→지원청] 종결 보고 공문</td></tr>
-    <tr><td>심의위원회</td><td>학교폭력대책심의위원회 개최 요청서 · 피해·가해학생 보호자 개인정보 · [학교→지원청] 개최 요청 공문 · (취소 시) 개최 요구 취소 요청서</td></tr>
-    <tr><td>조치 이행</td><td>[내부결재] 가해학생 조치이행 계획 · 조치이행 결과 보고서 · 가해학생 조치사항 관리대장 · 조건부 기재유보 관리대장</td></tr>
-  </table></div>
+  <details class="step" id="c2" open>
+    <summary><span class="num">2</span><span class="t">확인서 받기<em>당일~</em></span></summary>
+    <ul class="do">
+      <li><b>최초 학생 작성 확인서</b>는 되도록 <b>학교에서</b> 받아요.</li>
+      <li>1학년처럼 글쓰기가 어려우면 <b>보호자가 아이 말을 대신 적고</b>, 마지막에 <b>"보호자 ○○○가 ○○○ 대신 대필함"</b>이라고 쓴 뒤 <b>아이 서명</b>을 받아요.</li>
+      <li><b>피해 추정 학생</b>에게는 확인서와 함께 <b>분리 의사 확인서</b>도 줘요.</li>
+      <li>양쪽 보호자에게 <b>보호자 확인서</b>를 보내요.</li>
+    </ul>
+  </details>
 
-  <h3>사안 처리 체크리스트</h3>
-  <p style="color:var(--ink-2);font-size:14px;margin:0">사안이 생겼을 때 하나씩 체크하며 쓰세요. 체크한 내용은 지금 보고 있는 기기에만 저장돼요.</p>
+  <details class="step" id="c3" open>
+    <summary><span class="num">3</span><span class="t">분리 방법 내부기안<em>24시간 이내</em></span></summary>
+    <ul class="do">
+      <li>피해 학생이 분리를 원하면, 교원 위원과 의논해서 <b>분리 방법·장소·기간(최대 7일)</b>을 정해 <b>내부기안</b>해요.</li>
+      <li>같은 기안에 <b>가해 관련 학생 2호 조치</b>(전화·문자·SNS 포함 모든 접촉 금지, 심의위 결정 전까지)를 함께 적어요.</li>
+      <li>피해 학생이 분리를 원하지 않아도 <b>2호 조치 내부결재는 해요.</b></li>
+    </ul>
+    <details class="more"><summary>더 알아 두기</summary>
+      <ul>
+        <li>기간은 <b>시작한 날도 하루</b>로 세고, <b>토요일·공휴일도 포함</b>해요. (예: 금요일 시작 4일 = 금·토·일·월)</li>
+        <li>가정에서 분리하면 <b>출석인정결석</b>으로 처리하고, 학습자료를 보내요. 보호자가 <b>체험학습</b>을 신청해도 돼요.</li>
+        <li>두 학생이 서로 피해를 주장하며 둘 다 원하면 <b>양쪽 모두 분리</b>해요.</li>
+        <li>분리 전에 학생에게 취지·기간·출결·이후 절차를 설명해요.</li>
+      </ul>
+    </details>
+    <div class="ref">📎 <b>기안 예시</b> — 분리 계획 내부기안 <span>(받으면 채울 예정)</span></div>
+  </details>
+
+  <details class="step" id="c4" open>
+    <summary><span class="num">4</span><span class="t">교육지원청에 사안접수 보고<em>48시간 이내</em></span></summary>
+    <ul class="do">
+      <li><b>사안접수 보고서 + 학생 확인서</b>를 공문으로 보내요. 보고서에 <b>전담조사관 배정 요청</b> 여부를 적어요.</li>
+      <li>보호자 확인서가 아직 없으면 <b>학생 확인서만 먼저</b> 보내고, 보호자 확인서는 나중에 추가로 보내도 돼요.</li>
+      <li>48시간 안에 보고서를 못 낼 때만 <b>교육청 생활인권전문상담사에게 전화로 먼저</b> 알려요.</li>
+    </ul>
+    <details class="more"><summary>더 알아 두기</summary>
+      <ul>
+        <li>성폭력 등 중대한 사안은 서류와 따로 <b>전화로도 보고</b>해요.</li>
+        <li>조사관 요청 사항도 적을 수 있어요. (예: 여성 조사관, 상담 전문가, 저학년 사안이라 퇴직교원 조사관)</li>
+      </ul>
+    </details>
+    <div class="ref">📎 <b>기안 예시</b> — 사안접수 보고 공문 <span>(받으면 채울 예정)</span></div>
+  </details>
+
+  <details class="step" id="c5" open>
+    <summary><span class="num">5</span><span class="t">조사 · 피해 측 의견 듣기</span></summary>
+    <ul class="do">
+      <li>교육지원청 <b>전담조사관</b>이 와서 조사해요. 학교는 면담 날짜·장소를 잡고 보호자에게 문자로 알려요.</li>
+      <li>전담기구 전에 피해 측에 <b>① 자체해결 ② 심의위원회 ③ 관계회복(화해중재)</b> 중 무엇을 원하는지 물어보고 문자로 확인받아요.</li>
+    </ul>
+  </details>
+
+  <details class="step" id="c6" open>
+    <summary><span class="num">6</span><span class="t">전담기구 → 자체해결 또는 심의위원회</span></summary>
+    <ul class="do">
+      <li>조사 결과를 보고 <b>학교장 자체해결</b>이 되는지 정해요. (과반수 출석, 출석 과반수 찬성)</li>
+    </ul>
+    <div class="law"><b>자체해결 요건 4가지</b>를 모두 충족하고 <b>피해 측이 서면으로 동의</b>해야 해요.<br>
+      ① 2주 이상 치료가 필요한 진단서 없음 ② 재산 피해 없음 또는 즉시 복구·복구 약속 ③ 지속적이지 않음 ④ 보복행위 아님</div>
+    <div class="branch">
+      <div><b>✅ 자체해결</b><br>동의서 받기 → 결과 보고. 가해 학생 조치 없이 학교에서 지도로 마무리.</div>
+      <div><b>➡️ 심의위원회</b><br>요건 미충족 또는 피해 측 부동의 → 교육지원청에 개최 요청. 경험상 3개월 이상 걸려요.</div>
+    </div>
+    <div class="ref">📎 <b>기안 예시</b> — 전담기구 심의 결과 보고 <span>(받으면 채울 예정)</span></div>
+  </details>
+
+  <h3>필요할 때만 보기</h3>
+  <details class="step">
+    <summary><span class="num">+</span><span class="t">긴급조치 (2호 말고 더 필요할 때)</span></summary>
+    <div class="tablewrap"><table>
+      <tr><th>언제</th><th>무슨 조치</th></tr>
+      <tr><td>학교폭력을 알게 되면 <b>항상</b></td><td>가해 관련 학생 <b>2호</b> (접촉·협박·보복 금지)</td></tr>
+      <tr><td>학교장이 급하다고 판단할 때</td><td>1호, 3호, 5호, 6호, 7호 (여러 개 함께 가능)</td></tr>
+      <tr><td>피해 측이 요청할 때</td><td>6호 또는 7호 — <b>전담기구 심의</b>를 거쳐야 해요</td></tr>
+    </table></div>
+    <ul>
+      <li>2호 외 긴급조치는 <b>긴급조치 보고서</b>를 공문으로 보내고, 심의위원회에 보고해 <b>추인</b>(나중에 승인)받아요.</li>
+      <li>피해 학생에 대한 긴급조치(상담 등)도 피해 측이 요청하면 할 수 있어요.</li>
+    </ul>
+    <div class="ref">📎 <b>기안 예시</b> — 긴급조치 내부결재 <span>(받으면 채울 예정)</span></div>
+  </details>
+  <details class="step">
+    <summary><span class="num">+</span><span class="t">심의위원회 이후 (조치 이행 · 이의 제기)</span></summary>
+    <ul>
+      <li>결정된 조치를 통보받아 이행하고, 학교생활기록부 기재 지침대로 처리해요.</li>
+      <li>조치 종류: 1호 서면사과 · 2호 접촉 금지 · 3호 학교 봉사 · 4호 사회봉사 · 5호 특별교육 · 6호 출석정지 · 7호 학급교체 · 8호 전학 · 9호 퇴학</li>
+      <li>통보받고 <b>3개월 안에 이행하지 않으면</b> 교육지원청에 미이행 보고해요.</li>
+      <li>이의가 있으면 행정심판(안 날부터 90일, 처분일부터 180일 이내)이나 행정소송(안 날부터 90일, 처분일부터 1년 이내)을 할 수 있어요.</li>
+    </ul>
+  </details>
+  <details class="step">
+    <summary><span class="num">+</span><span class="t">단계별 서류 이름 전체 보기</span></summary>
+    <div class="tablewrap"><table>
+      <tr><th>단계</th><th>서류 (매뉴얼 부록 양식)</th></tr>
+      <tr><td>접수</td><td>신고 접수 대장 · 분리 의사 확인서 · 분리 계획 내부결재 · 사안접수 보고서</td></tr>
+      <tr><td>확인</td><td>학생 작성 확인서 · 보호자 확인서 · 사안조사 보고서</td></tr>
+      <tr><td>긴급조치</td><td>긴급조치 내부결재 · (피해·가해) 긴급조치 보고서</td></tr>
+      <tr><td>화해중재</td><td>화해중재 대화모임 신청서 · 참여 동의서</td></tr>
+      <tr><td>전담기구</td><td>심의 개최 계획 내부결재 · 전담기구 시나리오 · 심의결과 보고서</td></tr>
+      <tr><td>자체해결</td><td>학교장 자체해결 동의서 · 자체해결 결과 보고서</td></tr>
+      <tr><td>학교폭력 아님</td><td>학교폭력 아닌 사안의 종결 보고서</td></tr>
+      <tr><td>심의위원회</td><td>개최 요청서 · 보호자 개인정보 · (취소 시) 개최 요구 취소 요청서</td></tr>
+      <tr><td>조치 이행</td><td>조치이행 계획 내부결재 · 조치이행 결과 보고서 · 조치사항 관리대장</td></tr>
+    </table></div>
+  </details>
+
+  <h3>체크리스트</h3>
+  <p style="color:var(--ink-2);font-size:14px;margin:0">체크한 내용은 지금 보는 기기에만 저장돼요.</p>
   <div class="check" id="caseCheck">
-    <label><input type="checkbox"><span>다친 학생 응급조치 / 성·아동학대 사안이면 112 신고</span></label>
-    <label><input type="checkbox"><span>관리자 보고, 학교폭력 신고 접수 대장 기록, 사안번호 정하기</span></label>
-    <label><input type="checkbox"><span>피해·가해 관련 학생 상태 확인</span></label>
-    <label><input type="checkbox"><span>교육청 생활인권전문상담사에게 구두 보고</span></label>
-    <label><input type="checkbox"><span>양쪽 보호자 통화 + 통화 후 문자 발송</span></label>
-    <label><input type="checkbox"><span>최초 학생 작성 확인서 받기</span></label>
-    <label><input type="checkbox"><span>사안접수 보고서 (조사관 배정 요청 여부) — 48시간 이내, 메신저 먼저 → 공문</span></label>
-    <label><input type="checkbox"><span>피해 학생 분리 의사 확인서 받기</span></label>
-    <label><input type="checkbox"><span>교원 위원 소집, 분리 방법·기간(7일 이내) 결정 내부 결재 — 24시간 이내</span></label>
-    <label><input type="checkbox"><span>긴급조치 2호 (모든 접촉 금지) 안내, 내부 결재에 함께 기재 — 분리 안 해도 2호는 결재</span></label>
-    <label><input type="checkbox"><span>추가 긴급조치 시 긴급조치 보고서 공문 발송</span></label>
-    <label><input type="checkbox"><span>보호자 확인서 받기, 전담조사관 면담 일정 안내</span></label>
-    <label><input type="checkbox"><span>전담기구 전 피해 측 의견 확인 (자체해결 / 심의 / 관계회복) + 문자</span></label>
-    <label><input type="checkbox"><span>전담기구 심의 → 자체해결(서면 동의) 또는 심의위원회 이관</span></label>
-    <label><input type="checkbox"><span>결과 통보, 조치 이행, 사후 관리</span></label>
+    <label><input type="checkbox"><span>관리자 보고 · 신고 접수 대장 · 사안번호</span></label>
+    <label><input type="checkbox"><span>양쪽 보호자 전화 + 문자</span></label>
+    <label><input type="checkbox"><span>최초 학생 작성 확인서 (대필이면 "대필함" + 아이 서명)</span></label>
+    <label><input type="checkbox"><span>피해 추정 학생 분리 의사 확인서</span></label>
+    <label><input type="checkbox"><span>보호자 확인서 발송</span></label>
+    <label><input type="checkbox"><span>분리 방법 + 2호 내부기안 (24시간)</span></label>
+    <label><input type="checkbox"><span>사안접수 보고서 + 학생 확인서 공문 (48시간)</span></label>
+    <label><input type="checkbox"><span>보호자 확인서 추가 제출</span></label>
+    <label><input type="checkbox"><span>전담조사관 조사 일정 안내</span></label>
+    <label><input type="checkbox"><span>피해 측 의견 확인 (자체해결 / 심의 / 관계회복) + 문자</span></label>
+    <label><input type="checkbox"><span>전담기구 → 자체해결 동의서 또는 심의위원회 요청</span></label>
   </div>
   <p><button class="btn" id="resetCheck">체크 모두 지우기</button></p>
 </section>
@@ -685,7 +716,7 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
     <tr><td>교육지원청 학교폭력 담당</td><td data-fill="c-office">(부서·전화번호)</td><td>사안 보고, 심의위원회, 전담조사관</td></tr>
     <tr><td>학교전담경찰관(SPO)</td><td data-fill="c-spo">(이름·전화번호)</td><td>예방교육 요청, 사안 상담</td></tr>
     <tr><td>Wee센터</td><td data-fill="c-wee">(전화번호)</td><td>학생 상담 연계</td></tr>
-    <tr><td>도란도란 (학교폭력 예방 포털)</td><td><a href="https://doran.edunet.net" target="_blank" rel="noopener">doran.edunet.net</a></td><td>예방교육 자료, 어울림 프로그램</td></tr>
+    <tr><td>도란도란 (학교폭력 예방 포털)</td><td><a href="https://doran.edunet.net" target="_blank" rel="noopener">doran.edunet.net</a></td><td>예방교육 자료, 어울림 프로그램 (주소 바뀌었는지 확인)</td></tr>
   </table></div>
   <div class="law">사안 처리는 매년 나오는 교육부 <b>「학교폭력 사안처리 가이드북」</b> 최신판을 기준으로 해요. 법이 자주 바뀌니 새 학년마다 꼭 새 가이드북을 받아 두세요.</div>
 </section>
@@ -746,7 +777,7 @@ document.querySelectorAll("main section").forEach(s => io.observe(s));
 const sections = [...document.querySelectorAll("main section")];
 document.getElementById("search").addEventListener("input", e => {
   const q = e.target.value.trim();
-  sections.forEach(s => s.classList.toggle("hidden-by-search", !!q && !s.innerText.includes(q)));
+  sections.forEach(s => s.classList.toggle("hidden-by-search", !!q && !s.textContent.includes(q)));
 });
 </script>
 </body>
