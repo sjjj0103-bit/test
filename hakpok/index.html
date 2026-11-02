@@ -4,139 +4,107 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>학교폭력 업무 인수인계</title>
-<meta name="description" content="초등학교 학교폭력 업무 담당자를 위한 1년 업무, 계획서, 연수, 사안 처리 절차, 학부모 통화 멘트 정리">
+<meta name="description" content="초등학교 학교폭력 업무 1년 일정, 계획서, 예방교육, 책임규약, 언어문화개선 주간, 사안 처리 절차, 학부모 통화 멘트">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap">
 <style>
-/* Layout: 왼쪽 목차(고정) + 오른쪽 본문. 폰에서는 목차가 위쪽 가로 줄로 바뀌어요. */
+/* Layout: 왼쪽 목차(고정) + 가운데 본문(읽기 좋은 폭). 폰에서는 목차가 위쪽 가로 줄. */
 :root {
-  --bg: #f6f5f1;
-  --paper: #ffffff;
-  --ink: #1f2328;
-  --ink-2: #555b63;
-  --line: #e2e0d8;
-  --accent: #2f5d8a;
-  --accent-soft: #e6eef6;
-  --star: #b4372f;
-  --star-soft: #fbeceb;
-  --todo: #fff6d6;
-  --todo-line: #e6c84f;
-  --ok: #2e7d4f;
-  --law-soft: #eef3ee;
+  --bg: #f4f3ef; --paper: #ffffff; --ink: #1f2328; --ink-2: #5d636b; --line: #e4e1d8;
+  --accent: #2f5d8a; --accent-soft: #e8eff7;
+  --star: #b4372f; --star-soft: #fbeeed;
+  --todo: #fff7dc; --todo-line: #e3c757;
+  --ok: #2e7d4f; --ok-soft: #eaf4ee;
+  --t-plan: #e8eff7; --t-plan-ink: #2f5d8a;
+  --t-edu: #eaf4ee; --t-edu-ink: #2e7d4f;
+  --t-week: #fdf0e1; --t-week-ink: #a45a12;
+  --t-must: #fbeeed; --t-must-ink: #b4372f;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
     --bg: #15171a; --paper: #1e2125; --ink: #e8e6e1; --ink-2: #a7abb1; --line: #33373d;
     --accent: #8db7e0; --accent-soft: #23303d; --star: #f08a80; --star-soft: #3a2422;
-    --todo: #3a3320; --todo-line: #8a7530; --ok: #7cc79a; --law-soft: #1f2a22;
+    --todo: #37301d; --todo-line: #8a7530; --ok: #7cc79a; --ok-soft: #1f2a22;
+    --t-plan: #23303d; --t-plan-ink: #8db7e0; --t-edu: #1f2a22; --t-edu-ink: #7cc79a;
+    --t-week: #3a2c1c; --t-week-ink: #f0b46e; --t-must: #3a2422; --t-must-ink: #f08a80;
   }
 }
 :root[data-theme="dark"] {
   --bg: #15171a; --paper: #1e2125; --ink: #e8e6e1; --ink-2: #a7abb1; --line: #33373d;
   --accent: #8db7e0; --accent-soft: #23303d; --star: #f08a80; --star-soft: #3a2422;
-  --todo: #3a3320; --todo-line: #8a7530; --ok: #7cc79a; --law-soft: #1f2a22;
+  --todo: #37301d; --todo-line: #8a7530; --ok: #7cc79a; --ok-soft: #1f2a22;
+  --t-plan: #23303d; --t-plan-ink: #8db7e0; --t-edu: #1f2a22; --t-edu-ink: #7cc79a;
+  --t-week: #3a2c1c; --t-week-ink: #f0b46e; --t-must: #3a2422; --t-must-ink: #f08a80;
 }
 * { box-sizing: border-box; }
 html { scroll-behavior: smooth; scroll-padding-top: 16px; }
-body {
-  margin: 0; background: var(--bg); color: var(--ink);
-  font-family: "Noto Sans KR", system-ui, sans-serif; font-size: 16px; line-height: 1.7;
-  word-break: keep-all; overflow-wrap: anywhere;
-}
+body { margin: 0; background: var(--bg); color: var(--ink); font-family: "Noto Sans KR", system-ui, sans-serif; font-size: 16px; line-height: 1.75; word-break: keep-all; overflow-wrap: anywhere; }
 a { color: var(--accent); }
-.wrap { display: grid; grid-template-columns: 250px minmax(0, 1fr); max-width: 1180px; margin: 0 auto; }
-nav.toc {
-  position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 16px 28px 20px;
-  border-right: 1px solid var(--line);
-}
-nav.toc .brand { font-weight: 700; font-size: 15px; margin-bottom: 14px; }
-nav.toc a {
-  display: block; text-decoration: none; color: var(--ink-2); padding: 6px 10px; border-radius: 8px; font-size: 14.5px;
-}
+.wrap { display: grid; grid-template-columns: 230px minmax(0, 1fr); max-width: 1120px; margin: 0 auto; }
+nav.toc { position: sticky; top: 0; height: 100vh; overflow-y: auto; padding: 28px 14px 28px 18px; border-right: 1px solid var(--line); }
+nav.toc .brand { font-weight: 700; font-size: 15px; margin-bottom: 12px; }
+nav.toc a { display: block; text-decoration: none; color: var(--ink-2); padding: 6px 10px; border-radius: 8px; font-size: 14.5px; }
 nav.toc a:hover, nav.toc a.on { background: var(--accent-soft); color: var(--ink); }
 nav.toc a.star { color: var(--star); font-weight: 700; }
-nav.toc .search { width: 100%; margin: 4px 0 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; }
-main { padding: 32px 40px 80px; min-width: 0; }
-header.top h1 { font-size: 28px; margin: 0 0 6px; line-height: 1.35; }
+nav.toc .search { width: 100%; margin: 0 0 14px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 8px; background: var(--paper); color: var(--ink); font: inherit; font-size: 14px; }
+main { padding: 32px 40px 80px; min-width: 0; max-width: 860px; }
+header.top h1 { font-size: 27px; margin: 0 0 4px; line-height: 1.35; }
 header.top .meta { color: var(--ink-2); font-size: 14px; }
-section { background: var(--paper); border: 1px solid var(--line); border-radius: 14px; padding: 26px 28px; margin: 22px 0; }
-section.star { border-color: var(--star); box-shadow: 0 0 0 3px var(--star-soft); }
+section { background: var(--paper); border: 1px solid var(--line); border-radius: 16px; padding: 28px 30px; margin: 22px 0; }
+section.star { border-color: var(--star); }
 section > h2 { margin: 0 0 4px; font-size: 22px; line-height: 1.4; }
-section > .lead { color: var(--ink-2); margin: 0 0 16px; }
-h3 { font-size: 17.5px; margin: 26px 0 8px; }
-h4 { font-size: 16px; margin: 18px 0 6px; }
-.badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; vertical-align: 3px; margin-left: 6px; }
-.badge.star { background: var(--star-soft); color: var(--star); }
+section > .lead { color: var(--ink-2); margin: 0 0 18px; }
+h3 { font-size: 17.5px; margin: 28px 0 10px; padding-top: 18px; border-top: 1px solid var(--line); }
+section > h3:first-of-type { border-top: 0; padding-top: 0; margin-top: 8px; }
+h4 { font-size: 16px; margin: 16px 0 6px; }
+.badge { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 999px; vertical-align: 3px; margin-left: 6px; background: var(--star-soft); color: var(--star); }
 table { width: 100%; border-collapse: collapse; font-size: 15px; margin: 8px 0; }
-th, td { border: 1px solid var(--line); padding: 8px 10px; text-align: left; vertical-align: top; }
-th { background: var(--accent-soft); font-weight: 700; white-space: nowrap; }
+th, td { border-bottom: 1px solid var(--line); padding: 10px 10px; text-align: left; vertical-align: top; }
+th { font-size: 13.5px; color: var(--ink-2); font-weight: 700; white-space: nowrap; }
 .tablewrap { overflow-x: auto; }
 ul, ol { padding-left: 22px; margin: 6px 0; }
-li { margin: 3px 0; }
+li { margin: 4px 0; }
+small { color: var(--ink-2); }
 
-/* 아직 채우지 않은 우리 학교 내용 */
-.todo { background: var(--todo); border: 1.5px dashed var(--todo-line); border-radius: 10px; padding: 12px 14px; margin: 10px 0; }
-.todo::before { content: "✏️ 채울 내용"; display: block; font-weight: 700; font-size: 13px; margin-bottom: 2px; }
-.todo p { margin: 2px 0; }
-/* 법·지침 기본 내용 */
-.law { background: var(--law-soft); border-left: 4px solid var(--ok); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
-.law::before { content: "📘 법·지침 기본 (매년 새 가이드북으로 확인)"; display: block; font-weight: 700; font-size: 13px; color: var(--ok); }
-.warn { background: var(--star-soft); border-left: 4px solid var(--star); border-radius: 8px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
-.legend { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; font-size: 14px; }
-.legend span { padding: 4px 10px; border-radius: 8px; }
+/* 출처 표시 */
+.src { display: inline-block; font-size: 11.5px; font-weight: 700; padding: 0 7px; border-radius: 999px; border: 1px solid var(--ok); color: var(--ok); vertical-align: 2px; white-space: nowrap; }
+.src.me { border-color: var(--accent); color: var(--accent); }
+.legend { display: flex; flex-wrap: wrap; gap: 8px 14px; font-size: 14px; color: var(--ink-2); margin-top: 10px; }
+
+.todo { background: var(--todo); border: 1.5px dashed var(--todo-line); border-radius: 10px; padding: 10px 14px; margin: 10px 0; font-size: 15px; }
+.todo::before { content: "✏️ 채울 내용  "; font-weight: 700; font-size: 13px; }
+.law { background: var(--ok-soft); border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-size: 15px; }
+.warn { background: var(--star-soft); border-radius: 10px; padding: 12px 14px; margin: 10px 0; font-size: 15px; }
+.key { background: var(--accent-soft); border-radius: 12px; padding: 14px 16px; margin: 10px 0; }
+.key b.big { font-size: 18px; }
+.ref { margin-top: 8px; font-size: 14.5px; background: var(--accent-soft); border-radius: 8px; padding: 7px 12px; }
+.ref span { color: var(--ink-2); }
 
 /* 1년 달력 */
-.months { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
-.month { border: 1px solid var(--line); border-radius: 10px; padding: 12px 14px; }
-.month b { display: block; color: var(--accent); margin-bottom: 4px; }
-.month ul { font-size: 14.5px; padding-left: 18px; }
+.cal { width: 100%; border-collapse: collapse; }
+.cal td { padding: 12px 8px; border-bottom: 1px solid var(--line); }
+.cal td.m { width: 92px; font-weight: 700; color: var(--accent); white-space: nowrap; }
+.cal tr.sem td { background: var(--bg); font-weight: 700; font-size: 14px; color: var(--ink-2); padding: 7px 10px; border-bottom: 0; }
+.cal .it { display: block; margin: 3px 0; }
+.tag { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 6px; margin-right: 6px; vertical-align: 1px; }
+.tag.plan { background: var(--t-plan); color: var(--t-plan-ink); }
+.tag.edu { background: var(--t-edu); color: var(--t-edu-ink); }
+.tag.week { background: var(--t-week); color: var(--t-week-ink); }
+.tag.must { background: var(--t-must); color: var(--t-must-ink); }
+.who { font-size: 13px; color: var(--ink-2); }
 
 /* 카드 */
-.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 14px; }
-.card { border: 1px solid var(--line); border-radius: 12px; padding: 16px; }
-.card h3 { margin-top: 0; }
-
-/* 다운로드 목록 */
-.files { margin: 10px 0; }
-.file { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; margin: 6px 0; }
-.file .name { flex: 1; min-width: 0; }
-.file .name small { display: block; color: var(--ink-2); font-size: 13px; }
-.file a.dl { text-decoration: none; background: var(--accent); color: var(--paper); padding: 5px 12px; border-radius: 8px; font-size: 14px; white-space: nowrap; }
-.file .wait { font-size: 13px; color: var(--ink-2); white-space: nowrap; }
-
-/* 사안 처리 단계 */
-.steps { counter-reset: s; list-style: none; padding: 0; }
-.steps > li { position: relative; padding: 14px 16px 14px 62px; border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; }
-.steps > li::before {
-  counter-increment: s; content: counter(s); position: absolute; left: 16px; top: 14px;
-  width: 32px; height: 32px; border-radius: 50%; background: var(--star); color: #fff; font-weight: 700;
-  display: grid; place-items: center;
-}
-.steps > li > b:first-child { font-size: 16.5px; }
-.steps .when { display: inline-block; font-size: 13px; color: var(--star); font-weight: 700; margin-left: 6px; }
-.branch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
-.branch > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
-
-/* 체크리스트 */
-.check label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
-.check input { margin-top: 6px; width: 18px; height: 18px; flex: none; }
-.check input:checked + span { color: var(--ink-2); text-decoration: line-through; }
-button { font: inherit; cursor: pointer; }
-.btn { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 8px; padding: 5px 12px; font-size: 14px; }
-
-/* 통화 멘트 */
-.script { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
-.script .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
-.script .head b { font-size: 16px; }
-.script blockquote { margin: 8px 0 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 8px; white-space: pre-line; font-size: 15.5px; }
-.dont td:first-child { color: var(--star); }
+.cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; }
+.card { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+.card h4 { margin: 0 0 4px; }
+.card p { margin: 4px 0; font-size: 15px; }
 
 /* 사안 처리: 흐름 칩 + 접는 단계 카드 */
 .flow { display: grid; grid-template-columns: repeat(6, 1fr); gap: 6px; margin: 4px 0 14px; }
 .flow a { text-decoration: none; color: var(--ink); background: var(--star-soft); border-radius: 10px; padding: 8px 6px; text-align: center; font-size: 14px; font-weight: 700; line-height: 1.35; }
 .flow a b { display: block; font-size: 18px; color: var(--star); }
-.flow a small { display: block; font-weight: 400; color: var(--ink-2); font-size: 12px; }
+.flow a small { display: block; font-weight: 400; font-size: 12px; }
 details.step { border: 1px solid var(--line); border-radius: 12px; margin: 10px 0; padding: 0 16px; }
 details.step > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 12px; padding: 13px 0; }
 details.step > summary::-webkit-details-marker { display: none; }
@@ -147,36 +115,42 @@ details.step .t { font-weight: 700; font-size: 16.5px; }
 details.step .t em { font-style: normal; font-size: 13px; color: var(--star); margin-left: 8px; }
 details.step[open] { padding-bottom: 12px; }
 ul.do { margin: 0 0 4px; }
-ul.do li { margin: 5px 0; }
 details.more { margin: 8px 0; font-size: 15px; }
 details.more > summary { cursor: pointer; color: var(--accent); font-size: 14.5px; }
-.ref { margin-top: 8px; font-size: 14.5px; background: var(--accent-soft); border-radius: 8px; padding: 7px 12px; }
-.ref span { color: var(--ink-2); }
-@media (max-width: 860px) { .flow { grid-template-columns: repeat(3, 1fr); } }
+.branch { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+.branch > div { border: 1px solid var(--line); border-radius: 10px; padding: 10px 12px; font-size: 15px; }
+
+.check label { display: flex; gap: 10px; align-items: flex-start; padding: 6px 4px; border-bottom: 1px dashed var(--line); cursor: pointer; }
+.check input { margin-top: 6px; width: 18px; height: 18px; flex: none; }
+.check input:checked + span { color: var(--ink-2); text-decoration: line-through; }
+button { font: inherit; cursor: pointer; }
+.btn { border: 1px solid var(--line); background: var(--paper); color: var(--ink); border-radius: 8px; padding: 5px 12px; font-size: 14px; }
+
+.script { border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; margin: 12px 0; }
+.script .head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.script .head b { font-size: 16px; }
+.script blockquote { margin: 8px 0 0; padding: 10px 14px; background: var(--accent-soft); border-radius: 8px; white-space: pre-line; font-size: 15.5px; }
 
 .hidden-by-search { display: none; }
-mark { background: #ffe58a; color: #1f2328; }
 footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top: 30px; }
 
 @media (max-width: 860px) {
   .wrap { display: block; }
-  nav.toc {
-    position: sticky; top: 0; z-index: 5; height: auto; display: flex; gap: 4px; overflow-x: auto; flex-wrap: nowrap;
-    padding: 8px 16px; border-right: 0; border-bottom: 1px solid var(--line); background: var(--bg);
-  }
+  nav.toc { position: sticky; top: 0; z-index: 5; height: auto; display: flex; gap: 4px; overflow-x: auto; padding: 8px 16px; border-right: 0; border-bottom: 1px solid var(--line); background: var(--bg); }
   nav.toc .brand { display: none; }
   nav.toc a { white-space: nowrap; flex: none; font-size: 14px; }
   nav.toc .search { flex: none; width: 140px; margin: 0; }
   main { padding: 18px 16px 60px; }
-  section { padding: 18px 16px; }
+  section { padding: 20px 16px; }
   header.top h1 { font-size: 23px; }
   .branch { grid-template-columns: 1fr; }
-  .steps > li { padding-left: 56px; }
+  .flow { grid-template-columns: repeat(3, 1fr); }
+  .cal td.m { width: 64px; }
 }
 @media print {
   nav.toc, .btn, .search { display: none !important; }
   .wrap { display: block; }
-  section { break-inside: avoid-page; box-shadow: none; }
+  section { break-inside: avoid-page; }
 }
 </style>
 </head>
@@ -185,189 +159,198 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
 
 <nav class="toc" id="toc">
   <div class="brand">📁 학교폭력 업무</div>
-  <input class="search" id="search" type="search" placeholder="🔍 검색 (예: 분리, 동의서)">
+  <input class="search" id="search" type="search" placeholder="🔍 검색 (예: 분리, 11차시)">
   <a href="#start">처음 보는 분께</a>
-  <a href="#year">1년 업무 달력</a>
-  <a href="#plans">계획서 (연간·학기)</a>
+  <a href="#year">1년 일정</a>
+  <a href="#plans">계획서</a>
   <a href="#training">예방교육(연수)</a>
   <a href="#culture">학교문화 책임규약</a>
-  <a href="#language">언어문화 개선 주간</a>
+  <a href="#language">언어문화개선 주간</a>
   <a href="#case" class="star">★ 사안 처리 절차</a>
   <a href="#call" class="star">★ 학부모 통화 멘트</a>
-  <a href="#files">자료 위치 안내</a>
-  <a href="#contacts">연락처·사이트</a>
-  <a href="#memo">인수인계 메모·FAQ</a>
+  <a href="#links">자료 사이트·연락처</a>
+  <a href="#memo">인수인계 메모</a>
 </nav>
 
 <main>
 <header class="top">
-  <h1>초등학교 학교폭력 업무 인수인계</h1>
-  <div class="meta">최종 수정 <b data-fill="updated">2026. 11.</b> · 작성 <b data-fill="author">(담당자 이름)</b> · 학교 <b data-fill="school">(학교명)</b></div>
+  <h1>학교폭력 업무 인수인계</h1>
+  <div class="meta">최종 수정 2026. 11. · 작성 (담당자 이름)</div>
 </header>
 
 <!-- ============ 0. 처음 보는 분께 ============ -->
 <section id="start">
   <h2>처음 보는 분께</h2>
-  <p class="lead">이 업무를 처음 맡았다면 아래 순서대로 보세요. 급한 사안이 생겼다면 바로 <a href="#case"><b>★ 사안 처리 절차</b></a>로 가세요.</p>
+  <div class="warn" data-banner><b>⚠️ 공개 페이지예요</b> — 주소만 알면 누구나 볼 수 있어요. 업무 방법만 적고, 학교 계획서·학생 이름·실제 사안 내용·연락처는 적지 않아요.</div>
   <ol>
-    <li><a href="#year">1년 업무 달력</a>으로 언제 무엇을 해야 하는지 큰 그림 보기</li>
-    <li><a href="#plans">계획서</a>: 작년 기안문을 <a href="#files">교내 폴더·업무관리시스템</a>에서 찾아 날짜·이름만 바꿔 기안하기</li>
-    <li><a href="#training">예방교육(연수)</a>: 학생·교사·학부모 <b>학기마다 1번씩</b> 꼭 하고, 증빙 남기기</li>
-    <li><a href="#case">사안 처리 절차</a>와 <a href="#call">통화 멘트</a>는 사안이 생기기 <b>전에</b> 한 번 꼭 읽어 두기</li>
+    <li><a href="#year">1년 일정</a>에서 언제 무엇을 하는지 먼저 보기</li>
+    <li>사안이 생기면 <a href="#case">사안 처리 절차</a>와 <a href="#call">통화 멘트</a>를 보기 (미리 한 번 읽어 두면 좋아요)</li>
   </ol>
   <div class="legend">
-    <span style="background:var(--todo);border:1.5px dashed var(--todo-line)">✏️ 노란 칸 = 우리 학교 실제 방법 (담당자가 채울 내용)</span>
-    <span style="background:var(--law-soft);border-left:4px solid var(--ok)">📘 초록 칸 = 법·교육부 지침 기본 내용</span>
+    <span><span class="src">운영계획</span> 2026 학교폭력 예방교육 운영계획 (교육지원청)</span>
+    <span><span class="src">매뉴얼</span> 2026 학교폭력 사안처리 매뉴얼 부록</span>
+    <span><span class="src me">우리 학교</span> 실제로 해 본 방법</span>
   </div>
-  <div class="warn"><b>⚠️ 전체 공개 페이지예요</b> — 인터넷 주소만 알면 누구나 볼 수 있어요. 그래서 이 페이지에는 <b>업무 방법과 노하우만</b> 적고, 계획서·공문·양식 파일은 올리지 않아요. 실제 파일은 <a href="#files">자료 위치 안내</a>에 적힌 교내 폴더에서 찾으세요. 학생 이름, 실제 사안 내용, 연락처는 절대 적지 마세요.</div>
 </section>
 
-<!-- ============ 1. 1년 업무 달력 ============ -->
+<!-- ============ 1. 1년 일정 ============ -->
 <section id="year">
-  <h2>1년 업무 달력</h2>
-  <p class="lead">교육청 공문이 오는 시기에 따라 조금씩 달라요. 우리 학교에서 실제로 한 달로 고쳐 두세요.</p>
-  <div class="months">
-    <div class="month"><b>2월 (새 학년 준비)</b><ul>
-      <li>학교폭력 <b>연간 계획서</b> 작성</li>
-      <li>전담기구 구성 준비 (교감·책임교사·보건·상담교사·학부모)</li>
-      <li>작년 담당자에게 인수인계 받기 (이 페이지!)</li>
-    </ul></div>
-    <div class="month"><b>3월</b><ul>
-      <li><b>연간 계획서 기안</b></li>
-      <li><b>전담기구 구성 내부결재</b> (3월 초까지, 학부모 위원은 학교운영위원회 추천 → 위촉)</li>
-      <li><b>1학기 계획서 기안</b> (학교폭력 예방주간 포함)</li>
-      <li>1학기 학교폭력 예방주간 운영</li>
-      <li>학부모총회 때 학부모 연수 연계</li>
-      <li>교직원 연수 (1학기)</li>
-    </ul></div>
-    <div class="month"><b>4~5월</b><ul>
-      <li>학교폭력 <b>실태조사 (1차, 전수)</b> 안내·참여 독려 (교육청 공문)</li>
-      <li>학생 예방교육 (1학기)</li>
-    </ul></div>
-    <div class="month"><b>6~7월</b><ul>
-      <li>1학기 학생·교사·학부모 연수 <b>실적 정리</b></li>
-      <li>교육청 실적 보고 (공문 오면)</li>
-    </ul></div>
-    <div class="month"><b>8~9월</b><ul>
-      <li><b>2학기 계획서 기안</b> (학교폭력 예방주간 포함)</li>
-      <li>2학기 학교폭력 예방주간 운영</li>
-      <li>실태조사 (2차, 표본) 안내</li>
-    </ul></div>
-    <div class="month"><b>10월</b><ul>
-      <li><b>언어문화 개선 교육주간</b> (한글날 무렵에 하는 학교가 많음)</li>
-      <li>2학기 학생 예방교육</li>
-    </ul></div>
-    <div class="month"><b>11~12월</b><ul>
-      <li>2학기 교사·학부모 연수</li>
-      <li>2학기 실적 정리·보고</li>
-    </ul></div>
-    <div class="month"><b>1~2월</b><ul>
-      <li>올해 운영 평가, 내년 계획 준비</li>
-      <li>후임자 인수인계 (이 페이지 최신으로 고치기)</li>
-    </ul></div>
-  </div>
-  <div class="todo"><p>우리 학교에서 실제로 한 시기로 고치기. 예: "언어문화 개선 주간은 10월 2주에 했음", "실태조사 공문은 4월 말에 옴"</p></div>
+  <h2>1년 일정</h2>
+  <p class="lead">
+    <span class="tag plan">계획서</span><span class="tag edu">예방교육</span><span class="tag week">주간·행사</span><span class="tag must">필수 제출</span>
+  </p>
+  <div class="tablewrap"><table class="cal">
+    <tr class="sem"><td colspan="2">새 학년 준비</td></tr>
+    <tr><td class="m">2월</td><td>
+      <span class="it"><span class="tag plan">계획서</span><b>연간 계획서</b>(학교폭력 예방교육 운영 계획) 작성·기안 (2~3월) <span class="src">운영계획</span></span>
+      <span class="it"><span class="tag plan">담당</span>학교폭력 예방교육 전담(담당)교사 지정 <span class="src">운영계획</span></span>
+      <span class="it"><span class="tag plan">담당</span>전담기구 구성·운영 내부결재 (3월 초까지) <span class="src me">우리 학교</span></span>
+    </td></tr>
+    <tr class="sem"><td colspan="2">1학기</td></tr>
+    <tr><td class="m">3월</td><td>
+      <span class="it"><span class="tag plan">계획서</span><b>1학기 계획서</b> 기안 (3월 예방교육주간 포함) <span class="src me">우리 학교</span></span>
+      <span class="it"><span class="tag week">주간</span><b>학교폭력 예방교육주간</b> <span class="src">운영계획</span></span>
+      <span class="it"><span class="tag edu">예방교육</span><b>교직원 연수</b> — 다모임 때 대면 연수 <span class="src me">우리 학교</span></span>
+    </td></tr>
+    <tr><td class="m">2~5월</td><td>
+      <span class="it"><span class="tag must">필수</span><b>학교문화 책임규약</b> 추진 <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">6월 3주</td><td>
+      <span class="it"><span class="tag week">주간</span><b>사이버폭력 예방교육주간</b> <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">7월</td><td>
+      <span class="it"><span class="tag week">행사</span><b>학교폭력 예방의 날</b> (7월 셋째 주 수요일), 학교폭력 예방 집중캠페인 <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr class="sem"><td colspan="2">2학기</td></tr>
+    <tr><td class="m">9월</td><td>
+      <span class="it"><span class="tag plan">계획서</span><b>2학기 계획서</b> 기안 (9월 예방교육주간 포함, 기안 시기 확인 필요) <span class="src me">우리 학교</span></span>
+      <span class="it"><span class="tag week">주간</span><b>학교폭력 예방교육주간</b> <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">9월 4주<br>~10월 2주</td><td>
+      <span class="it"><span class="tag week">주간</span><b>언어문화개선 교육주간</b> <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">11월</td><td>
+      <span class="it"><span class="tag must">제출</span><b>학급별 예방교육 11차시 편성·운영 현황</b> 제출 (예정) <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">12월</td><td>
+      <span class="it"><span class="tag week">행사</span>학교폭력 예방 집중캠페인 <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr class="sem"><td colspan="2">1년 내내</td></tr>
+    <tr><td class="m">학기마다</td><td>
+      <span class="it"><span class="tag must">필수</span>학생 · 교직원 · 학부모 예방교육 <b>학기별 1회 이상</b> <span class="src">운영계획</span></span>
+    </td></tr>
+    <tr><td class="m">연간</td><td>
+      <span class="it"><span class="tag must">필수</span>학급별 예방교육 <b>11차시 이상</b> (사이버폭력 예방 3차시 이상 포함) <span class="src">운영계획</span></span>
+      <span class="it"><span class="tag must">필수</span>학교 언어순화운동 교내 행사 <b>연 1회 이상</b> <span class="src">운영계획</span></span>
+    </td></tr>
+  </table></div>
+  <div class="todo">2학기 교직원·학부모 연수, 1학기 학부모 연수 시기와 방법</div>
 </section>
 
 <!-- ============ 2. 계획서 ============ -->
 <section id="plans">
-  <h2>계획서 (연간 · 1학기 · 2학기)</h2>
-  <p class="lead">계획서는 <b>3개</b>를 따로 기안해요. 작년 기안문을 업무관리시스템에서 찾아(<a href="#files">자료 위치 안내</a>) 날짜·이름·일정만 바꾸면 됩니다.</p>
+  <h2>계획서</h2>
+  <p class="lead">연간 계획서 1개 + 학기별 계획서 2개, 모두 따로 기안해요. <span class="src me">우리 학교</span></p>
   <div class="cards">
-    <div class="card">
-      <h3>① 연간 계획서</h3>
-      <p><b>언제:</b> 연초 (2~3월)<br><b>무엇:</b> 1년 전체 학교폭력 예방·대응 계획</p>
-      <h4>꼭 들어갈 내용</h4>
-      <ul>
-        <li>목적·근거 (학교폭력예방법 등)</li>
-        <li>전담기구 구성</li>
-        <li>학생·교직원·학부모 예방교육 계획 (학기별 1회 이상)</li>
-        <li>학교폭력 예방주간·언어문화 개선 주간</li>
-        <li>사안 처리 절차, 실태조사, 예산</li>
-      </ul>
-    </div>
-    <div class="card">
-      <h3>② 1학기 계획서</h3>
-      <p><b>언제:</b> 3월 초<br><b>무엇:</b> 1학기 세부 운영 계획</p>
-      <h4>꼭 들어갈 내용</h4>
-      <ul>
-        <li><b>1학기 학교폭력 예방주간</b> 일정·활동</li>
-        <li>1학기 학생·교사·학부모 연수 일정</li>
-      </ul>
-    </div>
-    <div class="card">
-      <h3>③ 2학기 계획서</h3>
-      <p><b>언제:</b> 8월 말~9월 초<br><b>무엇:</b> 2학기 세부 운영 계획</p>
-      <h4>꼭 들어갈 내용</h4>
-      <ul>
-        <li><b>2학기 학교폭력 예방주간</b> 일정·활동</li>
-        <li>2학기 학생·교사·학부모 연수 일정</li>
-      </ul>
-    </div>
+    <div class="card"><h4>① 연간 계획서</h4><p>연초에 작성 후 기안</p></div>
+    <div class="card"><h4>② 1학기 계획서</h4><p>3월 학교폭력 예방교육주간 내용 포함</p></div>
+    <div class="card"><h4>③ 2학기 계획서</h4><p>9월 학교폭력 예방교육주간 내용 포함</p></div>
   </div>
-  <h3>학교폭력 예방주간 운영</h3>
-  <div class="todo">
-    <p>· 예방주간에 실제로 한 활동 (예: 아침 캠페인, 학급별 예방교육, 표어·포스터, 서약서 등)</p>
-    <p>· 준비물, 누구에게 무엇을 부탁했는지, 사진은 어떻게 모았는지</p>
-    <p>· 해 보니 좋았던 점 / 다음엔 바꾸고 싶은 점</p>
-  </div>
-  <h3>기안할 때 팁</h3>
-  <div class="todo"><p>결재 라인, 기안 제목 예시, 자주 지적받은 부분 등</p></div>
+  <h3>운영계획에서 학교 계획에 넣으라고 한 것 <span class="src">운영계획</span></h3>
+  <ul>
+    <li>학교폭력 예방교육 운영 계획 수립 → 교육과정에 반영 (2~3월)</li>
+    <li><b>바른 언어사용 교육, 학교 언어순화운동</b> 추진 사항 명시</li>
+    <li><b>언어문화개선 교육주간</b>(9월 4주~10월 2주) 운영 계획 (예방교육 운영 계획에 포함 가능)</li>
+    <li>학급별 연간 <b>11차시 이상</b> 예방교육 편성 (사이버폭력 예방 3차시 이상)</li>
+  </ul>
+  <h3>학교폭력 예방교육주간 (3월·9월) <span class="src">운영계획</span></h3>
+  <div class="tablewrap"><table>
+    <tr><th>내용</th><td>학기 초 학교폭력 예방, 책임규약, 관계 형성, 방어자 교육 등</td></tr>
+    <tr><th>방법</th><td>강의, 선서식, 지역연계 프로그램, 토의·토론, 캠페인, 학교전담경찰관(SPO) 범죄예방교육 등</td></tr>
+  </table></div>
+  <div class="todo">우리 학교 예방교육주간에 실제로 한 활동</div>
+  <div class="ref">📎 <b>기안 원본</b> — 연간 / 1학기 / 2학기 계획서 <span>(받으면 연결 예정)</span></div>
 </section>
 
 <!-- ============ 3. 예방교육 ============ -->
 <section id="training">
-  <h2>학교폭력 예방교육 (연수)</h2>
-  <p class="lead">학생 · 교직원 · 학부모 모두 <b>학기마다 1번 이상</b> 해야 해요. 1년이면 대상마다 최소 2번, 총 6번입니다.</p>
-  <div class="law">학교폭력예방법 제15조, 시행령 제17조: 학교장은 학생·교직원·학부모 대상 학교폭력 예방교육을 <b>학기별 1회 이상</b> 실시해야 해요.</div>
-  <div class="tablewrap"><table>
-    <tr><th>대상</th><th>1학기</th><th>2학기</th><th>흔히 하는 방법</th><th>남길 증빙</th></tr>
-    <tr><td><b>학생</b></td><td data-fill="s1">(시기)</td><td data-fill="s2">(시기)</td><td>담임 학급 수업(어울림 프로그램 등), 외부 강사, 학교전담경찰관 교육</td><td>학급별 실시 결과, 사진</td></tr>
-    <tr><td><b>교직원</b></td><td data-fill="t1">(시기)</td><td data-fill="t2">(시기)</td><td>교직원 회의 때 연수, 연수 자료 공람</td><td>연수 자료, 참석 서명부</td></tr>
-    <tr><td><b>학부모</b></td><td data-fill="p1">(시기)</td><td data-fill="p2">(시기)</td><td>학부모총회 연계, 가정통신문 + 연수 영상 링크</td><td>가정통신문, 참여 확인(회신서·설문)</td></tr>
-  </table></div>
-  <h3>학생 연수 — 우리 학교 방법</h3>
-  <div class="todo"><p>무엇을, 누가, 몇 시간, 결과를 어떻게 걷었는지</p></div>
-  <h3>교직원 연수 — 우리 학교 방법</h3>
-  <div class="todo"><p>연수 자료는 어디서 구했는지, 서명부 걷는 방법</p></div>
-  <h3>학부모 연수 — 우리 학교 방법</h3>
-  <div class="todo"><p>가정통신문 문구, 영상 링크, 참여 확인 방법</p></div>
+  <h2>예방교육 (연수)</h2>
+  <div class="key"><b class="big">학생 · 교직원 · 학부모 모두 학기별 1회 이상</b> <span class="src">운영계획</span><br>
+  <small>근거: 학교폭력예방법 제15조, 같은 법 시행령 제17조</small></div>
+
+  <h3>학생</h3>
+  <div class="key"><b class="big">학급별 연간 11차시 이상</b> (그중 사이버폭력 예방 3차시 이상) — 필수 <span class="src">운영계획</span></div>
+  <ul>
+    <li><b>언제</b>: 교과 시간이나 창의적 체험활동 시간</li>
+    <li><b>누가</b>: 담임교사, 교과(전담)교사 — 학급 단위가 원칙. 전문상담교사 단독 수업은 피하고 협력 수업으로</li>
+    <li><b>무엇으로</b>: 어울림 · 사이버어울림 프로그램 (「어울림 프로그램으로 일년나기」 활용 권장)</li>
+    <li><b>권장</b>: 경기형 관계성장 프로그램 3차시 이상. 사회정서 프로그램·도박 예방교육도 포함 가능</li>
+    <li><b>시수 인정</b>: 인성교육, 안전교육(폭력 예방 영역), 정보윤리교육 등과 연계하면 해당 시수도 함께 인정</li>
+    <li><b>11월</b>: 학급별 편성·운영 현황 제출 (예정)</li>
+  </ul>
+  <div class="todo">우리 학교에서 11차시를 어떻게 편성했는지 (학년별 배정, 담임에게 안내한 방법)</div>
+
+  <h3>교직원</h3>
+  <ul>
+    <li><b>1학기 (3월)</b>: 다모임 때 <b>대면 연수</b> <span class="src me">우리 학교</span></li>
+    <li>연수 자료: 경기도교육청 '별별' 교직원용 영상 <span class="src">운영계획</span></li>
+  </ul>
+  <div class="todo">2학기 교직원 연수 방법</div>
+  <div class="ref">📎 <b>기안·자료</b> — 3월 교직원 연수 <span>(받으면 연결 예정)</span></div>
+
+  <h3>학부모</h3>
+  <ul>
+    <li><b>학기당 1회 이상 의무</b> <span class="src">운영계획</span></li>
+    <li><b>내용</b>: 학교폭력 유형, 예방·대응 방법, 우리 학교 예방교육 계획, 가정의 역할</li>
+    <li><b>방법</b>: 찾아가는 강연, 공감 토크, 캠페인, 역할극, 온라인 교육 등</li>
+    <li><b>자료</b>: 별별 학부모용 영상(공감토크), 학부모On누리, 학교폭력예방교육지원센터 → <a href="#links">자료 사이트</a></li>
+  </ul>
+  <div class="todo">우리 학교 학부모 연수 방법 (1학기 / 2학기)</div>
 </section>
 
-<!-- ============ 4. 학교문화 책임규약 ============ -->
+<!-- ============ 4. 책임규약 ============ -->
 <section id="culture">
   <h2>학교문화 책임규약</h2>
-  <p class="lead">학생 · 학부모 · 교원이 각자 지킬 약속을 함께 정하는 규약이에요.</p>
-  <div class="law">학교 구성원(학생·학부모·교원)이 함께 의견을 모아 각자의 권리와 책임을 정하고, 학교 안내·학교생활규정 등과 연계해 운영해요. 세부 방법은 교육청 공문·안내자료를 따릅니다.</div>
-  <h3>우리 학교 진행 과정</h3>
-  <ol class="steps">
-    <li><b>계획·안내</b><div class="todo"><p>언제, 누구에게 어떻게 알렸는지 (공문 받은 시기 포함)</p></div></li>
-    <li><b>의견 수렴</b><div class="todo"><p>학생·학부모·교원 의견을 어떻게 모았는지 (설문, 학급회의, 학부모회 등)</p></div></li>
-    <li><b>규약안 만들기</b><div class="todo"><p>누가 초안을 썼는지, 검토는 어디서 했는지 (학교운영위원회 등)</p></div></li>
-    <li><b>확정·안내</b><div class="todo"><p>확정 후 홈페이지 게시, 가정통신문 발송 등</p></div></li>
-    <li><b>실천·점검</b><div class="todo"><p>학기 중 어떻게 실천했고 점검했는지</p></div></li>
-  </ol>
+  <div class="key"><b class="big">2~5월 추진 필수</b> <span class="src">운영계획</span><br>
+  학교폭력·생활지도에 대해 학교 구성원으로서의 책임을 확인하고 실천을 다짐하는 <b>학교-학생-학부모 간 규약</b></div>
+  <h3>운영 단계 <span class="src">운영계획</span></h3>
+  <div class="tablewrap"><table>
+    <tr><th>1. 준비</th><td>필요성 공감대 형성, 학교 특성·여건 분석</td></tr>
+    <tr><th>2. 계획</th><td>학교 교육활동·행사와 연계한 계획, 시기·방법·서식 결정</td></tr>
+    <tr><th>3. 실시</th><td>취지 안내 → 의견 수렴 → 책임규약 확정 → 결과 공유</td></tr>
+    <tr><th>4. 환류</th><td>지속 활용, 실천 사례·소감 공유, 내년 반영 사항 정리</td></tr>
+  </table></div>
+  <p><b>주요 내용</b>: 학교폭력의 정의·유형, 가해학생 조치사항(9개), 학교장 긴급조치, 보복 금지, 학부모의 예방교육 이수 의무, 구성원의 책임(의견 수렴 반영), 학생생활지도의 이해 <span class="src">운영계획</span></p>
+  <h3>안내 영상 <span class="src">운영계획</span></h3>
+  <ul>
+    <li><a href="https://www.youtube.com/watch?v=t4B0Q3_QfBk" target="_blank" rel="noopener">학생용 애니메이션 — 다울, 모모와 함께 알아보는 학교문화 책임규약</a> (8분 47초)</li>
+    <li><a href="https://www.youtube.com/watch?v=EHqHnfNc--o" target="_blank" rel="noopener">학부모용 — 학부모(보호자)와 함께하는 학교문화 책임규약</a> (8분 53초)</li>
+    <li><a href="https://www.youtube.com/watch?v=SsGsyejFF6Q" target="_blank" rel="noopener">교사용 — 학교문화 책임규약 우수사례</a> (17분 45초)</li>
+  </ul>
+  <h3>우리 학교 진행 과정 <span class="src me">우리 학교</span></h3>
+  <div class="todo">언제, 어떻게 의견을 모으고 확정·공유했는지</div>
 </section>
 
-<!-- ============ 5. 언어문화 개선 ============ -->
+<!-- ============ 5. 언어문화 ============ -->
 <section id="language">
-  <h2>언어문화 개선 교육주간</h2>
-  <p class="lead">바른 말·고운 말 쓰기, 욕설·비속어 줄이기를 위한 주간 행사예요.</p>
-  <div class="tablewrap"><table>
-    <tr><th>항목</th><th>우리 학교</th></tr>
-    <tr><td>운영 기간</td><td data-fill="lang-date">(예: 10월 둘째 주)</td></tr>
-    <tr><td>대상</td><td data-fill="lang-who">(예: 전교생)</td></tr>
-    <tr><td>주요 활동</td><td data-fill="lang-act">(예: 고운 말 캠페인, 학급별 언어순화 활동지, 칭찬 릴레이, 표어 공모)</td></tr>
-    <tr><td>필요한 준비</td><td data-fill="lang-prep">(예: 활동지 인쇄, 상품 구입, 방송 안내)</td></tr>
-    <tr><td>결과 정리</td><td data-fill="lang-result">(예: 사진, 학급별 결과, 결과보고 기안)</td></tr>
-  </table></div>
-  <div class="todo"><p>해 보니 좋았던 활동 / 반응이 별로였던 활동 / 다음 담당자에게 추천</p></div>
+  <h2>언어문화개선 교육주간</h2>
+  <div class="key"><b class="big">9월 4주 ~ 10월 2주</b> <span class="src">운영계획</span><br>
+  + 학교 언어순화운동 관련 교내 행사 <b>연 1회 이상 필수</b></div>
+  <h3>운영계획에 나온 활동 예 <span class="src">운영계획</span></h3>
+  <ul>
+    <li>학생자치회 등굣길 바른말 사용 캠페인</li>
+    <li>'나쁜 말 멈춰!' 챌린지, '우리 반 최고 좋은 말' 선정, 선플달기, 바른말로 편지 쓰기</li>
+    <li>가정 연계 '자녀와의 대화법' 학부모 연수</li>
+    <li>자료: 도란도란 바른 언어사용 교육자료, 언어습관 자가진단 도구</li>
+  </ul>
+  <h3>우리 학교 운영 <span class="src me">우리 학교</span></h3>
+  <div class="todo">실제로 한 활동, 준비물, 결과 정리 방법</div>
 </section>
 
 <!-- ============ 6. 사안 처리 절차 ============ -->
 <section id="case" class="star">
   <h2>★ 학교폭력 사안 처리 절차 <span class="badge star">가장 중요</span></h2>
-  <p class="lead">한눈에 흐름을 보고, 지금 하는 단계를 눌러서 자세히 보세요.</p>
+  <p class="lead">위 흐름표에서 지금 단계를 누르면 바로 이동해요. <span class="src">매뉴얼</span> <span class="src me">우리 학교</span></p>
 
   <div class="flow">
     <a href="#c1"><b>1</b>접수·연락<small>당일</small></a>
@@ -378,7 +361,7 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
     <a href="#c6"><b>6</b>전담기구<small>자체해결/심의</small></a>
   </div>
 
-  <div class="warn"><b>🚨 먼저!</b> 다친 학생은 응급조치·보건실이 먼저 · <b>성 관련 사안이나 아동학대 의심</b>이면 바로 112 신고 (교원은 신고 의무자)</div>
+  <div class="warn"><b>🚨 성 관련 사안</b>(아동·청소년 대상 성범죄)은 <b>반드시 수사기관(112 또는 117)에 신고</b>하고 신고 일시를 기록해요. <span class="src">매뉴얼</span></div>
 
   <details class="step" id="c1" open>
     <summary><span class="num">1</span><span class="t">접수 · 보호자 연락<em>당일</em></span></summary>
@@ -456,6 +439,8 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
     <div class="ref">📎 <b>기안 예시</b> — 전담기구 심의 결과 보고 <span>(받으면 채울 예정)</span></div>
   </details>
 
+  <div class="ref" style="margin-top:14px">📂 <b>양식 파일 폴더</b> — 학생 확인서, 보호자 확인서, 분리 의사 확인서 등 양식 23개 (한글 파일) <span>(구글 드라이브 링크 받으면 연결 예정)</span></div>
+
   <h3>필요할 때만 보기</h3>
   <details class="step">
     <summary><span class="num">+</span><span class="t">긴급조치 (2호 말고 더 필요할 때)</span></summary>
@@ -467,7 +452,7 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
     </table></div>
     <ul>
       <li>2호 외 긴급조치는 <b>긴급조치 보고서</b>를 공문으로 보내고, 심의위원회에 보고해 <b>추인</b>(나중에 승인)받아요.</li>
-      <li>피해 학생에 대한 긴급조치(상담 등)도 피해 측이 요청하면 할 수 있어요.</li>
+      <li>피해 학생 측이 요청하면 피해 학생에 대한 긴급조치도 할 수 있어요.</li>
     </ul>
     <div class="ref">📎 <b>기안 예시</b> — 긴급조치 내부결재 <span>(받으면 채울 예정)</span></div>
   </details>
@@ -517,7 +502,7 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
 <!-- ============ 7. 학부모 통화 멘트 ============ -->
 <section id="call" class="star">
   <h2>★ 학부모 통화 멘트 <span class="badge star">가장 중요</span></h2>
-  <p class="lead">실제 통화하며 정리한 시나리오예요. ○○ 부분만 바꿔 쓰면 돼요. "복사" 버튼을 누르면 멘트가 복사되고, <b>전화가 끝나면 꼭 문자로 한 번 더</b> 보내요.</p>
+  <p class="lead"><span class="src me">우리 학교</span> 실제 통화하며 정리한 시나리오예요. ○○ 부분만 바꿔 쓰면 돼요. "복사" 버튼을 누르면 멘트가 복사되고, <b>전화가 끝나면 꼭 문자로 한 번 더</b> 보내요.</p>
 
   <h3>통화 요령</h3>
   <div class="tablewrap"><table>
@@ -677,65 +662,38 @@ footer { color: var(--ink-2); font-size: 13.5px; text-align: center; margin-top:
 본 사안은 학교 전담기구 검토 후 '학교장 자체해결' 또는 '심의위원회 이관' 절차가 진행될 예정입니다. 추가로 궁금한 사항이 있으시면 업무 시간 내에 편하게 연락 주시기 바랍니다.
 - ○○초 학교폭력 업무 담당 ○○ 드림</blockquote>
   </div>
-
-  <h3>하면 안 되는 말</h3>
-  <div class="tablewrap"><table class="dont">
-    <tr><th>❌ 이렇게 말하지 않기</th><th>⭕ 이렇게</th></tr>
-    <tr><td>"가해자가 ~했어요"</td><td>"가해 추정 학생", "관련 학생"이라고 부르기</td></tr>
-    <tr><td>"별일 아닌 것 같아요" / "애들끼리 그럴 수 있죠"</td><td>판단하지 않고 사실만 전달</td></tr>
-    <tr><td>"~하면 ~될 거예요" / "이건 몇 호 나와요"</td><td>"결과는 심의를 거쳐 결정됩니다"</td></tr>
-    <tr><td>상대 학생의 이름·연락처·가정 사정 알려주기</td><td>개인정보는 말하지 않기</td></tr>
-    <tr><td>"그냥 좋게 화해하시죠" (자체해결 강요)</td><td>선택은 보호자가 하도록 절차만 안내</td></tr>
-  </table></div>
 </section>
 
-<!-- ============ 8. 자료 위치 안내 ============ -->
-<section id="files">
-  <h2>자료 위치 안내</h2>
-  <p class="lead">이 페이지는 전체 공개라서 파일은 올리지 않아요. 실제 파일은 아래 위치에서 찾으세요.</p>
+<!-- ============ 8. 자료 사이트·연락처 ============ -->
+<section id="links">
+  <h2>자료 사이트 · 연락처</h2>
+  <h3>자료 사이트 <span class="src">운영계획</span></h3>
   <div class="tablewrap"><table>
-    <tr><th>자료</th><th>어디에 있나요?</th><th>찾는 법 (검색어 등)</th></tr>
-    <tr><td>연간 계획서 기안문</td><td data-fill="loc-annual">(예: 업무관리시스템 문서등록대장)</td><td>(예: 제목 "학교폭력 예방 연간" 검색)</td></tr>
-    <tr><td>1학기 계획서 기안문 (예방주간 포함)</td><td data-fill="loc-s1">(위치)</td><td>(검색어)</td></tr>
-    <tr><td>2학기 계획서 기안문 (예방주간 포함)</td><td data-fill="loc-s2">(위치)</td><td>(검색어)</td></tr>
-    <tr><td>학생·교직원·학부모 연수 자료, 서명부, 결과 보고</td><td data-fill="loc-train">(위치)</td><td>(검색어)</td></tr>
-    <tr><td>학교문화 책임규약 최종본·의견 수렴 자료</td><td data-fill="loc-culture">(위치)</td><td>(검색어)</td></tr>
-    <tr><td>언어문화 개선 교육주간 계획·결과</td><td data-fill="loc-lang">(위치)</td><td>(검색어)</td></tr>
-    <tr><td>사안 처리 양식 (확인서, 동의서, 접수 대장 등)</td><td data-fill="loc-case">(위치)</td><td>(최신 가이드북 부록 양식 사용)</td></tr>
+    <tr><th>사이트</th><th>무엇이 있나요</th></tr>
+    <tr><td><a href="https://www.stopbullying.re.kr/" target="_blank" rel="noopener">학교폭력예방교육지원센터</a></td><td>어울림·사이버어울림 프로그램, 학교문화 책임규약 가이드북, 학부모 교육자료 <small>(경기도교육청 공용 계정은 운영계획 공문 참고)</small></td></tr>
+    <tr><td><a href="https://doran.edunet.net/" target="_blank" rel="noopener">도란도란</a></td><td>사이버폭력 예방교육 자료, 사이버스(메타버스 교육), 언어습관 자가진단 <small>(에듀넷 개인 계정으로 로그인)</small></td></tr>
+    <tr><td><a href="https://www.parents.go.kr" target="_blank" rel="noopener">학부모On누리</a></td><td>학부모 온라인 연수, 카드뉴스</td></tr>
+    <tr><td>경기도교육청 '별별'</td><td>학생·교직원·학부모용 예방교육 영상 (온마음터, 유튜브 GOE·GO3), 수업지도안 (도교육청 누리집 통합자료실에서 '별별' 검색)</td></tr>
+    <tr><td><a href="https://theyouthacademy.police.go.kr" target="_blank" rel="noopener">청소년경찰학교</a></td><td>체험형 학교폭력 예방 프로그램 신청</td></tr>
   </table></div>
-  <div class="todo"><p>교내 공유폴더 경로, 업무관리시스템에서 찾는 방법을 실제로 적기</p></div>
-</section>
-
-<!-- ============ 9. 연락처 ============ -->
-<section id="contacts">
-  <h2>연락처 · 참고 사이트</h2>
+  <h3>연락처</h3>
   <div class="tablewrap"><table>
-    <tr><th>어디</th><th>연락처 / 주소</th><th>언제</th></tr>
-    <tr><td>학교폭력 신고센터</td><td>☎ 117 (문자 #0117)</td><td>신고·상담, 24시간</td></tr>
-    <tr><td>경찰</td><td>☎ 112</td><td>성 관련 사안, 아동학대 의심, 긴급 상황</td></tr>
-    <tr><td>교육지원청 학교폭력 담당</td><td data-fill="c-office">(부서·전화번호)</td><td>사안 보고, 심의위원회, 전담조사관</td></tr>
-    <tr><td>학교전담경찰관(SPO)</td><td data-fill="c-spo">(이름·전화번호)</td><td>예방교육 요청, 사안 상담</td></tr>
-    <tr><td>Wee센터</td><td data-fill="c-wee">(전화번호)</td><td>학생 상담 연계</td></tr>
-    <tr><td>도란도란 (학교폭력 예방 포털)</td><td><a href="https://doran.edunet.net" target="_blank" rel="noopener">doran.edunet.net</a></td><td>예방교육 자료, 어울림 프로그램 (주소 바뀌었는지 확인)</td></tr>
+    <tr><th>어디</th><th>연락처</th><th>언제</th></tr>
+    <tr><td>수사기관</td><td>112 또는 117</td><td>아동·청소년 대상 성범죄 사안 신고 (필수) <span class="src">매뉴얼</span></td></tr>
+    <tr><td>교육지원청 생활인권전문상담사</td><td>(채울 내용)</td><td>48시간 안에 보고서를 못 낼 때 먼저 연락 <span class="src me">우리 학교</span></td></tr>
+    <tr><td>학교폭력제로센터 (전담조사관)</td><td>(채울 내용)</td><td>조사 일정</td></tr>
+    <tr><td>학교전담경찰관 (SPO)</td><td>(채울 내용)</td><td>범죄예방교육, 협력 예방활동</td></tr>
   </table></div>
-  <div class="law">사안 처리는 매년 나오는 교육부 <b>「학교폭력 사안처리 가이드북」</b> 최신판을 기준으로 해요. 법이 자주 바뀌니 새 학년마다 꼭 새 가이드북을 받아 두세요.</div>
 </section>
 
-<!-- ============ 10. 메모 ============ -->
+<!-- ============ 9. 메모 ============ -->
 <section id="memo">
-  <h2>인수인계 메모 · 자주 묻는 질문</h2>
-  <h3>후임자에게 꼭 하고 싶은 말</h3>
-  <div class="todo"><p>제일 바빴던 시기, 미리 해 두면 편한 일, 도움 받을 수 있는 사람</p></div>
-  <h3>자주 묻는 질문</h3>
-  <div class="todo">
-    <p>Q. (예) 학부모 연수 참여율이 낮으면 어떻게 하나요?</p>
-    <p>A. </p>
-  </div>
-  <h3>진행 중인 일 (인수인계 시점 기준)</h3>
-  <div class="todo"><p>학생 이름 없이: "○월 접수 사안 1건, 조치 이행 확인 남음" 정도로만 적기</p></div>
+  <h2>인수인계 메모</h2>
+  <div class="todo">후임자에게 꼭 하고 싶은 말, 제일 바빴던 시기, 미리 해 두면 편한 일</div>
+  <div class="todo">진행 중인 일 (학생 이름 없이: "○월 접수 1건, 조치 이행 확인 남음" 정도)</div>
 </section>
 
-<footer>학교폭력 업무 인수인계 · 법·지침 내용은 참고용이며, 실제 처리는 최신 교육부 가이드북과 교육청 공문을 따릅니다.</footer>
+<footer>출처 표시가 있는 내용만 적었어요. 기준이 바뀔 수 있으니 매년 새 운영계획·매뉴얼 공문을 확인하세요.</footer>
 </main>
 </div>
 
