@@ -106,6 +106,22 @@ mark{background:color-mix(in srgb,var(--hl) 45%,transparent);color:inherit;paddi
 @keyframes dots{0%{content:""}25%{content:"."}50%{content:".."}75%{content:"..."}}
 @media (prefers-reduced-motion:reduce){.thinking::after{animation:none;content:"..."}}
 details summary{cursor:pointer;font-weight:600;color:var(--accent)}
+.tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.tile{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:14px;display:grid;gap:4px}
+.tile .score{font-size:28px}
+.bars.stat .bar{grid-template-columns:70px 1fr auto}
+details.rec{border-top:1px solid var(--line);padding:10px 0}
+details.rec summary{display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:500;list-style:none}
+details.rec summary::-webkit-details-marker{display:none}
+details.rec summary>span:nth-child(2){min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+details.rec[open] summary>span:nth-child(2){white-space:normal}
+.rec-body{display:grid;gap:12px;padding-top:12px}
+.card>*,.quiet>*,.rec-body>*{min-width:0}
+details.rec,details.rec summary{min-width:0}
+details.rec summary .chip{flex:0 0 auto}
+details.rec summary b{flex:0 0 auto;white-space:nowrap}
+.model,.passage,.pair{overflow-wrap:anywhere}
+@media (max-width:520px){.tiles{grid-template-columns:repeat(2,1fr)}}
 @media (max-width:420px){h1{font-size:24px}.bar{grid-template-columns:86px 1fr 24px}}
 </style>
 
@@ -158,33 +174,83 @@ const SAMPLE_READ={title:"The 1% Rule",sample:true,
   ]};
 const ERROR_TYPES=["시제","관사(a/the)","전치사","단어 선택","어순","주어-동사 일치","단수/복수","직역·콩글리시","문장 연결","자연스러움","철자·구두점"];
 
-/* ---------- state ---------- */
-const LS_KEY="daily-english-notebook-v1";
-function blank(){return{v:1,level:"B1",streak:{last:"",count:0},days:{},errors:[],history:[],focus:null,drillDone:{}}}
-let S=blank();
-let tab="today", sample=null, aiChecked=false, docRef=null, store="device";
+/* ---------- state ----------
+   S   = small settings/progress doc (level, streak, focus, review progress)
+   LOG = every practice session, kept forever: one entry per day {d, records:[...]}
+   ERR = every mistake from every session (derived from LOG) */
+const LS_KEY="daily-english-notebook-v1", LS_LOG="daily-english-notebook-log-v1";
+function blank(){return{v:2,level:"B1",streak:{last:"",count:0},days:{},focus:null,drillDone:{},rv:{}}}
+let S=blank(), LOG={}, ERR=[];
+let tab="today", sample=null, aiChecked=false, progRef=null, dayCol=null, store="device";
 const scratch={}; // per-session view state (current listening/reading set, answers, feedback)
+const dirty=new Set();
+let cloudPending=!!(window.claude&&typeof window.claude.use==="function");
 
 function today(){const d=new Date();return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0")}
 function dayIndex(){return Math.floor(Date.now()/864e5)}
 function addDays(s,n){const [y,m,d]=s.split("-").map(Number);const t=new Date(y,m-1,d+n);return t.getFullYear()+"-"+String(t.getMonth()+1).padStart(2,"0")+"-"+String(t.getDate()).padStart(2,"0")}
 function esc(s){return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function merge(d){const b=blank();if(!d||typeof d!=="object")return b;return Object.assign(b,JSON.parse(JSON.stringify(d)))}
+function cut(v,n){return v==null?"":String(v).slice(0,n)}
 
 try{const raw=localStorage.getItem(LS_KEY);if(raw)S=merge(JSON.parse(raw))}catch(e){}
+try{const raw=localStorage.getItem(LS_LOG);if(raw)LOG=JSON.parse(raw)||{}}catch(e){}
+
+function putRecord(r){
+  LOG[r.d]=LOG[r.d]||{d:r.d,records:[]};
+  if(LOG[r.d].records.some(x=>x.ts===r.ts))return false;
+  LOG[r.d].records.push(r);LOG[r.d].records.sort((a,b)=>a.ts-b.ts);dirty.add(r.d);return true;
+}
+function rebuildErr(){
+  ERR=[];
+  for(const d of Object.keys(LOG).sort())for(const r of LOG[d].records||[])for(const e of r.errors||[])ERR.push({...e,d,skill:r.skill});
+  scratch.rvPick=null;
+}
+function cleanErrors(list){
+  return (Array.isArray(list)?list:[]).filter(e=>e&&e.wrong&&e.right).slice(0,10).map(e=>({type:ERROR_TYPES.includes(e.type)?e.type:"자연스러움",wrong:cut(e.wrong,200),right:cut(e.right,200),why:cut(e.why,240)}));
+}
+function addRecord(rec){
+  rec.ts=Date.now();rec.d=today();
+  for(const k of ["text","corrected","natural"])if(rec[k]!=null)rec[k]=cut(rec[k],1500);
+  if(rec.title!=null)rec.title=cut(rec.title,200);
+  rec.errors=cleanErrors(rec.errors);
+  putRecord(rec);rebuildErr();save();
+}
+// v1 kept only the last 150 mistakes and 40 short history lines inside S: move them into LOG
+function migrateLegacy(){
+  const errs=Array.isArray(S.errors)?S.errors:[], hist=Array.isArray(S.history)?S.history:[];
+  delete S.errors;delete S.history;
+  if(!errs.length&&!hist.length)return false;
+  const groups={};
+  for(const e of errs){const k=e.d+"|"+e.skill;(groups[k]=groups[k]||[]).push(e)}
+  const recs=hist.map((h,i)=>{const quiz=h.skill==="listening";return{ts:Date.parse(h.d)+i,d:h.d,skill:h.skill,title:quiz?h.text:"",text:quiz?"":h.text,score:h.score,errors:[]}});
+  for(const r of recs){const k=r.d+"|"+r.skill;if(groups[k]&&r.skill!=="listening"){r.errors=cleanErrors(groups[k]);delete groups[k]}}
+  let n=0;for(const k in groups){const [d,skill]=k.split("|");recs.push({ts:Date.parse(d)+500+(n++),d,skill,title:"이전 기록",text:"",score:null,errors:cleanErrors(groups[k])})}
+  for(const r of recs)putRecord(r);
+  return true;
+}
+if(migrateLegacy()){try{localStorage.setItem(LS_KEY,JSON.stringify(S));localStorage.setItem(LS_LOG,JSON.stringify(LOG))}catch(e){}}
+rebuildErr();
 
 let saveTimer=null, saving=false, saveAgain=false;
 function save(){
-  S.errors=S.errors.slice(-150);S.history=S.history.slice(-40);
-  const keys=Object.keys(S.days).sort();if(keys.length>60)for(const k of keys.slice(0,keys.length-60))delete S.days[k];
+  const keys=Object.keys(S.days).sort();if(keys.length>400)for(const k of keys.slice(0,keys.length-400))delete S.days[k];
   try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}
-  if(!docRef)return;
+  try{localStorage.setItem(LS_LOG,JSON.stringify(LOG))}catch(e){}
+  if(!progRef)return;
   clearTimeout(saveTimer);saveTimer=setTimeout(flush,700);
 }
 async function flush(){
   if(saving){saveAgain=true;return}
   saving=true;
-  try{await docRef.set(JSON.parse(JSON.stringify(S)))}catch(e){console.warn("save failed",e)}
+  try{
+    await progRef.set(JSON.parse(JSON.stringify(S)));
+    for(const d of [...dirty]){
+      dirty.delete(d);
+      try{await dayCol.doc(d).set(JSON.parse(JSON.stringify(LOG[d])))}catch(e){dirty.add(d);throw e}
+    }
+    scratch.saveErr="";
+  }catch(e){console.warn("save failed",e);scratch.saveErr=e&&e.code==="quota_exceeded"?"저장 공간이 가득 찼어요.":"계정에 저장하지 못했어요. 이 기기에는 저장돼 있고, 다음 연습 때 다시 올려요."}
   saving=false;if(saveAgain){saveAgain=false;flush()}
 }
 
@@ -194,18 +260,12 @@ function markDone(key){
   if(S.streak.last!==t){S.streak.count=(S.streak.last===addDays(t,-1))?S.streak.count+1:1;S.streak.last=t}
   save();
 }
-function logErrors(list,skill){
-  const t=today();scratch.rvPick=null;
-  for(const e of (list||[])){
-    if(!e||!e.wrong||!e.right)continue;
-    S.errors.push({d:t,skill,type:ERROR_TYPES.includes(e.type)?e.type:"자연스러움",wrong:String(e.wrong).slice(0,200),right:String(e.right).slice(0,200),why:String(e.why||"").slice(0,240)});
-  }
-}
-function logHistory(skill,text,score){S.history.push({d:today(),skill,text:String(text).slice(0,300),score:typeof score==="number"?score:null})}
+function errKey(e){return norm(e.wrong).join(" ")}
+function isMastered(e){return (S.rv[errKey(e)]?.ok||0)>=2}
 
 /* ---------- Claude ---------- */
 function weakSpots(){
-  const recent=S.errors.slice(-60);const c={};for(const e of recent)c[e.type]=(c[e.type]||0)+1;
+  const recent=ERR.slice(-60);const c={};for(const e of recent)c[e.type]=(c[e.type]||0)+1;
   const top=Object.entries(c).sort((a,b)=>b[1]-a[1]).slice(0,3).map(x=>x[0]);
   const habits=(S.focus?.habits||[]).map(h=>h.title_ko).filter(Boolean);
   return [...habits,...top].slice(0,5).join(", ")||"(아직 기록 없음)";
@@ -250,12 +310,12 @@ function startDictation(onText,onState){
 function stopDictation(){try{rec&&rec.stop()}catch(e){}}
 
 /* ---------- views ---------- */
-const TABS=[["today","오늘"],["writing","쓰기"],["speaking","말하기"],["listening","듣기"],["reading","읽기"],["patterns","내 패턴"]];
+const TABS=[["today","오늘"],["writing","쓰기"],["speaking","말하기"],["listening","듣기"],["reading","읽기"],["patterns","내 패턴"],["history","기록"]];
 const TASKS=[["writing","쓰기 한 편","5분"],["speaking","말하기 한 번","3분"],["listening","듣기 한 세트","3분"],["reading","읽기 한 편","4분"],["review","오답 복습 3개","2분"]];
 
 function renderStatus(){
   const ai=sample?'<span class="pill on">AI 피드백 켜짐</span>':(aiChecked?'<span class="pill">AI 피드백 꺼짐</span>':'<span class="pill">AI 연결 중</span>');
-  const st=store==="cloud"?'<span class="pill on">내 계정에 저장</span>':'<span class="pill">이 기기에 저장</span>';
+  const st=scratch.saveErr?`<span class="pill" style="color:var(--pen)">${esc(scratch.saveErr)}</span>`:store==="cloud"?'<span class="pill on">내 계정에 저장</span>':'<span class="pill">이 기기에 저장</span>';
   document.getElementById("status").innerHTML=ai+st+`<span class="pill">레벨 ${esc(S.level)}</span>`;
 }
 function renderTabs(){
@@ -264,7 +324,7 @@ function renderTabs(){
 function render(){
   renderStatus();renderTabs();
   const v=document.getElementById("view");
-  v.innerHTML=({today:vToday,writing:vWriting,speaking:vSpeaking,listening:vListening,reading:vReading,patterns:vPatterns}[tab])();
+  v.innerHTML=({today:vToday,writing:vWriting,speaking:vSpeaking,listening:vListening,reading:vReading,patterns:vPatterns,history:vHistory}[tab])();
 }
 function go(t){tab=t;stopSpeak();stopDictation();render();window.scrollTo({top:0})}
 
@@ -317,8 +377,8 @@ function vToday(){
       <div class="pair"><span class="wrong">${esc(e.wrong)}</span></div>
       <input type="text" class="en" id="rv-in-${i}" placeholder="바르게 고쳐 써 보세요" value="${esc(r?.val||"")}">
       <div class="row"><button class="btn" data-act="rv-check" data-i="${i}">확인</button></div>
-      ${r?.shown?`<p>${r.match?'<b class="right">맞았어요!</b> ':""}정답: <span class="right" style="font-family:var(--f-read)">${esc(e.right)}</span><br><span class="small muted">${esc(e.why)}</span></p>`:""}
-    </div>`}).join(""):`<p class="muted">아직 오답이 없어요. 쓰기나 말하기 피드백을 받으면 틀린 문장이 여기에 모여서, 하루 3개씩 다시 풀게 돼요.</p>`}
+      ${r?.shown?`<p>${r.match?(isMastered(e)?'<b class="right">졸업! 이제 복습에서 빠져요.</b> ':'<b class="right">맞았어요! 다른 날 한 번 더 맞히면 졸업해요.</b> '):'<b class="wrong" style="text-decoration:none">다시 나올 거예요.</b> '}정답: <span class="right" style="font-family:var(--f-read)">${esc(e.right)}</span><br><span class="small muted">${esc(e.why)}</span></p>`:""}
+    </div>`}).join(""):`<p class="muted">${ERR.length?"복습할 오답을 모두 졸업했어요! 새 연습을 하면 다시 채워져요.":"아직 오답이 없어요."} ${ERR.length?"":"쓰기나 말하기 피드백을 받으면 틀린 문장이 여기에 모여서, 하루 3개씩 다시 풀게 돼요. 다른 날 두 번 맞히면 졸업이에요."}</p>`}
   </div>
   <div class="card">
     <div class="row between"><h3>내 레벨</h3>
@@ -330,11 +390,11 @@ function vToday(){
 function skillKo(s){return({writing:"쓰기",speaking:"말하기",reading:"읽기 요약",listening:"듣기"})[s]||s}
 function reviewCards(){
   if(!scratch.rvPick){
+    // every mistake not yet graduated; least-recently reviewed first, then oldest first
     const seen=new Set(),pool=[];
-    for(const e of [...S.errors].reverse()){if(seen.has(e.wrong))continue;seen.add(e.wrong);pool.push(e)}
-    // oldest-first among the latest 30 so older mistakes come back before fresh ones
-    const recent=pool.slice(0,30);const start=recent.length?dayIndex()%Math.max(1,recent.length):0;
-    scratch.rvPick=[0,1,2].map(i=>recent[(start+i)%recent.length]).filter((e,i,a)=>e&&a.indexOf(e)===i);
+    for(const e of ERR){const k=errKey(e);if(!k||seen.has(k)||isMastered(e))continue;seen.add(k);pool.push(e)}
+    pool.sort((a,b)=>(S.rv[errKey(a)]?.last||"").localeCompare(S.rv[errKey(b)]?.last||"")||a.d.localeCompare(b.d));
+    scratch.rvPick=pool.slice(0,3);
   }
   return scratch.rvPick;
 }
@@ -353,7 +413,7 @@ function vWriting(){
   ${fbBlock("w")}`;
 }
 function wc(s){return (s.trim().match(/\S+/g)||[]).length}
-async function feedback(key,skill,task,text){
+async function feedback(key,skill,task,text,title){
   scratch[key]={loading:true};render();
   const spoken=skill==="speaking";
   const prompt=`${learner()}
@@ -378,7 +438,8 @@ List at most 8 errors, most important first. 2-3 expressions.`;
   try{
     const r=await askJSON(prompt,"default");
     const errs=Array.isArray(r.errors)?r.errors:[];
-    logErrors(errs,skill);logHistory(skill,text,r.score);markDone(skill==="reading"?"reading":skill);
+    addRecord({skill,title:title||task,text,score:typeof r.score==="number"?r.score:null,errors:errs,corrected:r.corrected,natural:r.natural,good:cut(r.good_ko,300),tip:cut(r.tip_ko,300),expressions:(Array.isArray(r.expressions)?r.expressions:[]).slice(0,4).map(x=>({en:cut(x.en,120),ko:cut(x.ko,120),example:cut(x.example,240)}))});
+    markDone(skill);
     scratch[key]={html:fbHtml(r,spoken)};
   }catch(e){scratch[key]={error:errText(e)}}
   render();
@@ -393,7 +454,7 @@ function fbHtml(r,spoken){
   <div class="card"><h3>고칠 곳 ${errs.length}개</h3>
     ${errs.length?errs.map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div>
       <div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}</div></div>`).join(""):`<p class="muted">틀린 곳이 없어요. 아래 자연스러운 표현을 익혀 보세요.</p>`}
-    <p class="small muted">틀린 문장은 오답 노트에 저장돼서 '오늘' 탭에서 다시 풀게 돼요.</p>
+    <p class="small muted">이번 연습 전체가 <b>기록</b> 탭에 쌓이고, 틀린 문장은 '오늘' 탭 오답 복습에 다시 나와요.</p>
   </div>
   <div class="card"><h3>고친 문장</h3><div class="model">${esc(r.corrected)}</div>
     <div class="row between"><h3>원어민이라면</h3><button class="btn" data-speak="${esc(r.natural)}">▶ 듣기</button></div>
@@ -462,10 +523,14 @@ function qHtml(px,q,i,ans,sub){
     ${sub?`<p class="small muted" style="margin:0">${ans===q.answer?'<b class="right">정답</b> · ':""}${esc(q.why_ko)}</p>`:""}</div>`;
 }
 function norm(s){return s.toLowerCase().replace(/[’']/g,"'").replace(/[^a-z0-9' ]/g," ").split(/\s+/).filter(Boolean)}
+function dictCheck(user,target){
+  const bag={};for(const w of norm(user))bag[w]=(bag[w]||0)+1;
+  const parts=target.split(/\s+/).filter(Boolean).map(raw=>{const w=norm(raw)[0];const ok=!!(w&&bag[w]);if(ok)bag[w]--;return{raw,ok}});
+  return{parts,hit:parts.filter(p=>p.ok).length,total:parts.length};
+}
 function dictHtml(user,target){
-  const t=norm(target),u=norm(user);const bag={};for(const w of u)bag[w]=(bag[w]||0)+1;
-  let hit=0;const out=target.split(/\s+/).map(raw=>{const w=norm(raw)[0];if(w&&bag[w]){bag[w]--;hit++;return `<span class="word-ok">${esc(raw)}</span>`}return `<span class="word-miss">${esc(raw)}</span>`});
-  return `<p style="font-family:var(--f-read);font-size:16px;margin:0">${out.join(" ")}</p><p class="small muted" style="margin:0">${t.length}단어 중 ${hit}단어를 맞게 들었어요. 물결 밑줄이 놓친 단어예요.</p>`;
+  const r=dictCheck(user,target);
+  return `<p style="font-family:var(--f-read);font-size:16px;margin:0">${r.parts.map(p=>`<span class="${p.ok?"word-ok":"word-miss"}">${esc(p.raw)}</span>`).join(" ")}</p><p class="small muted" style="margin:0">${r.total}단어 중 ${r.hit}단어를 맞게 들었어요. 물결 밑줄이 놓친 단어예요.</p>`;
 }
 async function newSet(kind){
   const isL=kind==="listen";
@@ -516,7 +581,7 @@ function vReading(){
 
 /* patterns */
 function vPatterns(){
-  const since=addDays(today(),-30);const recent=S.errors.filter(e=>e.d>=since);
+  const since=addDays(today(),-30);const recent=ERR.filter(e=>e.d>=since);
   const c={};for(const e of recent)c[e.type]=(c[e.type]||0)+1;
   const rows=Object.entries(c).sort((a,b)=>b[1]-a[1]);const max=rows.length?rows[0][1]:1;
   const F=S.focus;
@@ -530,8 +595,8 @@ function vPatterns(){
   </div>
   <div class="card">
     <div class="row between"><h3>AI 패턴 분석</h3>
-      <button class="btn primary" data-act="analyze" ${sample&&S.errors.length>=5&&!p?.loading?"":"disabled"}>${F?"다시 분석하기":"분석하기"}</button></div>
-    <p class="small muted">${S.errors.length<5?`실수가 5개 이상 모이면 분석할 수 있어요 (지금 ${S.errors.length}개).`:"모인 실수 전체를 보고, 반복되는 습관 3가지와 1주일 공부 계획을 짜 줘요."}${F?` 마지막 분석: ${esc(F.updated)}`:""}</p>
+      <button class="btn primary" data-act="analyze" ${sample&&ERR.length>=5&&!p?.loading?"":"disabled"}>${F?"다시 분석하기":"분석하기"}</button></div>
+    <p class="small muted">${ERR.length<5?`실수가 5개 이상 모이면 분석할 수 있어요 (지금 ${ERR.length}개).`:"모인 실수 전체를 보고, 반복되는 습관 3가지와 1주일 공부 계획을 짜 줘요."}${F?` 마지막 분석: ${esc(F.updated)}`:""}</p>
     ${p?.loading?`<p class="thinking">내 문장들을 훑어보는 중</p>`:""}${p?.error?`<p class="err">${esc(p.error)}</p>`:""}
   </div>
   ${F?`<div class="card"><div class="eyebrow">한 줄 진단</div><p style="margin:0">${esc(F.summary_ko)}</p></div>
@@ -541,11 +606,11 @@ function vPatterns(){
     ${(h.mini_drill||[]).length?`<details><summary>연습 문제 ${h.mini_drill.length}개</summary>${h.mini_drill.map(d=>`<p class="small">${esc(d.prompt_ko)}<br><span class="right" style="font-family:var(--f-read)">${esc(d.answer_en)}</span></p>`).join("")}</details>`:""}
   </div>`).join("")}
   ${(F.plan_ko||[]).length?`<div class="card"><h3>이번 주 하루 15분 계획</h3><div class="tasks">${F.plan_ko.map((d,i)=>`<div class="task" style="cursor:default"><span class="chip">${i+1}일</span><span>${esc(d)}</span></div>`).join("")}</div></div>`:""}`:""}
-  ${S.errors.length?`<div class="card"><h3>최근 오답</h3>${S.errors.slice(-10).reverse().map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div><div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}</div></div>`).join("")}</div>`:""}`;
+  ${ERR.length?`<div class="card"><h3>최근 오답</h3>${ERR.slice(-10).reverse().map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div><div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}</div></div>`).join("")}</div>`:""}`;
 }
 async function analyze(){
   scratch.pat={loading:true};render();
-  const list=S.errors.slice(-80).map(e=>`[${e.type}] ${e.wrong} -> ${e.right}`).join("\n");
+  const list=ERR.slice(-120).map(e=>`[${e.type}] ${e.wrong} -> ${e.right}`).join("\n");
   const prompt=`${learner()}
 Here are the learner's recent English mistakes (wrong -> right), from writing and speaking practice:
 ${list}
@@ -563,6 +628,69 @@ Exactly 3 habits, each with 3 mini_drill items.`;
     save();scratch.pat=null;
   }catch(e){scratch.pat={error:errText(e)}}
   render();
+}
+
+/* history */
+const SKILLS=[["all","전체"],["writing","쓰기"],["speaking","말하기"],["listening","듣기"],["reading","읽기"]];
+function allRecords(){const out=[];for(const d of Object.keys(LOG).sort())for(const r of LOG[d].records||[])out.push(r);return out}
+function avg(a){return a.length?Math.round(a.reduce((x,y)=>x+y,0)/a.length):null}
+function trendSvg(recs,label){
+  const pts=recs.filter(r=>typeof r.score==="number").slice(-20);
+  if(pts.length<2)return `<p class="small muted">${label}: 두 번 이상 하면 점수 변화가 그려져요.</p>`;
+  const W=340,H=130,L=26,B=20,T=14,bw=(W-L-8)/pts.length;
+  const y=v=>T+(H-T-B)*(1-v/100);
+  let g="";for(const v of [0,50,100])g+=`<line x1="${L}" x2="${W}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${L-6}" y="${y(v)+4}" text-anchor="end" font-size="11" fill="var(--muted)">${v}</text>`;
+  const bars=pts.map((r,i)=>{const x=L+4+i*bw,h=(H-T-B)*(r.score/100);const last=i===pts.length-1;
+    return `<rect x="${x}" y="${y(r.score)}" width="${Math.max(2,bw-4)}" height="${h}" rx="2" fill="${last?"var(--accent)":"color-mix(in srgb,var(--accent) 40%,transparent)"}"><title>${esc(r.d)} · ${r.score}점</title></rect>${last?`<text x="${x+(bw-4)/2}" y="${y(r.score)-4}" text-anchor="middle" font-size="11" font-weight="600" fill="var(--ink)">${r.score}</text>`:""}`}).join("");
+  const first=avg(pts.slice(0,Math.ceil(pts.length/2)).map(r=>r.score)),second=avg(pts.slice(Math.ceil(pts.length/2)).map(r=>r.score));
+  const diff=second-first;
+  return `<div class="quiet"><div class="row between"><span class="small"><b>${label}</b> 최근 ${pts.length}번</span><span class="small ${diff>=0?"right":"wrong"}" style="text-decoration:none">${diff>=0?"▲":"▼"} 앞쪽 평균보다 ${Math.abs(diff)}점 ${diff>=0?"올랐어요":"내렸어요"}</span></div>
+    <svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${label} 점수 변화">${g}${bars}<text x="${L+4}" y="${H-5}" font-size="11" fill="var(--muted)">${esc(pts[0].d.slice(5))}</text><text x="${W-4}" y="${H-5}" text-anchor="end" font-size="11" fill="var(--muted)">${esc(pts[pts.length-1].d.slice(5))}</text></svg></div>`;
+}
+function recordHtml(r){
+  const head=`<span class="chip">${esc(skillKo(r.skill))}</span> <span>${esc(r.title||cut(r.text,50))}</span>${typeof r.score==="number"?` <b style="margin-left:auto;font-variant-numeric:tabular-nums">${r.score}점</b>`:""}`;
+  let body="";
+  if(r.text)body+=`<div class="quiet"><div class="eyebrow">내 답</div><div class="model">${esc(r.text)}</div></div>`;
+  if(r.errors?.length)body+=`<div class="quiet"><div class="eyebrow">고칠 곳 ${r.errors.length}개</div>${r.errors.map(e=>`<div class="fix"><div class="pair"><span class="wrong">${esc(e.wrong)}</span> → <span class="right">${esc(e.right)}</span></div><div class="small"><span class="chip">${esc(e.type)}</span> ${esc(e.why)}${isMastered(e)?' <span class="right">· 졸업</span>':""}</div></div>`).join("")}</div>`;
+  if(r.corrected)body+=`<div class="quiet"><div class="eyebrow">고친 문장</div><div class="model">${esc(r.corrected)}</div></div>`;
+  if(r.natural)body+=`<div class="quiet"><div class="row between"><div class="eyebrow">원어민이라면</div><button class="btn" data-speak="${esc(r.natural)}">▶ 듣기</button></div><div class="model">${esc(r.natural)}</div></div>`;
+  if(r.expressions?.length)body+=`<div class="quiet"><div class="eyebrow">챙겨 갈 표현</div>${r.expressions.map(x=>`<div><mark>${esc(x.en)}</mark> <span class="small muted">${esc(x.ko)}</span></div>`).join("")}</div>`;
+  if(r.total)body+=`<p>문제 ${r.total}개 중 <b>${r.correct}개</b> 맞힘</p>${(r.wrong||[]).map(w=>`<div class="fix small"><div>${esc(w.q)}</div><div>내 답 <span class="${w.mine==="(안 고름)"?"muted":"wrong"}">${esc(w.mine)}</span> · 정답 <span class="right">${esc(w.right)}</span></div></div>`).join("")}`;
+  if(r.dictation&&r.dictation.total)body+=`<div class="quiet"><div class="eyebrow">받아쓰기 ${r.dictation.hit}/${r.dictation.total}단어</div>${dictHtml(r.dictation.mine||"",r.dictation.sentence||"")}</div>`;
+  if(r.vocab?.length)body+=`<div class="small">${r.vocab.map(v=>`<mark>${esc(v.word)}</mark> ${esc(v.ko)}`).join(" · ")}</div>`;
+  if(r.tip)body+=`<p class="notice">${esc(r.tip)}</p>`;
+  return `<details class="rec"><summary>${head}</summary><div class="rec-body">${body||'<p class="small muted">이전 버전에서 옮겨 온 기록이라 자세한 내용은 없어요.</p>'}</div></details>`;
+}
+function vHistory(){
+  const all=allRecords();
+  const f=scratch.hFilter||"all";
+  const studyDays=new Set([...Object.keys(LOG).filter(d=>LOG[d].records?.length),...Object.keys(S.days).filter(d=>Object.keys(S.days[d]||{}).length)]).size;
+  const uniq=new Map();for(const e of ERR){const k=errKey(e);if(k)uniq.set(k,e)}
+  const mastered=[...uniq.values()].filter(isMastered).length;
+  const per=SKILLS.slice(1).map(([k,l])=>{const rs=all.filter(r=>r.skill===k);const sc=rs.filter(r=>typeof r.score==="number").map(r=>r.score);return `<div class="bar"><span>${l}</span><span>${rs.length}번</span><span class="n" style="text-align:right">${sc.length?"평균 "+avg(sc)+"점":"–"}</span></div>`}).join("");
+  const shown=all.filter(r=>f==="all"||r.skill===f).reverse();
+  const limit=scratch.hLimit||20;
+  const groups=[];for(const r of shown.slice(0,limit)){const g=groups[groups.length-1];if(g&&g.d===r.d)g.items.push(r);else groups.push({d:r.d,items:[r]})}
+  const first=all[0]?.d;
+  return `
+  <section class="quiet"><h2>쌓인 기록</h2>
+    <p class="small muted">푼 문제와 받은 피드백이 날짜별로 모두 저장돼요. 지우지 않는 한 계속 쌓여요.${first?` 첫 기록: ${esc(first)}`:""}</p></section>
+  <div class="tiles">
+    <div class="tile"><span class="score">${studyDays}</span><span class="small muted">공부한 날</span></div>
+    <div class="tile"><span class="score">${all.length}</span><span class="small muted">연습한 횟수</span></div>
+    <div class="tile"><span class="score">${uniq.size}</span><span class="small muted">모인 오답</span></div>
+    <div class="tile"><span class="score">${mastered}</span><span class="small muted">졸업한 오답</span></div>
+  </div>
+  <div class="card"><h3>영역별</h3><div class="bars stat">${per}</div></div>
+  <div class="card"><h3>점수 변화</h3>
+    ${trendSvg(all.filter(r=>r.skill==="writing"||r.skill==="speaking"||(r.skill==="reading"&&r.text)),"쓰기·말하기·요약")}
+    ${trendSvg(all.filter(r=>r.total),"듣기·읽기 문제 정답률")}
+  </div>
+  <div class="card">
+    <div class="row" role="group" aria-label="영역 골라 보기">${SKILLS.map(([k,l])=>`<button class="btn ${f===k?"primary":""}" data-hfilter="${k}">${l}</button>`).join("")}</div>
+    ${groups.length?groups.map(g=>`<div class="quiet"><div class="eyebrow">${esc(g.d)}</div>${g.items.map(recordHtml).join("")}</div>`).join(""):cloudPending?`<p class="thinking">내 계정에서 기록을 불러오는 중</p>`:`<p class="muted">아직 기록이 없어요. 쓰기·말하기 피드백을 받거나 듣기·읽기 문제를 채점하면 여기에 쌓여요.</p>`}
+    ${shown.length>limit?`<button class="btn" data-act="h-more">이전 기록 더 보기 (${shown.length-limit}개 남음)</button>`:""}
+  </div>`;
 }
 
 /* ---------- events ---------- */
@@ -583,6 +711,7 @@ document.addEventListener("change",ev=>{
 document.addEventListener("click",ev=>{
   const b=ev.target.closest("button,[data-go]");if(!b)return;
   if(b.dataset.tab)return go(b.dataset.tab);
+  if(b.dataset.hfilter){scratch.hFilter=b.dataset.hfilter;scratch.hLimit=20;render();return}
   if(b.dataset.go){if(b.dataset.go==="today-review"){document.getElementById("review")?.scrollIntoView({behavior:"smooth"});return}return go(b.dataset.go)}
   if(b.dataset.speak!==undefined){speak(b.dataset.speak,Number(b.dataset.rate)||0.95);return}
   if(b.dataset.speakText){const src=b.dataset.speakText==="listen"?scratch.listen:scratch.read;speak(src.text.replace(/\n+/g," "),Number(b.dataset.rate)||1);return}
@@ -591,24 +720,32 @@ document.addEventListener("click",ev=>{
     case "stop":stopSpeak();break;
     case "w-next":scratch.wPrompt=WRITE_PROMPTS[(WRITE_PROMPTS.indexOf(scratch.wPrompt)+1)%WRITE_PROMPTS.length];delete scratch.w;render();break;
     case "s-next":scratch.sQ=SPEAK_QS[(SPEAK_QS.indexOf(scratch.sQ)+1)%SPEAK_QS.length];delete scratch.s;render();break;
-    case "w-submit":{const tx=(scratch.wText||"").trim();if(wc(tx)<3){scratch.w={error:"세 단어 이상 써 주세요."};render();break}feedback("w","writing",scratch.wPrompt.en,tx);break}
-    case "s-submit":{stopDictation();const tx=(scratch.sText||"").trim();if(wc(tx)<3){scratch.s={error:"말한 내용을 세 단어 이상 넣어 주세요."};render();break}feedback("s","speaking","Answer this question out loud: "+scratch.sQ.en,tx);break}
-    case "r-sum-submit":{const tx=(scratch.rSum||"").trim();if(wc(tx)<3){scratch.r={error:"세 단어 이상 써 주세요."};render();break}feedback("r","reading",`Summarize this passage in 1-2 sentences. Also judge whether the summary captures the main idea and mention it in good_ko/tip_ko.\nPassage: ${scratch.read.text}`,tx);break}
+    case "w-submit":{const tx=(scratch.wText||"").trim();if(wc(tx)<3){scratch.w={error:"세 단어 이상 써 주세요."};render();break}feedback("w","writing",scratch.wPrompt.en,tx,scratch.wPrompt.en);break}
+    case "s-submit":{stopDictation();const tx=(scratch.sText||"").trim();if(wc(tx)<3){scratch.s={error:"말한 내용을 세 단어 이상 넣어 주세요."};render();break}feedback("s","speaking","Answer this question out loud: "+scratch.sQ.en,tx,scratch.sQ.en);break}
+    case "r-sum-submit":{const tx=(scratch.rSum||"").trim();if(wc(tx)<3){scratch.r={error:"세 단어 이상 써 주세요."};render();break}feedback("r","reading",`Summarize this passage in 1-2 sentences. Also judge whether the summary captures the main idea and mention it in good_ko/tip_ko.\nPassage: ${scratch.read.text}`,tx,"요약: "+scratch.read.title);break}
     case "mic-start":startDictation(t=>{scratch.sText=t;const ta=document.getElementById("s-text");if(ta)ta.value=t},st=>{scratch.micState=st;if(tab==="speaking")render()});break;
     case "mic-stop":stopDictation();break;
     case "l-new":newSet("listen");break;
     case "r-new":newSet("read");break;
-    case "l-submit":scratch.lSub=true;markDone("listening");logHistory("listening",scratch.listen.title,score(scratch.listen,scratch.lAns));render();break;
-    case "r-submit":scratch.rSub=true;markDone("reading");logHistory("reading",scratch.read.title,score(scratch.read,scratch.rAns));render();break;
+    case "l-submit":{const L=scratch.listen;scratch.lSub=true;const dc=dictCheck(scratch.lDict||"",L.dictation);
+      addRecord({skill:"listening",title:L.title,...quizResult(L,scratch.lAns),dictation:{sentence:cut(L.dictation,300),mine:cut(scratch.lDict,300),hit:dc.hit,total:dc.total}});markDone("listening");render();break}
+    case "r-submit":{const R2=scratch.read;scratch.rSub=true;
+      addRecord({skill:"reading",title:R2.title,...quizResult(R2,scratch.rAns),vocab:(R2.vocab||[]).slice(0,6)});markDone("reading");render();break}
     case "l-reset":scratch.lSub=false;scratch.lAns={};scratch.lDict="";render();break;
     case "r-reset":scratch.rSub=false;scratch.rAns={};render();break;
     case "analyze":analyze();break;
+    case "h-more":scratch.hLimit=(scratch.hLimit||20)+20;render();break;
     case "drill-check":scratch.drillShown=true;S.drillDone[b.dataset.dk]=true;save();render();break;
     case "rv-check":{const i=b.dataset.i;const e=reviewCards()[i];const r=scratch["rv"+i]||{};const match=norm(r.val||"").join(" ")===norm(e.right).join(" ");scratch["rv"+i]={...r,shown:true,match};
+      if(!r.shown){const k=errKey(e),prev=S.rv[k]||{ok:0};S.rv[k]={last:today(),ok:match?(prev.last===today()?prev.ok:prev.ok+1):0};save()}
       const shownAll=reviewCards().every((_,k)=>scratch["rv"+k]?.shown);if(shownAll)markDone("review");render();break}
   }
 });
-function score(set,ans){const n=set.questions.length;let c=0;set.questions.forEach((q,i)=>{if((ans||{})[i]===q.answer)c++});return Math.round(c/n*100)}
+function quizResult(set,ans){
+  ans=ans||{};let c=0;const wrong=[];
+  set.questions.forEach((q,i)=>{if(ans[i]===q.answer)c++;else wrong.push({q:cut(q.q,200),mine:ans[i]==null?"(안 고름)":cut(q.options[ans[i]],120),right:cut(q.options[q.answer],120)})});
+  return{score:Math.round(c/set.questions.length*100),correct:c,total:set.questions.length,wrong};
+}
 
 /* ---------- boot ---------- */
 render();
@@ -618,13 +755,21 @@ if(window.claude&&typeof window.claude.use==="function"){
     const [db,user]=await Promise.all([window.claude.use("db"),window.claude.use("user")]);
     if(!db||!user)return;
     const id=await user.id();if(!id)return;
-    const ref=db.collection("data/users/"+id).doc("progress");
-    const snap=await ref.get();
-    docRef=ref;store="cloud";
-    if(snap.exists){S=merge(snap.data());try{localStorage.setItem(LS_KEY,JSON.stringify(S))}catch(e){}}
-    else if(S.errors.length||Object.keys(S.days).length)flush();
-    scratch.rvPick=null;render();
-  })().catch(e=>console.warn("cloud storage unavailable",e));
+    const pRef=db.collection("data/users/"+id).doc("progress");
+    const dCol=pRef.collection("days");
+    const [snap,q]=await Promise.all([pRef.get(),dCol.orderBy("d","desc").limit(1000).get()]);
+    const localS=S,localLOG=LOG;
+    if(snap.exists){S=merge(snap.data());S.days=Object.assign({},localS.days,S.days)}
+    LOG={};for(const doc of q.docs){const v=doc.data();if(v&&v.d)LOG[v.d]={d:v.d,records:Array.isArray(v.records)?v.records:[]}}
+    dirty.clear();
+    for(const d in localLOG)for(const r of (localLOG[d].records||[]))putRecord(r); // sessions done on this device before the account was reachable
+    migrateLegacy();
+    progRef=pRef;dayCol=dCol;store="cloud";
+    rebuildErr();
+    if(dirty.size||!snap.exists)flush();
+    try{localStorage.setItem(LS_KEY,JSON.stringify(S));localStorage.setItem(LS_LOG,JSON.stringify(LOG))}catch(e){}
+    render();
+  })().catch(e=>console.warn("cloud storage unavailable",e)).finally(()=>{cloudPending=false;render()});
 }else{aiChecked=true;render()}
 })();
 </script>
